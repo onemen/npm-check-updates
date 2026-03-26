@@ -101,7 +101,7 @@
     "eslint-plugin-promise": "^6.6.0",
     "fast-glob": "^3.3.3",
     "fast-memoize": "^2.5.2",
-    "find-up": "5.0.0",
+    "find-up": "8.0.0",
     "fp-and-or": "^1.0.2",
     "hosted-git-info": "^9.0.0",
     "ini": "^5.0.0",
