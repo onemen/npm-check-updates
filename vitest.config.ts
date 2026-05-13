@@ -26,7 +26,7 @@ export default defineConfig({
     teardownTimeout: 30000,
 
     // Setup files
-    setupFiles: ['test/helpers/vitest.setup.ts'],
+    setupFiles: ['./test/helpers/vitest.setup.ts'],
 
     // Reporter configuration
     reporters: ['default'],
