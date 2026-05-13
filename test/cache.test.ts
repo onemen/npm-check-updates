@@ -3,10 +3,8 @@ import fs from 'fs/promises'
 import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 
 const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()

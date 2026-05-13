@@ -7,12 +7,10 @@ import path from 'path'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
-import chaiSetup from './helpers/chaiSetup'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -37,11 +35,10 @@ const ncu = async (
 
 describe('doctor', function () {
   // 3 min timeout
-  this.timeout(3 * 60 * 1000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-  after(() => stub.restore())
+  beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
+  afterAll(() => stub.restore())
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {

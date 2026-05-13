@@ -1,9 +1,7 @@
 import ncu from '../src/'
 import { type Index } from '../src/types/IndexType'
 import { type VersionSpec } from '../src/types/VersionSpec'
-import chaiSetup from './helpers/chaiSetup'
 
-chaiSetup()
 
 describe('enginesNode', () => {
   it("update packages that satisfy the project's engines.node", async () => {

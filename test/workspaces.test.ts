@@ -6,11 +6,9 @@ import path, { dirname } from 'path'
 import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -117,7 +115,7 @@ let stub: { restore: () => void }
 
 describe('workspaces', () => {
   describe('stubbed', () => {
-    before(() => {
+    beforeAll(() => {
       stub = stubVersions(
         {
           'ncu-test-v2': '2.0.0',
@@ -127,12 +125,11 @@ describe('workspaces', () => {
         { spawn: true },
       )
     })
-    after(() => {
+    afterAll(() => {
       stub.restore()
     })
 
     describe('--workspaces', function () {
-      this.timeout(60000)
 
       it('do not allow --workspaces and --deep together', async () => {
         await ncu({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
@@ -262,7 +259,6 @@ describe('workspaces', () => {
     })
 
     describe('--workspace', function () {
-      this.timeout(60000)
 
       it('do not allow --workspace and --deep together', async () => {
         await ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
@@ -353,7 +349,6 @@ describe('workspaces', () => {
     })
 
     describe('--root/--no-root', function () {
-      this.timeout(60000)
 
       it('update root project by default', async () => {
         const tempDir = await setup()
@@ -444,7 +439,6 @@ describe('workspaces', () => {
     })
 
     describe('--workspace should include --root by default', function () {
-      this.timeout(60000)
 
       it('update root project and single workspace', async () => {
         const tempDir = await setup()

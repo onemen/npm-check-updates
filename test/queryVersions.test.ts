@@ -1,8 +1,6 @@
 import queryVersions from '../src/lib/queryVersions'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 
 describe('queryVersions', function () {
   it('valid single package', async () => {

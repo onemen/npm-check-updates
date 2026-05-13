@@ -3,18 +3,16 @@ import os from 'os'
 import path, { dirname } from 'path'
 import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
-const should = chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 
 describe('--interactive', () => {
   let stub: { restore: () => void }
-  before(() => {
+  beforeAll(() => {
     stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
@@ -26,7 +24,7 @@ describe('--interactive', () => {
       { spawn: true },
     )
   })
-  after(() => {
+  afterAll(() => {
     stub.restore()
   })
 

@@ -1,7 +1,5 @@
 import getPreferredWildcard from '../src/lib/getPreferredWildcard'
-import chaiSetup from './helpers/chaiSetup'
 
-const should = chaiSetup()
 
 describe('getPreferredWildcard', () => {
   it('identify ^ when it is preferred', () => {

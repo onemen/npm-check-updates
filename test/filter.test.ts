@@ -4,10 +4,8 @@ import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src'
 import { type Index } from '../src/types/IndexType'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -15,8 +13,8 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('filter', () => {
   describe('module', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9')))
-    after(() => stub.restore())
+    beforeAll(() => (stub = stubVersions('99.9.9')))
+    afterAll(() => stub.restore())
 
     it('filter by package name with one arg', async () => {
       const upgraded = (await ncu({
@@ -213,8 +211,8 @@ describe('filter', () => {
 
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-    after(() => stub.restore())
+    beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
+    afterAll(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
       const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'], {
@@ -306,8 +304,8 @@ describe('filter', () => {
 describe('reject', () => {
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-    after(() => stub.restore())
+    beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
+    afterAll(() => stub.restore())
 
     it('reject by package name with --reject', async () => {
       const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'], {

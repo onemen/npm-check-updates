@@ -9,11 +9,9 @@ import { pnpmApi } from '../src/package-managers/pnpm'
 import { yarnApi } from '../src/package-managers/yarn'
 import type { PackageFile } from '../src/types/PackageFile'
 import type { Packument } from '../src/types/Packument'
-import chaiSetup from './helpers/chaiSetup'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 
 const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()

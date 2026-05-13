@@ -566,7 +566,7 @@ npmApi.mockFetchUpgradedPackument =
     const packument: Packument = {
       name,
       'dist-tags': {
-        [options.distTag || 'latest']: version,
+        [options?.distTag || 'latest']: version,
       },
       engines: { node: '' },
       time: {

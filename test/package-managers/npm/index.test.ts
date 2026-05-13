@@ -1,9 +1,7 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as npm from '../../../src/package-managers/npm'
-import chaiSetup from '../../helpers/chaiSetup'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('npm', function () {

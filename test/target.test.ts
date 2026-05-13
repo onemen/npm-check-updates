@@ -3,10 +3,8 @@ import { type FilterFunction } from '../src/types/FilterFunction'
 import { type Index } from '../src/types/IndexType'
 import { type TargetFunction } from '../src/types/TargetFunction'
 import { type Version } from '../src/types/Version'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 
 // TODO: Mock based on real output of viewMany
 describe('target', () => {

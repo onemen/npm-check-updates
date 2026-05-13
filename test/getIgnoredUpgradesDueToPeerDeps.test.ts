@@ -1,14 +1,17 @@
 import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps'
 import { type Packument } from '../src/types/Packument'
-import chaiSetup from './helpers/chaiSetup'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 
 describe('getIgnoredUpgradesDueToPeerDeps', function () {
+  let pb: ReturnType<typeof silenceProgressBar>
+  beforeEach(() => {
+    pb = silenceProgressBar()
+  })
+  afterEach(() => pb.restore())
+
   it('ncu-test-peer-update', async () => {
-    silenceProgressBar()
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         'ncu-test-return-version': '1.0.0',
@@ -35,6 +38,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
       },
     })
   })
+
   it('ignored peer after upgrade', async () => {
     const stub = stubVersions({
       '@vitest/ui': {
@@ -90,7 +94,6 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
     })
-    silenceProgressBar()
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         '@vitest/ui': '1.3.1',

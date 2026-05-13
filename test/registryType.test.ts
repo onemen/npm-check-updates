@@ -1,7 +1,5 @@
 import ncu from '../src/index'
-import chaiSetup from './helpers/chaiSetup'
 
-chaiSetup()
 
 describe('staticRegistry', function () {
   it('upgrade to the version specified in the static registry file', async () => {

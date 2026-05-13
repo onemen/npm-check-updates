@@ -3,11 +3,9 @@ import os from 'os'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('run', function () {

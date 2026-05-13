@@ -1,12 +1,12 @@
 {
-  "include": ["src/**/*", "test/**/*", "vite.config.ts"],
-  "exclude": ["test/deep", "test/doctor", "node_modules"],
+  "include": ["src/**/*", "test/**/*", "vite.config.ts", "test/helpers/vitest.config.ts"],
+  "exclude": ["test/deep", "test/doctor", "node_modules", "coverage"],
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "types": ["node", "mocha"],
+    "types": ["node", "vitest/globals"],
     "noEmit": true,
     "allowJs": true,
     "esModuleInterop": true,
@@ -21,7 +21,7 @@
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo",
     "paths": {
       "libnpmconfig": ["./src/types/libnpmconfig"],
-      "prompts-ncu": ["./src/types/prompts-ncu"]
-    }
-  }
+      "prompts-ncu": ["./src/types/prompts-ncu"],
+    },
+  },
 }

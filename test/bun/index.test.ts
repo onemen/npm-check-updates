@@ -2,11 +2,9 @@ import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
-import chaiSetup from '../helpers/chaiSetup'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const mockNpmVersions = {
@@ -18,7 +16,7 @@ const mockNpmVersions = {
 
 describe('bun', function () {
   // Use a synchronous check to fail the suite immediately if bun is missing
-  before('check-environment', function () {
+  beforeAll(function () {
     const result = spawnSync('bun', ['--version'], {
       shell: true,
       encoding: 'utf8',
@@ -48,11 +46,11 @@ describe('bun', function () {
   })
 
   describe('doctor', function () {
-    this.timeout(3 * 60 * 1000)
+    // Note: Vitest has testTimeout in config; per-suite timeout not needed here
 
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-    after(() => stub.restore())
+    beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
+    afterAll(() => stub.restore())
 
     testPass({ packageManager: 'bun' })
     testFail({ packageManager: 'bun' })

@@ -2,10 +2,8 @@ import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import { type Packument } from '../src/types/Packument'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('peer dependencies', function () {

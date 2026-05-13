@@ -1,7 +1,5 @@
 import upgradeDependencies from '../src/lib/upgradeDependencies'
-import chaiSetup from './helpers/chaiSetup'
 
-chaiSetup()
 
 describe('upgradeDependencies', () => {
   it('upgrade simple, non-semver versions', () => {

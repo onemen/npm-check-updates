@@ -6,11 +6,9 @@ import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -47,11 +45,10 @@ const setupDeepTest = async () => {
 }
 
 describe('--deep', function () {
-  this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterAll(() => stub.restore())
 
   it('do not allow --packageFile and --deep together', async () => {
     await ncu({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
@@ -153,11 +150,10 @@ describe('--deep', function () {
 describe('--deep with nested ncurc files', function () {
   const cwd = path.join(__dirname, 'test-data/deep-ncurc')
 
-  this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterAll(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {
     const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd })

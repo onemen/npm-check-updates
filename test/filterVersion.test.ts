@@ -2,10 +2,8 @@ import path, { dirname } from 'path'
 import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -13,13 +11,13 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('filterVersion', () => {
   describe('module', () => {
     let stub: { restore: () => void }
-    before(() => {
+    beforeAll(() => {
       stub = stubVersions({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
       })
     })
-    after(() => {
+    afterAll(() => {
       stub.restore()
     })
 

@@ -1,8 +1,5 @@
 import ncu from '../src'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
 
 describe('rejectVersion', () => {
   it('reject by package version with string', async () => {

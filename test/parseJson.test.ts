@@ -1,7 +1,5 @@
 import parseJson from '../src/lib/utils/parseJson'
-import chaiSetup from './helpers/chaiSetup'
 
-chaiSetup()
 
 describe('parseJson', async function () {
   it('handles valid json strings', async () => {
