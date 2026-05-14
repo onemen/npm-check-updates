@@ -25,13 +25,9 @@ const mockNpmVersions = {
 }
 
 /** Run the ncu CLI. */
-const ncu = async (
-  args: string[],
-  spawnPleaseOptions?: Parameters<typeof spawn>[2],
-  spawnOptions?: Parameters<typeof spawn>[3],
-) => {
-  const { stdout } = await spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
-  return stdout
+// TODO: replace ncu with the real function
+const ncu = async (args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
+  return spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
 }
 
 describe('doctor', function () {
@@ -45,8 +41,8 @@ describe('doctor', function () {
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
       const cwd = path.join(doctorTests, 'nopackagefile')
-      const output = await ncu(['--doctor'], {}, { cwd })
-      return stripAnsi(output).should.equal(
+      const { stdout } = await ncu(['--doctor'], {}, { cwd })
+      return stripAnsi(stdout).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
           (cliOptionsMap.doctor.help as (options: { markdown: boolean }) => string)({ markdown: false }),
         )}\n`,
@@ -83,24 +79,12 @@ describe('doctor', function () {
       const lockfilePath = path.join(cwd, 'package-lock.json')
       const nodeModulesPath = path.join(cwd, 'node_modules')
       const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        // check only ncu-test-v2 (excluding ncu-return-version)
-        await ncu(
-          ['--doctor', '-u', '--filter', 'ncu-test-v2'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      let { stdout, stderr } = await ncu(
+        ['--doctor', '-u', '--filter', 'ncu-test-v2'],
+        { rejectOnError: false },
+        { cwd },
+      )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -136,23 +120,12 @@ describe('doctor', function () {
       const nodeModulesPath = path.join(cwd, 'node_modules')
       const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        await ncu(
-          ['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      let { stdout, stderr } = await ncu(
+        ['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'],
+        { rejectOnError: false },
+        { cwd },
+      )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -187,23 +160,12 @@ describe('doctor', function () {
       const nodeModulesPath = path.join(cwd, 'node_modules')
       const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        await ncu(
-          ['--doctor', '-u', '--doctorTest', npmCmd + ' run mytest'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      let { stdout, stderr } = await ncu(
+        ['--doctor', '-u', '--doctorTest', `${npmCmd} run mytest`],
+        { rejectOnError: false },
+        { cwd },
+      )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -238,23 +200,12 @@ describe('doctor', function () {
       const nodeModulesPath = path.join(cwd, 'node_modules')
       const echoPath = path.join(cwd, 'echo.js')
       const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        await ncu(
-          ['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      const { stdout, stderr } = await ncu(
+        ['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`],
+        { rejectOnError: false },
+        { cwd },
+      )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -314,32 +265,20 @@ else {
         'utf-8',
       )
 
-      let stdout = ''
-      let stderr = ''
+      let result
       let pkgUpgraded
 
       try {
         // explicitly set packageManager to avoid auto yarn detection
         await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
-
-        await ncu(
-          ['--doctor', '-u', '-p', 'npm'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd: tempDir },
-        )
-
+        result = await ncu(['--doctor', '-u', '-p', 'npm'], { rejectOnError: false }, { cwd: tempDir })
         pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
       } finally {
         await removeDir(tempDir)
       }
 
+      const stdout = result.stdout
+      const stderr = result.stderr
       const testTag = createNcuRegExp('ncu-test-tag 1.0.0 →')
       const testV2 = createNcuRegExp('ncu-test-v2 1.0.0 →')
 

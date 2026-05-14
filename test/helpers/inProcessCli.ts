@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream'
 import prompts from 'prompts-ncu'
+import { vi } from 'vitest'
 import { ncuCli } from '../../src/ncuCli.js'
 
 /**
@@ -19,14 +20,15 @@ export async function spawn(
   options: any = {},
   spawnOptions: { cwd?: string; env?: Record<string, string | undefined>; inject?: PromptValue[] } = {},
 ) {
-  const originalArgv = process.argv
-  const originalStdin = process.stdin
-  const originalCwd = process.cwd()
-  const originalEnv = { ...process.env }
+  const original = {
+    argv: process.argv,
+    cwd: process.cwd(),
+    env: { ...process.env },
+    stdin: process.stdin,
+  }
 
   let stdout = ''
   let stderr = ''
-  const EXIT_SIGNAL = Symbol('PROCESS_EXIT')
 
   if (spawnOptions.cwd) {
     process.chdir(spawnOptions.cwd)
@@ -56,53 +58,49 @@ export async function spawn(
     stdout += chunk.toString()
     return true
   })
-  vi.spyOn(console, 'log').mockImplementation(msg => (stdout += msg + '\n'))
-  vi.spyOn(console, 'log').mockImplementation(msg => {
-    stdout += msg + '\n'
-  })
-  vi.spyOn(console, 'info').mockImplementation(msg => {
-    stdout += msg + '\n'
-  })
-  vi.spyOn(console, 'warn').mockImplementation(msg => {
-    stdout += msg + '\n'
-  })
+
+  // vi.spyOn(console, 'log').mockImplementation(msg => {
+  //   stdout += msg + '\n'
+  // })
+  // vi.spyOn(console, 'info').mockImplementation(msg => {
+  //   stdout += msg + '\n'
+  // })
+  // vi.spyOn(console, 'warn').mockImplementation(msg => {
+  //   stdout += msg + '\n'
+  // })
 
   vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
     stderr += chunk.toString()
     return true
   })
-  vi.spyOn(console, 'error').mockImplementation(msg => {
-    stderr += msg + '\n'
-  })
+  // vi.spyOn(console, 'error').mockImplementation(msg => {
+  //   stderr += msg + '\n'
+  // })
 
-  vi.spyOn(process, 'exit').mockImplementation(code => {
-    const exitError = new Error(stderr.trim())
-    // @ts-expect-error - Custom property insertion for test reporting
-    exitError.code = code
-    // @ts-expect-error - Custom control signal token
-    exitError.signal = EXIT_SIGNAL
-    throw exitError
-  })
-
-  try {
-    await ncuCli()
-  } catch (error: any) {
-    if (error.signal === EXIT_SIGNAL) {
-      if (error.code !== 0 && options.rejectOnError !== false) {
-        throw error
-      }
-    } else {
-      if (options.rejectOnError !== false) {
-        throw error
-      }
+  vi.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+    if (typeof code === 'number' ? code : 0) {
+      throw new Error(stderr || `CLI exited with code ${code}`)
     }
-  } finally {
-    process.argv = originalArgv
-    vi.restoreAllMocks()
-    Object.defineProperty(process, 'stdin', { value: originalStdin, configurable: true })
-    process.chdir(originalCwd)
-    process.env = originalEnv
+  }) as never)
+
+  const result = await ncuCli()
+    .then(() => ({ stdout, stderr, error: null }))
+    .catch(error => ({ stdout, stderr, error }))
+
+  // clean up before throwing/returning
+  process.argv = original.argv
+  if (process.cwd() !== original.cwd) process.chdir(original.cwd)
+  Object.defineProperty(process, 'stdin', { value: original.stdin, configurable: true })
+
+  for (const key in process.env) delete process.env[key]
+  Object.assign(process.env, original.env)
+
+  vi.restoreAllMocks()
+
+  if (options.rejectOnError !== false && result.error) {
+    const errorMessage = stderr || result.stderr?.trim() || result.error?.message || String(result.error)
+    throw new Error(errorMessage)
   }
 
-  return { stdout, stderr }
+  return { stdout: result.stdout, stderr: result.stderr }
 }
