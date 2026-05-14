@@ -3,8 +3,8 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import path from 'path'
-import spawn from 'spawn-please'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
+import { spawn } from '../helpers/inProcessCli.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 

@@ -1,8 +1,8 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
+import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 

@@ -2,8 +2,8 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path, { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import spawn from 'spawn-please'
 import parseJson from '../../../src/lib/utils/parseJson'
+import { spawn } from '../../helpers/inProcessCli.js'
 import removeDir from '../../helpers/removeDir'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

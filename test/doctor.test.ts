@@ -4,10 +4,11 @@ import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
-import spawn from 'spawn-please'
+import spawnPlease from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
+import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
@@ -319,7 +320,7 @@ else {
 
       try {
         // explicitly set packageManager to avoid auto yarn detection
-        await spawn('npm', ['install'], {}, { cwd: tempDir })
+        await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
 
         await ncu(
           ['--doctor', '-u', '-p', 'npm'],

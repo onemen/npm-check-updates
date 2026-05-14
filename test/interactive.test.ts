@@ -1,8 +1,9 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
+import spawnPlease from 'spawn-please'
 import { fileURLToPath } from 'url'
+import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
@@ -45,10 +46,7 @@ describe('--interactive', () => {
         {},
         {
           cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
-          },
+          inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
         },
       )
 
@@ -87,10 +85,7 @@ describe('--interactive', () => {
         {},
         {
           cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
-          },
+          inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
         },
       )
 
@@ -132,10 +127,7 @@ describe('--interactive', () => {
         {},
         {
           cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
-          },
+          inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
         },
       )
 
@@ -167,17 +159,14 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      await spawn('npm', ['install'], {}, { cwd: tempDir })
+      await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await spawn(
         'node',
         [bin, '--interactive', '--format', 'repo'],
         {},
         {
           cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['modern-diacritics'], true]),
-          },
+          inject: [['modern-diacritics'], true],
         },
       )
 

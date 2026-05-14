@@ -2,10 +2,10 @@ import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
+import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
@@ -45,7 +45,6 @@ const setupDeepTest = async () => {
 }
 
 describe('--deep', function () {
-
   let stub: { restore: () => void }
   beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
   afterAll(() => stub.restore())
@@ -149,7 +148,6 @@ describe('--deep', function () {
 
 describe('--deep with nested ncurc files', function () {
   const cwd = path.join(__dirname, 'test-data/deep-ncurc')
-
 
   let stub: { restore: () => void }
   beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))

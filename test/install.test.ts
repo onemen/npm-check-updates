@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
-import spawn from 'spawn-please'
 import exists from '../src/lib/exists'
+import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
@@ -109,10 +109,7 @@ describe('install', () => {
           [bin, '-iu', '--packageFile', pkgFile],
           {},
           {
-            env: {
-              ...process.env,
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], true]),
-            },
+            inject: [['ncu-test-v2'], true],
           },
         )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
@@ -141,10 +138,7 @@ describe('install', () => {
           [bin, '-iu', '--packageFile', pkgFile],
           {},
           {
-            env: {
-              ...process.env,
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], false]),
-            },
+            inject: [['ncu-test-v2'], false],
           },
         )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
@@ -173,12 +167,9 @@ describe('install', () => {
           [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'],
           {},
           {
-            env: {
-              ...process.env,
-              // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
-              // i.e. Testing that the prompt is not shown with --install always must be done manually.
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
-            },
+            // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
+            // i.e. Testing that the prompt is not shown with --install always must be done manually.
+            inject: [['ncu-test-v2']],
           },
         )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
@@ -207,12 +198,9 @@ describe('install', () => {
           [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'],
           {},
           {
-            env: {
-              ...process.env,
-              // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
-              // i.e. Testing that the prompt is not shown with --install never must be done manually.
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
-            },
+            // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
+            // i.e. Testing that the prompt is not shown with --install never must be done manually.
+            inject: [['ncu-test-v2']],
           },
         )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false

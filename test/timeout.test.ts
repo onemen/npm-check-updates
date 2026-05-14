@@ -1,8 +1,8 @@
 import fs from 'fs/promises'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
+import { spawn } from './helpers/inProcessCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

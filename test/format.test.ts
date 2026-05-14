@@ -2,9 +2,10 @@ import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
+import spawnPlease from 'spawn-please'
 import { format as timeAgoFormat } from 'timeago.js'
 import { fileURLToPath } from 'url'
+import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
@@ -131,7 +132,7 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('npm', ['install'], {}, { cwd: tempDir })
+      await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await spawn('node', [bin, '--format', 'repo'], {}, { cwd: tempDir })
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
@@ -152,7 +153,7 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('npm', ['install'], {}, { cwd: tempDir })
+      await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await spawn('node', [bin, '--format', 'homepage'], {}, { cwd: tempDir })
       stdout.should.include('https://github.com/npm/hosted-git-info')
     } finally {

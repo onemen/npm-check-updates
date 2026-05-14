@@ -3,9 +3,9 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
+import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
@@ -130,7 +130,6 @@ describe('workspaces', () => {
     })
 
     describe('--workspaces', function () {
-
       it('do not allow --workspaces and --deep together', async () => {
         await ncu({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
       })
@@ -259,7 +258,6 @@ describe('workspaces', () => {
     })
 
     describe('--workspace', function () {
-
       it('do not allow --workspace and --deep together', async () => {
         await ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
       })
@@ -349,7 +347,6 @@ describe('workspaces', () => {
     })
 
     describe('--root/--no-root', function () {
-
       it('update root project by default', async () => {
         const tempDir = await setup()
         try {
@@ -439,7 +436,6 @@ describe('workspaces', () => {
     })
 
     describe('--workspace should include --root by default', function () {
-
       it('update root project and single workspace', async () => {
         const tempDir = await setup()
         try {

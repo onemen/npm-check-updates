@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
+import { spawn } from './helpers/inProcessCli.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
