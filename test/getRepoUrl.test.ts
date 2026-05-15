@@ -1,6 +1,5 @@
 import getRepoUrl from '../src/lib/getRepoUrl'
 
-
 describe('getRepoUrl', () => {
   it('return null if package is not installed', async () => {
     should.equal(await getRepoUrl('not-installed/package'), null)

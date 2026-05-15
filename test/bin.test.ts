@@ -12,11 +12,9 @@ import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const bin = path.join(__dirname, '../build/cli.js')
-
 describe('bin', async function () {
   it('fetch latest version from registry (not stubbed)', async () => {
-    const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin'], {
+    const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
     const pkgData = JSON.parse(stdout)
@@ -25,7 +23,7 @@ describe('bin', async function () {
 
   it('output only upgraded with --jsonUpgraded', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin'], {
+    const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
     const pkgData = JSON.parse(stdout)
@@ -35,7 +33,7 @@ describe('bin', async function () {
 
   it('--loglevel verbose', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli('node', [bin, '--loglevel', 'verbose'], {
+    const { stdout } = await runNcuCli(['--loglevel', 'verbose'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
     stdout.should.containIgnoreCase('Initializing')
@@ -46,7 +44,7 @@ describe('bin', async function () {
 
   it('--verbose', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli('node', [bin, '--verbose'], {
+    const { stdout } = await runNcuCli(['--verbose'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
     stdout.should.containIgnoreCase('Initializing')
@@ -57,7 +55,7 @@ describe('bin', async function () {
 
   it('accept stdin', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli('node', [bin, '--stdin'], {
+    const { stdout } = await runNcuCli(['--stdin'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     })
     stdout.trim().should.startWith('express')
@@ -66,7 +64,7 @@ describe('bin', async function () {
 
   it('reject out-of-date stdin with errorLevel 2', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    await runNcuCli('node', [bin, '--stdin', '--errorLevel', '2'], {
+    await runNcuCli(['--stdin', '--errorLevel', '2'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
     stub.restore()
@@ -74,7 +72,7 @@ describe('bin', async function () {
 
   it('fall back to package.json search when receiving empty content on stdin', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli('node', [bin, '--stdin'])
+    const { stdout } = await runNcuCli(['--stdin'])
     stdout
       .toString()
       .trim()
@@ -84,12 +82,7 @@ describe('bin', async function () {
 
   it('use package.json in cwd by default', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli(
-      'node',
-      [bin, '--jsonUpgraded'],
-      {},
-      { cwd: path.join(__dirname, 'test-data/ncu') },
-    )
+    const { stdout } = await runNcuCli(['--jsonUpgraded'], { cwd: path.join(__dirname, 'test-data/ncu') })
     const pkgData = JSON.parse(stdout)
     pkgData.should.have.property('express')
     stub.restore()
@@ -97,15 +90,15 @@ describe('bin', async function () {
 
   it('throw error if there is no package', async () => {
     // run from tmp dir to avoid ncu analyzing the project's package.json
-    return runNcuCli('node', [bin], {}, { cwd: os.tmpdir() }).should.eventually.be.rejectedWith('No package.json')
+    return runNcuCli([], { cwd: os.tmpdir() }).should.eventually.be.rejectedWith('No package.json')
   })
 
   it('throw error if there is no package in --cwd', async () => {
-    return runNcuCli('node', [bin, '--cwd', os.tmpdir()]).should.eventually.be.rejectedWith('No package.json')
+    return runNcuCli(['--cwd', os.tmpdir()]).should.eventually.be.rejectedWith('No package.json')
   })
 
   it('throw error if --cwd does not exist', async () => {
-    return runNcuCli('node', [bin, '--cwd', 'fnuoathufoawhtufonwauto']).should.eventually.be.rejectedWith(
+    return runNcuCli(['--cwd', 'fnuoathufoawhtufonwauto']).should.eventually.be.rejectedWith(
       'No such directory: fnuoathufoawhtufonwauto',
     )
   })
@@ -116,7 +109,7 @@ describe('bin', async function () {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
-      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--packageFile', pkgFile])
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--packageFile', pkgFile])
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('express')
     } finally {
@@ -131,7 +124,7 @@ describe('bin', async function () {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
-      await runNcuCli('node', [bin, '-u', '--packageFile', pkgFile])
+      await runNcuCli(['-u', '--packageFile', pkgFile])
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -149,14 +142,9 @@ describe('bin', async function () {
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
 
     try {
-      await runNcuCli('node', [
-        bin,
-        '-u',
-        '--errorLevel',
-        '2',
-        '--packageFile',
-        pkgFile,
-      ]).should.eventually.be.rejectedWith('Dependencies not up-to-date')
+      await runNcuCli(['-u', '--errorLevel', '2', '--packageFile', pkgFile]).should.eventually.be.rejectedWith(
+        'Dependencies not up-to-date',
+      )
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -173,7 +161,7 @@ describe('bin', async function () {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
-      await runNcuCli('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
+      await runNcuCli(['-u', '--jsonUpgraded', '--packageFile', pkgFile])
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -190,7 +178,7 @@ describe('bin', async function () {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
-      await runNcuCli('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], {
+      await runNcuCli(['-u', '--stdin', '--packageFile', pkgFile], {
         stdin: JSON.stringify({ dependencies: {} }),
       })
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
@@ -205,7 +193,7 @@ describe('bin', async function () {
 
   it('suppress stdout when --silent is provided', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli('node', [bin, '--silent'], {
+    const { stdout } = await runNcuCli(['--silent'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     })
     stdout.trim().should.equal('')
@@ -224,13 +212,7 @@ describe('bin', async function () {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
     try {
-      const { stdout } = await runNcuCli('node', [
-        bin,
-        '--packageFile',
-        pkgFile,
-        '--filter',
-        'ncu-test-v2 ncu-test-tag',
-      ])
+      const { stdout } = await runNcuCli(['--packageFile', pkgFile, '--filter', 'ncu-test-v2 ncu-test-tag'])
       stdout.should.include('"ncu-test-v2 ncu-test-tag"')
     } finally {
       await removeDir(tempDir)
@@ -245,7 +227,7 @@ describe('bin', async function () {
       event: 'link:../link',
       workspace: 'workspace:../workspace',
     }
-    const { stdout } = await runNcuCli('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies }) })
+    const { stdout } = await runNcuCli(['--stdin'], { stdin: JSON.stringify({ dependencies }) })
 
     stripAnsi(stdout)!.should.not.include('No package versions were returned.')
     stub.restore()
@@ -253,7 +235,7 @@ describe('bin', async function () {
 
   it('combine boolean flags with arguments', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { stdout } = await runNcuCli('node', [bin, '--stdin', '--jsonUpgraded', 'ncu-test-v2'], {
+    const { stdout } = await runNcuCli(['--stdin', '--jsonUpgraded', 'ncu-test-v2'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
     })
     const upgraded = JSON.parse(stdout) as Index<Version>
@@ -265,7 +247,7 @@ describe('bin', async function () {
 
   it('combine short boolean options with long options', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const promise = runNcuCli('node', [bin, '-mp', 'foo'])
+    const promise = runNcuCli(['-mp', 'foo'])
     await promise.should.eventually.be.rejectedWith('Invalid package manager: foo')
     stub.restore()
   })
@@ -282,7 +264,7 @@ describe('bin', async function () {
       'utf-8',
     )
     try {
-      await runNcuCli('node', [bin, '-u', '--packageFile', pkgFile])
+      await runNcuCli(['-u', '--packageFile', pkgFile])
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       console.log(upgradedPkg)
       upgradedPkg.dependencies.should.deep.equal({ 'ncu-test-v2': '99.9.9' })
@@ -298,7 +280,7 @@ describe('bin', async function () {
       const dependencies = {
         'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
       }
-      const { stdout } = await runNcuCli('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies }) })
+      const { stdout } = await runNcuCli(['--stdin'], { stdin: JSON.stringify({ dependencies }) })
       stripAnsi(stdout)
         .trim()
         .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
@@ -309,7 +291,7 @@ describe('bin', async function () {
       const dependencies = {
         request: 'npm:ncu-test-v2@1.0.0',
       }
-      const { stdout } = await runNcuCli('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies }) })
+      const { stdout } = await runNcuCli(['--stdin'], { stdin: JSON.stringify({ dependencies }) })
       stripAnsi(stdout).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  99.9.9')
       stub.restore()
     })
@@ -317,105 +299,105 @@ describe('bin', async function () {
 
   describe('option-specific help', () => {
     it('long option', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', '--filter'])
+      const { stdout } = await runNcuCli(['--help', '--filter'])
       stdout.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('long option without "--" prefix', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', 'filter'])
+      const { stdout } = await runNcuCli(['--help', 'filter'])
       stdout.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('short option', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', '-f'])
+      const { stdout } = await runNcuCli(['--help', '-f'])
       stdout.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('short option without "-" prefix', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', 'f'])
+      const { stdout } = await runNcuCli(['--help', 'f'])
       stdout.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('option with default', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', '--concurrency'])
+      const { stdout } = await runNcuCli(['--help', '--concurrency'])
       stdout.trim().should.containIgnoreCase('Default:')
     })
 
     it('option with extended help', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', '--target'])
+      const { stdout } = await runNcuCli(['--help', '--target'])
       stdout.trim().should.containIgnoreCase('Upgrade to the highest version number')
     })
 
     it('-h', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '-h', '--filter'])
+      const { stdout } = await runNcuCli(['-h', '--filter'])
       stdout.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('unknown option', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', '--foo'])
+      const { stdout } = await runNcuCli(['--help', '--foo'])
       stdout.trim().should.containIgnoreCase('Unknown option')
     })
 
     it('multiple options', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--help', '--interactive', '--minimal'])
+      const { stdout } = await runNcuCli(['--help', '--interactive', '--minimal'])
       stdout.trim().should.containIgnoreCase('ncu --interactive')
       stdout.trim().should.containIgnoreCase('ncu --minimal')
     })
 
     // version is a special case since it is not included in cli-options.ts
     it('--version', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '-h', '--version'])
+      const { stdout } = await runNcuCli(['-h', '--version'])
       stdout.trim().should.match(/^Usage:\s+ncu --version/)
     })
 
     it('-V', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '-h', '--version'])
+      const { stdout } = await runNcuCli(['-h', '--version'])
       stdout.trim().should.match(/^Usage:\s+ncu --version/)
     })
 
     it('-v', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '-h', '--version'])
+      const { stdout } = await runNcuCli(['-h', '--version'])
       stdout.trim().should.match(/^Usage:\s+ncu --version/)
     })
 
     describe('special --help help', () => {
       it('--help --help', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '--help', '--help'])
+        const { stdout } = await runNcuCli(['--help', '--help'])
         stdout.trim().should.not.include('Usage')
       })
 
       it('--help help', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '--help', 'help'])
+        const { stdout } = await runNcuCli(['--help', 'help'])
         stdout.trim().should.not.include('Usage')
       })
 
       it('--help -h', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '--help', '-h'])
+        const { stdout } = await runNcuCli(['--help', '-h'])
         stdout.trim().should.not.include('Usage')
       })
 
       it('--help h', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '--help', 'h'])
+        const { stdout } = await runNcuCli(['--help', 'h'])
         stdout.trim().should.not.include('Usage')
       })
 
       it('-h --help', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '-h', '--help'])
+        const { stdout } = await runNcuCli(['-h', '--help'])
         stdout.trim().should.not.include('Usage')
       })
 
       it('-h help', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '-h', 'help'])
+        const { stdout } = await runNcuCli(['-h', 'help'])
         stdout.trim().should.not.include('Usage')
       })
 
       it('-h -h', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '-h', '-h'])
+        const { stdout } = await runNcuCli(['-h', '-h'])
         stdout.trim().should.not.include('Usage')
       })
 
       it('-h h', async () => {
-        const { stdout } = await runNcuCli('node', [bin, '-h', 'h'])
+        const { stdout } = await runNcuCli(['-h', 'h'])
         stdout.trim().should.not.include('Usage')
       })
     })

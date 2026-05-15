@@ -2,7 +2,6 @@ import ncu from '../src/'
 import { type Index } from '../src/types/IndexType'
 import { type VersionSpec } from '../src/types/VersionSpec'
 
-
 describe('enginesNode', () => {
   it("update packages that satisfy the project's engines.node", async () => {
     const upgraded = await ncu({

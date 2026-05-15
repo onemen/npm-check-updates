@@ -8,18 +8,10 @@ import { type PackageManagerName } from '../../src/types/PackageManagerName'
 import { runNcuCli } from './runNcuCli.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../../build/cli.js')
 const doctorTests = path.join(__dirname, '../test-data/doctor')
 
 // Track the active sandbox path for the currently running test block
 let currentTempDir: string | null = null
-
-// TODO: replace ncu with the real function
-/** Run the ncu CLI. */
-const ncu = async (args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
-  return runNcuCli('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
-}
 
 /** Helper to recursively copy directory contents to a temporary folder */
 async function copyDir(src: string, dest: string) {
@@ -101,7 +93,7 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
     }
 
     // explicitly set packageManager to avoid auto yarn detection
-    let { stdout, stderr } = await ncu(['--doctor', '-u', '-p', packageManager], { rejectOnError: false }, { cwd })
+    let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '-p', packageManager], { rejectOnError: false, cwd })
 
     const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -152,7 +144,7 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
     }
 
     // explicitly set packageManager to avoid auto yarn detection
-    const { stdout, stderr } = await ncu(['--doctor', '-u', '-p', packageManager], { rejectOnError: false }, { cwd })
+    const { stdout, stderr } = await runNcuCli(['--doctor', '-u', '-p', packageManager], { rejectOnError: false, cwd })
 
     const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 

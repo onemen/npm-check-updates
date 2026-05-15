@@ -1,7 +1,13 @@
+import path, { dirname } from 'node:path'
 import { Readable } from 'node:stream'
+import { fileURLToPath } from 'node:url'
 import prompts from 'prompts-ncu'
 import { vi } from 'vitest'
 import { ncuCli } from '../../src/ncuCli.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+const CLI_BIN_PATH = path.join(__dirname, '../../build/cli.js')
 
 type PromptValue = string[] | boolean
 
@@ -9,6 +15,14 @@ interface CapturedOutputs {
   stdout: string
   stderr: string
   runnerWarning: string
+}
+
+interface RunCliOptions {
+  cwd?: string
+  env?: Record<string, string | undefined>
+  inject?: PromptValue[]
+  rejectOnError?: boolean
+  stdin?: string
 }
 
 /**
@@ -84,16 +98,17 @@ export function cleanupCliMocks(): void {
 }
 
 /**
- * In-process replacement for spawn-please.
- * Captures stdout/stderr, handles dynamic directory switching, and
- * intercepts process exits seamlessly.
+ * Executes the NCU CLI in-process for testing.
+ * Simulates a full command-line execution by forwarding arguments directly to the
+ * application entry point without mutating the global `process.argv`. Captures all
+ * standard outputs, intercepts early process exits (such as `--help` or `--version`),
+ * and ensures localized directory and environment state cleanup.
+ *
+ * @param args - Array of CLI arguments to pass to NCU (e.g., `['--jsonAll', '-u']`).
+ * @param options - Configuration overrides for environment, working directory, and mock inputs.
+ * @returns An object containing the accumulated `stdout` and `stderr` strings.
  */
-export async function runNcuCli(
-  command: string,
-  args: string[] = [],
-  options: any = {},
-  spawnOptions: { cwd?: string; env?: Record<string, string | undefined>; inject?: PromptValue[] } = {},
-) {
+export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
   const original = {
     argv: process.argv,
     cwd: process.cwd(),
@@ -101,11 +116,11 @@ export async function runNcuCli(
     stdin: process.stdin,
   }
 
-  if (spawnOptions.cwd) process.chdir(spawnOptions.cwd)
-  if (spawnOptions.env) Object.assign(process.env, spawnOptions.env)
-  if (spawnOptions.inject) prompts.inject(spawnOptions.inject)
+  if (options.cwd) process.chdir(options.cwd)
+  if (options.env) Object.assign(process.env, options.env)
+  if (options.inject) prompts.inject(options.inject)
 
-  process.argv = [command, ...args]
+  process.argv = ['node', CLI_BIN_PATH, ...args]
 
   if (args.includes('--stdin')) {
     const stdinSource = options.stdin !== undefined ? [options.stdin] : []

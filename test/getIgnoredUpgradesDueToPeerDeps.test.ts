@@ -3,7 +3,6 @@ import { type Packument } from '../src/types/Packument'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import stubVersions from './helpers/stubVersions'
 
-
 describe('getIgnoredUpgradesDueToPeerDeps', function () {
   let pb: ReturnType<typeof silenceProgressBar>
   beforeEach(() => {

@@ -5,7 +5,6 @@ import ncu from '../src/'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
-
 const packageData = JSON.stringify({
   dependencies: {
     'ncu-test-v2': '0.1.0',

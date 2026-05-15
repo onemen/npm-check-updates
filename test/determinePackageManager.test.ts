@@ -1,6 +1,5 @@
 import determinePackageManager from '../src/lib/determinePackageManager'
 
-
 const isWindows = process.platform === 'win32'
 
 describe('determinePackageManager', () => {

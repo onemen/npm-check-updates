@@ -1,6 +1,5 @@
 import parseJson from '../src/lib/utils/parseJson'
 
-
 describe('parseJson', async function () {
   it('handles valid json strings', async () => {
     parseJson('{}').should.deep.equal({})

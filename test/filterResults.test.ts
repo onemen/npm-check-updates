@@ -6,7 +6,6 @@ import ncu from '../src/'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
-
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
     const dependencies = { 'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' }

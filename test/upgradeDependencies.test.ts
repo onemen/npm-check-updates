@@ -1,6 +1,5 @@
 import upgradeDependencies from '../src/lib/upgradeDependencies'
 
-
 describe('upgradeDependencies', () => {
   it('upgrade simple, non-semver versions', () => {
     upgradeDependencies({ foo: '1' }, { foo: '2' }).should.eql({ foo: '2' })

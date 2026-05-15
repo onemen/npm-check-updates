@@ -5,7 +5,6 @@ import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
 import stubVersions from './helpers/stubVersions'
 
-
 const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()
 

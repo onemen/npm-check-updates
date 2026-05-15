@@ -1,6 +1,5 @@
 import isUpgradeable from '../src/lib/isUpgradeable'
 
-
 describe('isUpgradeable', () => {
   it('do not upgrade pure wildcards', () => {
     isUpgradeable('*', '0.5.1').should.equal(false)

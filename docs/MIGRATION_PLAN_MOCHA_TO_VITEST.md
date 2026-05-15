@@ -1,9 +1,11 @@
 # Migration Plan: Mocha → Vitest + Coverage
 
 ## Overview
+
 This document outlines the plan to migrate the test runner from **Mocha** to **Vitest** and add comprehensive code coverage reporting for unit tests.
 
 ### Key Benefits
+
 - **Faster test execution** - Vitest is significantly faster than Mocha for TypeScript projects
 - **Built-in coverage** - No need for separate nyc/coverage setup
 - **Better TypeScript support** - Seamless TS support without additional transpilers
@@ -15,11 +17,13 @@ This document outlines the plan to migrate the test runner from **Mocha** to **V
 ## Phase 1: Install & Configure Vitest
 
 ### 1.1 Install Dependencies
+
 ```bash
 npm install --save-dev vitest @vitest/coverage-v8
 ```
 
 **Why @vitest/coverage-v8?**
+
 - Industry-standard coverage provider (same as NYC uses)
 - Reliable and well-maintained
 - Excellent TypeScript support
@@ -27,6 +31,7 @@ npm install --save-dev vitest @vitest/coverage-v8
 **Alternative:** `@vitest/coverage-c8` (if V8 has issues on Windows)
 
 ### 1.2 Create Vitest Configuration
+
 Create `test/helpers/vitest.config.ts` (keeping test-related configs in helpers):
 
 ```typescript
@@ -38,33 +43,28 @@ export default defineConfig({
     environment: 'node',
     include: ['test/**/*.test.ts'],
     exclude: ['node_modules', 'build', 'test/test-data'],
-    
+
     // Coverage configuration
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov', 'text-summary'],
       include: ['src/**/*.ts'],
-      exclude: [
-        'node_modules/',
-        'build/',
-        'test/',
-        '**/*.d.ts',
-      ],
+      exclude: ['node_modules/', 'build/', 'test/', '**/*.d.ts'],
       // Coverage thresholds not enforced yet - establish baseline first
       // lines: 80,
       // functions: 80,
       // branches: 75,
       // statements: 80,
     },
-    
+
     // Performance & setup
-    testTimeout: 60000,  // Match Mocha timeout
+    testTimeout: 60000, // Match Mocha timeout
     hookTimeout: 60000,
     teardownTimeout: 30000,
-    
+
     // Globals setup (replaces Mocha's global describe, it, etc.)
     globals: true,
-    
+
     // Reporter configuration
     reporters: ['default'],
   },
@@ -76,25 +76,27 @@ export default defineConfig({
 ## Phase 2: Test File Migration
 
 ### 2.1 File Structure (No Changes Needed)
+
 - Keep all test files in `test/` directory
 - Maintain `.test.ts` extension (already matches Vitest convention)
 - No reorganization required
 
 ### 2.2 API Migration Reference
 
-| Mocha | Vitest | Notes |
-|-------|--------|-------|
-| `describe()` | `describe()` | ✅ No change |
-| `it()` | `it()` / `test()` | ✅ No change |
-| `before()` | `beforeAll()` | Minor change |
-| `after()` | `afterAll()` | Minor change |
-| `beforeEach()` | `beforeEach()` | ✅ No change |
-| `afterEach()` | `afterEach()` | Minor change |
-| `it.skip()` | `it.skip()` | ✅ No change |
-| `it.only()` | `it.only()` | ✅ No change |
-| Chai assertions | Chai assertions | ✅ No change (chai stays) |
+| Mocha           | Vitest            | Notes                     |
+| --------------- | ----------------- | ------------------------- |
+| `describe()`    | `describe()`      | ✅ No change              |
+| `it()`          | `it()` / `test()` | ✅ No change              |
+| `before()`      | `beforeAll()`     | Minor change              |
+| `after()`       | `afterAll()`      | Minor change              |
+| `beforeEach()`  | `beforeEach()`    | ✅ No change              |
+| `afterEach()`   | `afterEach()`     | Minor change              |
+| `it.skip()`     | `it.skip()`       | ✅ No change              |
+| `it.only()`     | `it.only()`       | ✅ No change              |
+| Chai assertions | Chai assertions   | ✅ No change (chai stays) |
 
-**Key Difference:** 
+**Key Difference:**
+
 - Mocha uses `before`/`after`
 - Vitest uses `beforeAll`/`afterAll`
 
@@ -103,6 +105,7 @@ export default defineConfig({
 Rename `test/helpers/chaiSetup.ts` → `test/helpers/globalSetup.ts` (to clarify it's for global setup, not just chai).
 
 Create `test/helpers/vitest.setup.ts`:
+
 ```typescript
 import { beforeAll } from 'vitest'
 import globalSetup from './globalSetup'
@@ -113,6 +116,7 @@ beforeAll(() => {
 ```
 
 Add to `test/helpers/vitest.config.ts`:
+
 ```typescript
 export default defineConfig({
   test: {
@@ -126,6 +130,7 @@ export default defineConfig({
 ### 2.4 Migration Checklist for Test Files
 
 For each test file:
+
 - [ ] Remove `import chaiSetup from './helpers/chaiSetup'` line (global setup now handles this)
 - [ ] Remove `chaiSetup()` call from each test file (~40+ files)
 - [ ] Replace `before(` → `beforeAll(` (except "beforeEach") - use find-replace in test/ directory
@@ -134,6 +139,7 @@ For each test file:
 - [ ] Verify imports from test helpers still work
 
 **Automated approach:**
+
 ```bash
 # Find and replace before/after hooks
 find test -name '*.test.ts' -type f -exec sed -i 's/^  before(/  beforeAll(/g' {} +
@@ -147,6 +153,7 @@ find test -name '*.test.ts' -type f -exec sed -i 's/^  after(/  afterAll(/g' {} 
 ## Phase 3: Update package.json Scripts
 
 ### 3.1 Current Scripts (Mocha-based)
+
 ```json
 {
   "test": "tsc --noEmit && npm run test:unit && npm run test:e2e",
@@ -157,6 +164,7 @@ find test -name '*.test.ts' -type f -exec sed -i 's/^  after(/  afterAll(/g' {} 
 ```
 
 ### 3.2 New Scripts (Vitest-based)
+
 ```json
 {
   "test": "tsc --noEmit && npm run test:unit && npm run test:e2e",
@@ -170,13 +178,21 @@ find test -name '*.test.ts' -type f -exec sed -i 's/^  after(/  afterAll(/g' {} 
 ```
 
 ### 3.3 Remove Mocha Configuration
+
 Delete the `mocha` section from `package.json`:
+
 ```json
 {
   "mocha": {
     "check-leaks": true,
     "extension": ["test.ts"],
-    "node-option": ["import=tsx", "enable-source-maps", "trace-deprecation", "trace-warnings", "no-warnings=TimeoutNaNWarning"],
+    "node-option": [
+      "import=tsx",
+      "enable-source-maps",
+      "trace-deprecation",
+      "trace-warnings",
+      "no-warnings=TimeoutNaNWarning"
+    ],
     "timeout": 60000,
     "recursive": true,
     "exit": true
@@ -185,6 +201,7 @@ Delete the `mocha` section from `package.json`:
 ```
 
 ### 3.4 No CI/CD Changes Required (Yet)
+
 Do NOT add coverage reporting to CI/CD pipelines at this stage. This is an exploratory phase to establish a baseline and verify test coverage works locally.
 
 ---
@@ -192,7 +209,9 @@ Do NOT add coverage reporting to CI/CD pipelines at this stage. This is an explo
 ## Phase 4: Update TypeScript Configuration
 
 ### 4.1 Update tsconfig.json
+
 Add Vitest types:
+
 ```json
 {
   "compilerOptions": {
@@ -202,11 +221,13 @@ Add Vitest types:
 ```
 
 ### 4.2 Install New Dependencies
+
 ```bash
 npm install --save-dev vitest @vitest/coverage-v8
 ```
 
 ### 4.3 Remove Old Dependencies
+
 See **Phase 10: Dependencies to Remove** below.
 
 ---
@@ -214,6 +235,7 @@ See **Phase 10: Dependencies to Remove** below.
 ## Phase 5: Handle Special Cases
 
 ### 5.1 Mocha-specific Hooks (if any)
+
 - `this.skip()` → `t.skip()` or use `it.skip()`
 - `this.timeout()` → Use test option or `testTimeout` in config
 - Custom reporters → Use Vitest's built-in reporters
@@ -221,6 +243,7 @@ See **Phase 10: Dependencies to Remove** below.
 **Your codebase:** ✅ No special hooks found
 
 ### 5.2 TypeScript Configuration
+
 - Current setup: `tsx` loader with Node options
 - Vitest approach: Uses TypeScript automatically if `tsconfig.json` exists
 - **Action:** Update `vitest.config.ts` to ensure proper TS handling:
@@ -236,7 +259,9 @@ export default defineConfig({
 ```
 
 ### 5.3 Environment Variables
+
 Mocha options in package.json:
+
 ```json
 {
   "mocha": {
@@ -253,6 +278,7 @@ Mocha options in package.json:
 ```
 
 Vitest equivalent - add to `vitest.config.ts`:
+
 ```typescript
 export default defineConfig({
   test: {
@@ -270,20 +296,25 @@ export default defineConfig({
 ## Phase 6: Coverage Strategy
 
 ### 6.1 Two-Track Testing Approach
+
 Your test suite has two distinct coverage scenarios:
 
-**Track 1: Source Code Coverage (src/**/*.ts)**
+**Track 1: Source Code Coverage (src/**/\*.ts)\*\*
+
 - Direct TypeScript source file testing
 - Most test files test this directly
 - Use Vitest's standard coverage
 
 **Track 2: Built CLI Coverage (build/cli.js)**
+
 - Some tests spawn the built CLI as a child process (e.g., `bin.test.ts`)
 - These tests validate the bundled output from Vite
 - Coverage from spawned processes requires special handling
 
 ### 6.2 Coverage Configuration
+
 In `test/helpers/vitest.config.ts`:
+
 ```typescript
 coverage: {
   provider: 'v8',
@@ -296,6 +327,7 @@ coverage: {
 ```
 
 ### 6.3 Coverage Baseline Phase
+
 - Generate coverage reports locally without enforcing thresholds
 - Review HTML reports to understand coverage gaps
 - Identify which source files need more test coverage
@@ -303,12 +335,14 @@ coverage: {
 - DO NOT add enforcement to CI/CD yet
 
 ### 6.4 Coverage Report Formats
+
 - **text** - Terminal output during runs
 - **html** - Interactive report: `coverage/index.html`
 - **lcov** - Standard format for IDE integration
 - **json** - Programmatic access for analysis
 
 ### 6.5 Viewing Coverage Reports
+
 ```bash
 # Generate and open HTML report
 npm run test:coverage:html
@@ -319,6 +353,7 @@ open coverage/index.html
 ```
 
 ### 6.6 Coverage Enforcement Timeline
+
 - **Phase 1 (current):** No thresholds - baseline only
 - **Phase 2 (future):** Review baseline, identify gaps
 - **Phase 3 (future):** Set reasonable thresholds (likely 60-70%)
@@ -330,6 +365,7 @@ open coverage/index.html
 ## Phase 7: Migration Steps (Execution Order)
 
 ### Step 1: Setup & Rename
+
 1. Rename `test/helpers/chaiSetup.ts` → `test/helpers/globalSetup.ts`
 2. Update `chaiSetup` function export/import
 3. Create `test/helpers/vitest.setup.ts`
@@ -338,6 +374,7 @@ open coverage/index.html
 6. Install Vitest: `npm install --save-dev vitest @vitest/coverage-v8`
 
 ### Step 2: Update Test Files (~40+ files)
+
 1. Remove `import chaiSetup from './helpers/chaiSetup'` from all test files
 2. Remove `chaiSetup()` calls from all test files
 3. Find and replace `before(` → `beforeAll(` in test/ directory
@@ -345,11 +382,13 @@ open coverage/index.html
 5. Run type checking: `npm run lint:types` (should pass)
 
 ### Step 3: Update package.json
+
 1. Update test scripts (test:unit, test:coverage, etc.)
 2. Delete `mocha` configuration section
 3. Remove Mocha dependencies (see Phase 10 list)
 
 ### Step 4: Verification
+
 1. Run: `npm run test:unit`
 2. Verify all tests pass (should be ~100% same tests)
 3. Check coverage: `npm run test:coverage`
@@ -357,11 +396,13 @@ open coverage/index.html
 5. Document baseline metrics
 
 ### Step 5: Documentation
+
 1. Update README.md test instructions
 2. Update CONTRIBUTING.md if needed
 3. Commit changes to branch
 
 ### Step 6: Analysis (Post-Migration)
+
 1. Review coverage gaps in HTML report
 2. Identify files with low coverage
 3. Plan for improved coverage in future PRs
@@ -371,32 +412,36 @@ open coverage/index.html
 
 ## Phase 8: Expected Challenges & Solutions (Windows-Specific)
 
-| Challenge | Solution |
-|-----------|----------|
-| Setup files not running | Check setupFiles path uses forward slashes: `test/helpers/vitest.setup.ts` |
-| Cannot find vitest module | Run `npm install` again, verify package.json updated |
-| TypeScript errors after rename | Update all imports: `globalSetup` instead of `chaiSetup` |
-| Windows line ending issues | Git config: `core.autocrlf=true` before migration |
-| Tests timeout after migration | Check `testTimeout: 60000` in vitest.config.ts |
-| Coverage not generating | Ensure source maps enabled: check vite.config.ts `sourcemap: true` |
-| Module resolution errors | Verify `tsconfig.json` has `moduleResolution: "bundler"` or `"node"` |
+| Challenge                      | Solution                                                                   |
+| ------------------------------ | -------------------------------------------------------------------------- |
+| Setup files not running        | Check setupFiles path uses forward slashes: `test/helpers/vitest.setup.ts` |
+| Cannot find vitest module      | Run `npm install` again, verify package.json updated                       |
+| TypeScript errors after rename | Update all imports: `globalSetup` instead of `chaiSetup`                   |
+| Windows line ending issues     | Git config: `core.autocrlf=true` before migration                          |
+| Tests timeout after migration  | Check `testTimeout: 60000` in vitest.config.ts                             |
+| Coverage not generating        | Ensure source maps enabled: check vite.config.ts `sourcemap: true`         |
+| Module resolution errors       | Verify `tsconfig.json` has `moduleResolution: "bundler"` or `"node"`       |
 
 ---
 
 ## Phase 9: Coverage Analysis for Spawned Processes
 
 ### Challenge: Spawned CLI Coverage
+
 Some tests (e.g., `test/bin.test.ts`) spawn the built CLI as a child process:
+
 ```typescript
 const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin'], ...)
 ```
 
 These spawned processes don't contribute to Vitest's coverage report because:
+
 - Vitest instruments the main process only
 - Child process has its own V8 instance
 - Coverage data isn't automatically collected
 
 ### Solution Strategy (Future)
+
 1. **Option A:** Enable V8 coverage in spawned process and merge reports
    - Pass `--coverage` flag to Node
    - Collect coverage JSON files
@@ -410,6 +455,7 @@ These spawned processes don't contribute to Vitest's coverage report because:
    - **Recommended for now**
 
 ### Current Approach
+
 - Focus coverage on direct source file testing
 - Spawned CLI tests count as integration/E2E tests
 - Revisit spawned process coverage in Phase 2 (future)
@@ -419,19 +465,23 @@ These spawned processes don't contribute to Vitest's coverage report because:
 After migration, remove these devDependencies (no longer needed):
 
 **Primary removal:**
+
 - `mocha` ^11.7.5 - Replaced by Vitest
 - `@types/mocha` ^10.0.10 - TypeScript types for Mocha
 
 **Optional removals (if not used elsewhere):**
+
 - `should` ^13.2.3 - Only used by Mocha tests, Chai is primary
 
 **Commands to execute:**
+
 ```bash
 npm uninstall mocha @types/mocha should
 npm ci  # Update package-lock.json
 ```
 
 **Remaining test dependencies (KEEP these):**
+
 - `chai` ^6.2.2 - Assertion library (still used)
 - `chai-as-promised` ^8.0.2 - Chai plugin for async (still used)
 - `chai-string` ^1.6.0 - Chai string assertions (still used)
@@ -446,6 +496,7 @@ npm ci  # Update package-lock.json
 If major issues occur during migration:
 
 1. **Quick rollback (before commit):**
+
    ```bash
    git checkout -- package.json package-lock.json
    npm ci
@@ -453,6 +504,7 @@ If major issues occur during migration:
    ```
 
 2. **After commit (revert commit):**
+
    ```bash
    git revert <commit-hash>
    npm ci
@@ -474,6 +526,7 @@ If major issues occur during migration:
 ## Phase 12: Expected Outcomes
 
 ### Before Migration
+
 - **Test runner:** Mocha
 - **Coverage:** Not configured
 - **Test speed:** ~45-60 seconds (estimated)
@@ -481,6 +534,7 @@ If major issues occur during migration:
 - **Assertion library:** Chai + Chai plugins
 
 ### After Migration
+
 - **Test runner:** Vitest (modern, Vite-aligned)
 - **Coverage:** Full v8-based reporting with HTML/LCOV exports
 - **Test speed:** ~25-40 seconds (typically 30-40% faster)
@@ -494,20 +548,22 @@ If major issues occur during migration:
 ## Phase 13: Documentation Updates
 
 ### Files to Update
+
 1. **README.md** - Update test running instructions
 2. **CONTRIBUTING.md** - Update development setup section
 3. **CI/CD workflows** - NO changes yet (not adding coverage enforcement)
 4. **.gitignore** - Ensure `coverage/` is ignored (likely already is)
 
 ### Example README.md Update
-```markdown
+
+````markdown
 ## Testing
 
 ### Run tests
 
-npm test                    # Run all tests (lint + unit + e2e)
-npm run test:unit           # Run unit tests only  
-npm run test:unit:watch     # Run in watch mode (for development)
+npm test # Run all tests (lint + unit + e2e)
+npm run test:unit # Run unit tests only  
+npm run test:unit:watch # Run in watch mode (for development)
 
 ### Test Coverage
 
@@ -515,9 +571,11 @@ npm run test:unit:watch     # Run in watch mode (for development)
 npm run test:coverage       # Generate coverage report
 npm run test:coverage:html  # Generate and open HTML report in browser
 ```
+````
 
 Coverage reports are available in the `coverage/` directory. Open `coverage/index.html` to view detailed coverage metrics.
-```
+
+````
 
 ### Example CONTRIBUTING.md Update
 ```markdown
@@ -536,8 +594,9 @@ Generate coverage reports:
 ```bash
 npm run test:coverage       # Terminal output
 npm run test:coverage:html  # Interactive HTML report
-```
-```
+````
+
+````
 
 ---
 
@@ -608,7 +667,7 @@ npm run test:coverage:html  # Interactive HTML report
 ```bash
 # These dependencies will be removed:
 npm uninstall mocha @types/mocha should
-```
+````
 
 ### Key Additions
 

@@ -7,8 +7,6 @@ import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const bin = path.join(__dirname, '../build/cli.js')
-
 describe('timeout', function () {
   it('throw an exception instead of printing to the console when timeout is exceeded', async () => {
     const pkgPath = path.join(__dirname, './test-data/ncu/package-large.json')
@@ -19,14 +17,14 @@ describe('timeout', function () {
   })
 
   it('exit with error when timeout is exceeded', async () => {
-    return runNcuCli('node', [bin, '--timeout', '1'], {
+    return runNcuCli(['--timeout', '1'], {
       stdin: '{ "dependencies": { "express": "1" } }',
     }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
   })
 
   it('completes successfully with timeout', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    await runNcuCli('node', [bin, '--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
+    await runNcuCli(['--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
     stub.restore()
   })
 })

@@ -1,6 +1,5 @@
 import getPreferredWildcard from '../src/lib/getPreferredWildcard'
 
-
 describe('getPreferredWildcard', () => {
   it('identify ^ when it is preferred', () => {
     const deps = {

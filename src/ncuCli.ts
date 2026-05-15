@@ -19,7 +19,7 @@ const uncode = (s: string) => s.replace(/`/g, '')
 const cloneDeep = createCloneDeep()
 
 /** Read ncu options from cli */
-export async function getCliOptions(argv: string[] = process.argv) {
+export async function getCliOptions() {
   // check if a new version of ncu is available and print an update notification
   //
   // For testing from specific versions, use:
@@ -72,7 +72,7 @@ ${chalk.dim.underline(
 
   // manually detect option-specific help
   // https://github.com/raineorshine/npm-check-updates/issues/787
-  const rawArgs = argv.slice(2)
+  const rawArgs = process.argv.slice(2)
   const indexHelp = rawArgs.findIndex(arg => arg === '--help' || arg === '-h')
   if (indexHelp !== -1 && rawArgs[indexHelp + 1]) {
     const helpOption = rawArgs[indexHelp + 1].replace(/^-*/, '')
@@ -165,10 +165,10 @@ ${chalk.dim.underline(
   // Otherwise array options will be duplicated
   const defaultOptionValues = cloneDeep((program as any)._optionValues)
   program.allowExcessArguments(true)
-  program.parse(argv)
+  program.parse(process.argv)
 
   const programOpts = program.opts()
-  const programArgs = argv.slice(2)
+  const programArgs = process.argv.slice(2)
 
   const { color, configFileName, configFilePath, global, packageFile, mergeConfig } = programOpts
 
@@ -197,7 +197,7 @@ ${chalk.dim.underline(
   )
 
   // insert config arguments into command line arguments so they can all be parsed by commander
-  const combinedArguments = [...argv.slice(0, 2), ...rcArgs, ...programArgs]
+  const combinedArguments = [...process.argv.slice(0, 2), ...rcArgs, ...programArgs]
 
   // save raw values for all cli arguments
   const raw: Partial<Record<keyof RunOptions, any>> = {}
@@ -255,8 +255,8 @@ ${chalk.dim.underline(
  * output by mocking 'process.stdout.write', 'process.stderr.write', and 'console'
  * methods. This ensures tests validate exactly what the user sees in the terminal.
  */
-export async function ncuCli(argv: string[] = process.argv): Promise<void> {
-  const options = await getCliOptions(argv)
+export async function ncuCli(): Promise<void> {
+  const options = await getCliOptions()
 
   // Execute ncu with the cli flag enabled.
   // We do not return the result here; ncu handles the printing internally.

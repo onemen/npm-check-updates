@@ -1,6 +1,5 @@
 import ncu from '../src'
 
-
 describe('github urls', () => {
   it('upgrade github https urls', async () => {
     const upgrades = await ncu({

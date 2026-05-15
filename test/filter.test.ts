@@ -8,8 +8,6 @@ import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const bin = path.join(__dirname, '../build/cli.js')
-
 describe('filter', () => {
   describe('module', () => {
     let stub: { restore: () => void }
@@ -215,7 +213,7 @@ describe('filter', () => {
     afterAll(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'], {
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '--filter', 'express'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -224,7 +222,7 @@ describe('filter', () => {
     })
 
     it('filter by package name with -f', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '-f', 'express'], {
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '-f', 'express'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -240,7 +238,7 @@ describe('filter', () => {
         },
       }
 
-      await runNcuCli('node', [bin, '--jsonUpgraded', '--filter', 'lodash.map', 'lodash.filter'], {
+      await runNcuCli(['--jsonUpgraded', '--filter', 'lodash.map', 'lodash.filter'], {
         stdin: JSON.stringify(pkgData),
       }).should.eventually.be.rejected
     })
@@ -254,8 +252,7 @@ describe('filter', () => {
       }
 
       const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', 'lodash.map', 'lodash.filter'],
+        ['--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', 'lodash.map', 'lodash.filter'],
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
@@ -271,11 +268,9 @@ describe('filter', () => {
         },
       }
 
-      const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', ' '],
-        { stdin: JSON.stringify(pkgData) },
-      )
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', ' '], {
+        stdin: JSON.stringify(pkgData),
+      })
       const upgraded = JSON.parse(stdout)
       upgraded.should.have.property('lodash.map')
       upgraded.should.have.property('lodash.filter')
@@ -290,8 +285,7 @@ describe('filter', () => {
       }
 
       const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '--filter', 'ncu-test-v2', '--filter', 'ncu-test-tag'],
+        ['--jsonUpgraded', '--stdin', '--filter', 'ncu-test-v2', '--filter', 'ncu-test-tag'],
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
@@ -308,7 +302,7 @@ describe('reject', () => {
     afterAll(() => stub.restore())
 
     it('reject by package name with --reject', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'], {
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '--reject', 'chalk'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -317,7 +311,7 @@ describe('reject', () => {
     })
 
     it('reject by package name with -x', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '-x', 'chalk'], {
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '-x', 'chalk'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -326,7 +320,7 @@ describe('reject', () => {
     })
 
     it('reject with empty string should not reject anything', async () => {
-      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--reject', '""', '--stdin', '-x', 'chalk'], {
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--reject', '""', '--stdin', '-x', 'chalk'], {
         stdin: '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "1.0.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -343,8 +337,7 @@ describe('reject', () => {
       }
 
       const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '--reject', 'ncu-test-v2', '--reject', 'ncu-test-tag'],
+        ['--jsonUpgraded', '--stdin', '--reject', 'ncu-test-v2', '--reject', 'ncu-test-tag'],
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)

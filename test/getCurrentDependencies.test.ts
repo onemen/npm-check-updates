@@ -2,7 +2,6 @@ import { type SemVer } from 'semver-utils'
 import getCurrentDependencies from '../src/lib/getCurrentDependencies'
 import { type PackageFile } from '../src/types/PackageFile'
 
-
 describe('getCurrentDependencies', () => {
   let deps: PackageFile
   beforeEach(() => {

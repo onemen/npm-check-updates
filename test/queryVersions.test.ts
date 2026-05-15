@@ -1,7 +1,6 @@
 import queryVersions from '../src/lib/queryVersions'
 import stubVersions from './helpers/stubVersions'
 
-
 describe('queryVersions', function () {
   it('valid single package', async () => {
     const stub = stubVersions('99.9.9')

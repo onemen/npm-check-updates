@@ -1,6 +1,4 @@
 import fs from 'fs/promises'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
@@ -8,10 +6,6 @@ import { type GroupFunction } from '../src/types/GroupFunction'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 /**
  * Sets up and tears down the temporary directories required to run each test
@@ -42,14 +36,9 @@ async function groupTestScaffold(
   const configFile = path.join(tempDir, '.ncurc.js')
   await fs.writeFile(configFile, `module.exports = { groupFunction: ${groupFn.toString()} }`, 'utf-8')
   try {
-    const { stdout } = await runNcuCli(
-      'node',
-      [bin, '--format', 'group', '--configFilePath', tempDir],
-      {},
-      {
-        cwd: tempDir,
-      },
-    )
+    const { stdout } = await runNcuCli(['--format', 'group', '--configFilePath', tempDir], {
+      cwd: tempDir,
+    })
     stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
   } finally {
     await removeDir(tempDir)

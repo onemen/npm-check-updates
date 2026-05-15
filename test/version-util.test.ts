@@ -1,7 +1,6 @@
 import chalk, { chalkInit } from '../src/lib/chalk'
 import * as versionUtil from '../src/lib/version-util'
 
-
 describe('version-util', () => {
   describe('upgradeDependencyDeclaration', () => {
     it('numeric upgrades', () => {

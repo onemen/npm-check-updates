@@ -1,15 +1,10 @@
 import fs from 'fs/promises'
 import os from 'os'
-import path, { dirname } from 'path'
+import path from 'path'
 import spawnPlease from 'spawn-please'
-import { fileURLToPath } from 'url'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 describe('--interactive', () => {
   let stub: { restore: () => void }
@@ -40,15 +35,10 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--interactive'],
-        {},
-        {
-          cwd: tempDir,
-          inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
-        },
-      )
+      const { stdout } = await runNcuCli(['--interactive'], {
+        cwd: tempDir,
+        inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
+      })
 
       should.equal(/^Upgrading/m.test(stdout), true)
 
@@ -79,15 +69,10 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      await runNcuCli(
-        'node',
-        [bin, '--interactive', '--format', 'group'],
-        {},
-        {
-          cwd: tempDir,
-          inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
-        },
-      )
+      await runNcuCli(['--interactive', '--format', 'group'], {
+        cwd: tempDir,
+        inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
+      })
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
@@ -121,15 +106,10 @@ describe('--interactive', () => {
     const configFile = path.join(tempDir, '.ncurc.js')
     await fs.writeFile(configFile, `module.exports = { groupFunction: () => 'minor' }`, 'utf-8')
     try {
-      await runNcuCli(
-        'node',
-        [bin, '--interactive', '--format', 'group', '--configFilePath', tempDir],
-        {},
-        {
-          cwd: tempDir,
-          inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
-        },
-      )
+      await runNcuCli(['--interactive', '--format', 'group', '--configFilePath', tempDir], {
+        cwd: tempDir,
+        inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
+      })
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
@@ -160,15 +140,10 @@ describe('--interactive', () => {
     )
     try {
       await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
-      const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--interactive', '--format', 'repo'],
-        {},
-        {
-          cwd: tempDir,
-          inject: [['modern-diacritics'], true],
-        },
-      )
+      const { stdout } = await runNcuCli(['--interactive', '--format', 'repo'], {
+        cwd: tempDir,
+        inject: [['modern-diacritics'], true],
+      })
 
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {

@@ -2,7 +2,6 @@ import { chalkInit } from '../src/lib/chalk'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 
-
 describe('getPeerDependenciesFromRegistry', function () {
   let pb: ReturnType<typeof silenceProgressBar>
   beforeEach(async () => {
@@ -41,4 +40,3 @@ describe('getPeerDependenciesFromRegistry', function () {
     })
   })
 })
-

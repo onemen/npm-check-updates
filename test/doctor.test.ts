@@ -1,6 +1,4 @@
 import fs from 'fs/promises'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
@@ -18,21 +16,11 @@ import {
 import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
-
 const mockNpmVersions = {
   emitter20: '2.0.0',
   'ncu-test-return-version': '2.0.0',
   'ncu-test-tag': '1.1.0',
   'ncu-test-v2': '2.0.0',
-}
-
-/** Run the ncu CLI. */
-// TODO: replace ncu with the real function
-const ncu = async (args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
-  return runNcuCli('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
 }
 
 describe('doctor', function () {
@@ -51,7 +39,7 @@ describe('doctor', function () {
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
       const cwd = await setupTempFolder('nopackagefile')
-      const { stdout } = await ncu(['--doctor'], {}, { cwd })
+      const { stdout } = await runNcuCli(['--doctor'], { cwd })
       return stripAnsi(stdout).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
           (cliOptionsMap.doctor.help as (options: { markdown: boolean }) => string)({ markdown: false }),
@@ -61,20 +49,20 @@ describe('doctor', function () {
 
     it('throw an error if there is no package file', async () => {
       const cwd = await setupTempFolder('nopackagefile')
-      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
+      return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
       const cwd = await setupTempFolder('notestscript')
-      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
+      return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
     })
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
       return Promise.all([
-        ncu(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
+        runNcuCli(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
           '--packageData and --packageFile are not allowed with --doctor',
         ),
-        ncu(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
+        runNcuCli(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
           '--packageData and --packageFile are not allowed with --doctor',
         ),
       ])
@@ -87,11 +75,10 @@ describe('doctor', function () {
       const cwd = await setupTempFolder('options')
       const pkgPath = path.join(cwd, 'package.json')
 
-      let { stdout, stderr } = await ncu(
-        ['--doctor', '-u', '--filter', 'ncu-test-v2'],
-        { rejectOnError: false },
-        { cwd },
-      )
+      let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--filter', 'ncu-test-v2'], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -120,11 +107,10 @@ describe('doctor', function () {
       const pkgPath = path.join(cwd, 'package.json')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
-      let { stdout, stderr } = await ncu(
-        ['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'],
-        { rejectOnError: false },
-        { cwd },
-      )
+      let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -152,11 +138,10 @@ describe('doctor', function () {
       const pkgPath = path.join(cwd, 'package.json')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
-      let { stdout, stderr } = await ncu(
-        ['--doctor', '-u', '--doctorTest', `${npmCmd} run mytest`],
-        { rejectOnError: false },
-        { cwd },
-      )
+      let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--doctorTest', `${npmCmd} run mytest`], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -184,11 +169,10 @@ describe('doctor', function () {
       const pkgPath = path.join(cwd, 'package.json')
       const echoPath = path.join(cwd, 'echo.js')
 
-      const { stdout, stderr } = await ncu(
-        ['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`],
-        { rejectOnError: false },
-        { cwd },
-      )
+      const { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -245,7 +229,7 @@ else {
 
       // explicitly set packageManager to avoid auto yarn detection
       await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
-      const result = await ncu(['--doctor', '-u', '-p', 'npm'], { rejectOnError: false }, { cwd: tempDir })
+      const result = await runNcuCli(['--doctor', '-u', '-p', 'npm'], { rejectOnError: false, cwd: tempDir })
       const pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
 
       const stdout = result.stdout

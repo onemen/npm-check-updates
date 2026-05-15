@@ -34,6 +34,7 @@ npm run test:coverage:html  # Generate and open interactive HTML coverage report
 ```
 
 Coverage reports are generated in the `coverage/` directory:
+
 - `coverage/index.html` - Interactive browser-based report
 - `coverage/lcov-report/` - Detailed line-by-line coverage
 - `coverage/lcov.info` - Standard LCOV format for IDE integration

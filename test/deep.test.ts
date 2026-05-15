@@ -11,8 +11,6 @@ import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const bin = path.join(__dirname, '../build/cli.js')
-
 /** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
  *
  * The file tree that is created is:
@@ -56,7 +54,7 @@ describe('--deep', function () {
   it('output json with --jsonAll', async () => {
     const tempDir = await setupDeepTest()
     try {
-      const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--deep'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--jsonAll', '--deep'], { cwd: tempDir })
       const deepJsonOut = JSON.parse(stdout)
       deepJsonOut.should.have.property('package.json')
       deepJsonOut.should.have.property('packages/sub1/package.json')
@@ -72,14 +70,10 @@ describe('--deep', function () {
   it('ignore stdin if --packageFile glob is specified', async () => {
     const tempDir = await setupDeepTest()
     try {
-      await runNcuCli(
-        'node',
-        [bin, '-u', '--packageFile', path.join(tempDir, '/**/package.json')],
-        { stdin: '{ "dependencies": {}}' },
-        {
-          cwd: tempDir,
-        },
-      )
+      await runNcuCli(['-u', '--packageFile', path.join(tempDir, '/**/package.json')], {
+        stdin: '{ "dependencies": {}}',
+        cwd: tempDir,
+      })
       const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -93,10 +87,8 @@ describe('--deep', function () {
     const tempDir = await setupDeepTest()
     try {
       const { stdout } = await runNcuCli(
-        'node',
-        [bin, '-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
-        { stdin: '{ "dependencies": {}}' },
-        { cwd: tempDir },
+        ['-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
+        { stdin: '{ "dependencies": {}}', cwd: tempDir },
       )
 
       const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
@@ -132,14 +124,9 @@ describe('--deep', function () {
     await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
 
     try {
-      await runNcuCli(
-        'node',
-        [bin, '--deep', '--errorLevel', '2'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      )
+      await runNcuCli(['--deep', '--errorLevel', '2'], {
+        cwd: tempDir,
+      })
     } finally {
       await removeDir(tempDir)
     }
@@ -154,7 +141,7 @@ describe('--deep with nested ncurc files', function () {
   afterAll(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {
-    const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd })
+    const { stdout } = await runNcuCli(['--jsonUpgraded', '--deep'], { cwd })
     const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']
@@ -182,7 +169,7 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('use ncurc of nested packages with --mergeConfig option', async () => {
-    const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--deep', '--mergeConfig'], {}, { cwd })
+    const { stdout } = await runNcuCli(['--jsonUpgraded', '--deep', '--mergeConfig'], { cwd })
     const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']

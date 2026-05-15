@@ -1,6 +1,5 @@
 import ncu from '../src/index'
 
-
 describe('staticRegistry', function () {
   it('upgrade to the version specified in the static registry file', async () => {
     const output = await ncu({

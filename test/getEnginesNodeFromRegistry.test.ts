@@ -2,7 +2,6 @@ import { chalkInit } from '../src/lib/chalk'
 import getEnginesNodeFromRegistry from '../src/lib/getEnginesNodeFromRegistry'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 
-
 describe('getEnginesNodeFromRegistry', function () {
   let pb: ReturnType<typeof silenceProgressBar>
   beforeEach(async () => {
@@ -39,4 +38,3 @@ describe('getEnginesNodeFromRegistry', function () {
     })
   })
 })
-

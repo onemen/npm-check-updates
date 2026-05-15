@@ -2,16 +2,11 @@
 // eslint doesn't like .should.be.empty syntax
 import fs from 'fs/promises'
 import os from 'os'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import path from 'path'
 import ncu from '../src/'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 /** Creates a temp directory with nested package files for --workspaces testing. Returns the temp directory name (should be removed by caller).
  *
@@ -137,7 +132,7 @@ describe('workspaces', () => {
       it('update workspaces with --workspaces', async () => {
         const tempDir = await setup(['packages/a'])
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -150,7 +145,7 @@ describe('workspaces', () => {
       it('update workspaces glob', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -164,7 +159,7 @@ describe('workspaces', () => {
       it('update workspaces with -w', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '-w'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '-w'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -189,7 +184,7 @@ describe('workspaces', () => {
         )
 
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -206,7 +201,7 @@ describe('workspaces', () => {
       it('update workspaces/packages', async () => {
         const tempDir = await setup({ packages: ['packages/**'] })
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -221,7 +216,7 @@ describe('workspaces', () => {
       it('ignore local workspace packages', async () => {
         const tempDir = await setupSymlinkedPackages()
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonUpgraded', '--workspaces'], { cwd: tempDir })
           const upgrades = JSON.parse(stdout)
           upgrades.should.deep.equal({
             'package.json': {},
@@ -240,7 +235,7 @@ describe('workspaces', () => {
       it('ignore local workspace packages with different names than their folders', async () => {
         const tempDir = await setupSymlinkedPackages(['packages/**'], 'chalk')
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonUpgraded', '--workspaces'], { cwd: tempDir })
           const upgrades = JSON.parse(stdout)
           upgrades.should.deep.equal({
             'package.json': {},
@@ -269,7 +264,7 @@ describe('workspaces', () => {
       it('update single workspace with --workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspace', 'a'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspace', 'a'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -282,14 +277,7 @@ describe('workspaces', () => {
       it('update more than one workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'],
-            {},
-            {
-              cwd: tempDir,
-            },
-          )
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspace', 'a', '--workspace', 'b'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -304,14 +292,9 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           // when npm-check-updates is executed in a workspace directory but uses --cwd to point up to the root, make sure that the root package.json is checked for the workspaces property
-          const { stdout } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspace', 'a', '--cwd', '../../'],
-            {},
-            {
-              cwd: path.join(tempDir, 'packages', 'a'),
-            },
-          )
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspace', 'a', '--cwd', '../../'], {
+            cwd: path.join(tempDir, 'packages', 'a'),
+          })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -325,14 +308,7 @@ describe('workspaces', () => {
       it('update namespaced workspace', async () => {
         const tempDir = await setupSymlinkedPackages(['packages/**'], '@ncu/bar')
         try {
-          const { stdout } = await runNcuCli(
-            'node',
-            [bin, '--jsonUpgraded', '--workspace', '@ncu/bar'],
-            {},
-            {
-              cwd: tempDir,
-            },
-          )
+          const { stdout } = await runNcuCli(['--jsonUpgraded', '--workspace', '@ncu/bar'], { cwd: tempDir })
           const upgrades = JSON.parse(stdout)
           upgrades.should.deep.equal({
             'package.json': {},
@@ -350,7 +326,7 @@ describe('workspaces', () => {
       it('update root project by default', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspaces', '--root'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces', '--root'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -366,12 +342,7 @@ describe('workspaces', () => {
       it('do not update the root project with --no-root', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspaces', '--no-root'],
-            {},
-            { cwd: tempDir },
-          )
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces', '--no-root'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -387,9 +358,8 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           await runNcuCli(
-            'node',
-            [bin, '--upgrade', '--workspaces', '--errorLevel', '2'],
-            {},
+            ['--upgrade', '--workspaces', '--errorLevel', '2'],
+
             {
               cwd: tempDir,
             },
@@ -425,7 +395,7 @@ describe('workspaces', () => {
         )
 
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -444,7 +414,7 @@ describe('workspaces', () => {
       it('update root project and single workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspace', 'a'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspace', 'a'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -460,9 +430,8 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           const { stdout } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'],
-            {},
+            ['--jsonAll', '--workspace', 'a', '--workspace', 'b'],
+
             {
               cwd: tempDir,
             },
@@ -484,7 +453,7 @@ describe('workspaces', () => {
       it('read packages from pnpm-workspace.yaml', async () => {
         const tempDir = await setup(['packages/**'], { pnpm: true })
         try {
-          const { stdout } = await runNcuCli('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspaces'], { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -531,12 +500,10 @@ catalogs:
             'utf-8',
           )
 
-          const { stdout, stderr } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspaces'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout, stderr } = await runNcuCli(['--jsonAll', '--workspaces'], {
+            rejectOnError: false,
+            cwd: tempDir,
+          })
 
           // Assert no errors and valid output
           stderr.should.be.empty
@@ -592,12 +559,10 @@ catalog:
             'utf-8',
           )
 
-          const { stdout, stderr } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspaces'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout, stderr } = await runNcuCli(['--jsonAll', '--workspaces'], {
+            rejectOnError: false,
+            cwd: tempDir,
+          })
 
           // Assert no errors and valid output
           stderr.should.be.empty
@@ -657,7 +622,7 @@ catalogs:
             'utf-8',
           )
 
-          await runNcuCli('node', [bin, '-u', '--workspaces'], { rejectOnError: false }, { cwd: tempDir })
+          await runNcuCli(['-u', '--workspaces'], { rejectOnError: false, cwd: tempDir })
 
           const updatedConfig = await fs.readFile(path.join(tempDir, 'pnpm-workspace.yaml'), 'utf-8')
           updatedConfig.should.be.equal(`packages:
@@ -710,7 +675,7 @@ catalogs:
             'utf-8',
           )
 
-          await runNcuCli('node', [bin, '-u', '--workspaces'], { rejectOnError: false }, { cwd: tempDir })
+          await runNcuCli(['-u', '--workspaces'], { rejectOnError: false, cwd: tempDir })
 
           const updatedConfig = await fs.readFile(path.join(tempDir, 'pnpm-workspace.yaml'), 'utf-8')
           updatedConfig.should.be.equal(`workspaces:
@@ -772,12 +737,10 @@ catalog:
             'utf-8',
           )
 
-          const { stdout, stderr } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspace', 'a'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout, stderr } = await runNcuCli(['--jsonAll', '--workspace', 'a'], {
+            rejectOnError: false,
+            cwd: tempDir,
+          })
 
           // Assert no errors and valid output
           stderr.should.be.empty
@@ -838,12 +801,10 @@ catalogs:
             'utf-8',
           )
 
-          const { stdout, stderr } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspaces'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout, stderr } = await runNcuCli(['--jsonAll', '--workspaces'], {
+            rejectOnError: false,
+            cwd: tempDir,
+          })
 
           // Assert no errors and valid output
           stderr.should.be.empty
@@ -897,12 +858,10 @@ catalog:
             'utf-8',
           )
 
-          const { stdout, stderr } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspaces'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout, stderr } = await runNcuCli(['--jsonAll', '--workspaces'], {
+            rejectOnError: false,
+            cwd: tempDir,
+          })
 
           // Assert no errors and valid output
           stderr.should.be.empty
@@ -959,12 +918,7 @@ catalogs:
             'utf-8',
           )
 
-          const { stdout } = await runNcuCli(
-            'node',
-            [bin, '-u', '--workspaces'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout } = await runNcuCli(['-u', '--workspaces'], { rejectOnError: false, cwd: tempDir })
 
           stdout.should.not.be.empty
 
@@ -1011,12 +965,10 @@ catalogs:
             'utf-8',
           )
 
-          const { stdout, stderr } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspaces', '--root'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout, stderr } = await runNcuCli(['--jsonAll', '--workspaces', '--root'], {
+            rejectOnError: false,
+            cwd: tempDir,
+          })
 
           // Assert no errors and valid output
           stderr.should.be.empty
@@ -1071,12 +1023,10 @@ catalogs:
             'utf-8',
           )
 
-          const { stdout, stderr } = await runNcuCli(
-            'node',
-            [bin, '--jsonAll', '--workspaces', '--root'],
-            { rejectOnError: false },
-            { cwd: tempDir },
-          )
+          const { stdout, stderr } = await runNcuCli(['--jsonAll', '--workspaces', '--root'], {
+            rejectOnError: false,
+            cwd: tempDir,
+          })
 
           // Assert no errors and valid output
           stderr.should.be.empty
@@ -1113,9 +1063,8 @@ catalogs:
         await fs.writeFile(path.join(tempDir, '.npmrc'), 'ncutest=root')
         await fs.writeFile(path.join(tempDir, 'packages/a/.npmrc'), 'ncutest=a')
         const { stdout } = await runNcuCli(
-          'node',
-          [bin, '--verbose', '--packageManager', 'pnpm'],
-          {},
+          ['--verbose', '--packageManager', 'pnpm'],
+
           {
             cwd: path.join(tempDir, 'packages/a'),
           },

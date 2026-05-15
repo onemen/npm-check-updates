@@ -5,7 +5,6 @@ import { type TargetFunction } from '../src/types/TargetFunction'
 import { type Version } from '../src/types/Version'
 import stubVersions from './helpers/stubVersions'
 
-
 // TODO: Mock based on real output of viewMany
 describe('target', () => {
   describe('minor', () => {

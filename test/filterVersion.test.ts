@@ -1,12 +1,6 @@
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
 import ncu from '../src'
 import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 describe('filterVersion', () => {
   describe('module', () => {
@@ -128,8 +122,7 @@ describe('filterVersion', () => {
       }
 
       const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--jsonUpgraded', '--verbose', '--stdin', '--filterVersion', '1.0.0', '--filterVersion', '1.0.9'],
+        ['--jsonUpgraded', '--verbose', '--stdin', '--filterVersion', '1.0.0', '--filterVersion', '1.0.9'],
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
@@ -152,8 +145,7 @@ describe('rejectVersion', () => {
       }
 
       const { stdout } = await runNcuCli(
-        'node',
-        [bin, '--jsonUpgraded', '--verbose', '--stdin', '--rejectVersion', '1.0.0', '--rejectVersion', '1.0.9'],
+        ['--jsonUpgraded', '--verbose', '--stdin', '--rejectVersion', '1.0.0', '--rejectVersion', '1.0.9'],
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
