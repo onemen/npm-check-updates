@@ -7,15 +7,20 @@ import path from 'path'
 import spawnPlease from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
-import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
+import {
+  cleanupTempFolder,
+  createNcuRegExp,
+  setTrackedTempFolder,
+  setupTempFolder,
+  testFail,
+  testPass,
+} from './helpers/doctorHelpers'
 import { spawn } from './helpers/inProcessCli.js'
-import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
-const doctorTests = path.join(__dirname, 'test-data/doctor')
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
@@ -38,9 +43,14 @@ describe('doctor', function () {
   afterAll(() => stub.restore())
 
   describe('npm', () => {
+    // Automatically clears the active temporary directory after every single test
+    afterEach(async () => {
+      await cleanupTempFolder()
+    })
+
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
-      const cwd = path.join(doctorTests, 'nopackagefile')
+      const cwd = await setupTempFolder('nopackagefile')
       const { stdout } = await ncu(['--doctor'], {}, { cwd })
       return stripAnsi(stdout).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
@@ -50,12 +60,12 @@ describe('doctor', function () {
     })
 
     it('throw an error if there is no package file', async () => {
-      const cwd = path.join(doctorTests, 'nopackagefile')
+      const cwd = await setupTempFolder('nopackagefile')
       return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
-      const cwd = path.join(doctorTests, 'notestscript')
+      const cwd = await setupTempFolder('notestscript')
       return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
     })
 
@@ -74,11 +84,8 @@ describe('doctor', function () {
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async function () {
-      const cwd = path.join(doctorTests, 'options')
+      const cwd = await setupTempFolder('options')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
 
       let { stdout, stderr } = await ncu(
         ['--doctor', '-u', '--filter', 'ncu-test-v2'],
@@ -87,11 +94,6 @@ describe('doctor', function () {
       )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -114,11 +116,8 @@ describe('doctor', function () {
     })
 
     it('custom install script with --doctorInstall', async function () {
-      const cwd = path.join(doctorTests, 'custominstall')
+      const cwd = await setupTempFolder('custominstall')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
       let { stdout, stderr } = await ncu(
@@ -128,11 +127,6 @@ describe('doctor', function () {
       )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -154,11 +148,8 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest', async function () {
-      const cwd = path.join(doctorTests, 'customtest')
+      const cwd = await setupTempFolder('customtest')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
       let { stdout, stderr } = await ncu(
@@ -168,11 +159,6 @@ describe('doctor', function () {
       )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -194,12 +180,9 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
-      const cwd = path.join(doctorTests, 'customtest2')
+      const cwd = await setupTempFolder('customtest2')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
       const echoPath = path.join(cwd, 'echo.js')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
 
       const { stdout, stderr } = await ncu(
         ['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`],
@@ -208,11 +191,6 @@ describe('doctor', function () {
       )
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -226,8 +204,8 @@ describe('doctor', function () {
 
     it('handle failed prepare script', async () => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      setTrackedTempFolder(tempDir)
       const pkgPath = path.join(tempDir, 'package.json')
-      await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
       // package.json
       await fs.writeFile(
@@ -265,17 +243,10 @@ else {
         'utf-8',
       )
 
-      let result
-      let pkgUpgraded
-
-      try {
-        // explicitly set packageManager to avoid auto yarn detection
-        await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
-        result = await ncu(['--doctor', '-u', '-p', 'npm'], { rejectOnError: false }, { cwd: tempDir })
-        pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
-      } finally {
-        await removeDir(tempDir)
-      }
+      // explicitly set packageManager to avoid auto yarn detection
+      await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
+      const result = await ncu(['--doctor', '-u', '-p', 'npm'], { rejectOnError: false }, { cwd: tempDir })
+      const pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
 
       const stdout = result.stdout
       const stderr = result.stderr

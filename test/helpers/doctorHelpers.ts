@@ -2,6 +2,7 @@ import fs from 'fs/promises'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
+import os from 'os'
 import path from 'path'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
 import { spawn } from '../helpers/inProcessCli.js'
@@ -11,14 +12,52 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../../build/cli.js')
 const doctorTests = path.join(__dirname, '../test-data/doctor')
 
+// Track the active sandbox path for the currently running test block
+let currentTempDir: string | null = null
+
+// TODO: replace ncu with the real function
 /** Run the ncu CLI. */
-const ncu = async (
-  args: string[],
-  spawnPleaseOptions?: Parameters<typeof spawn>[2],
-  spawnOptions?: Parameters<typeof spawn>[3],
-) => {
-  const { stdout } = await spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
-  return stdout
+const ncu = async (args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
+  return spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
+}
+
+/** Helper to recursively copy directory contents to a temporary folder */
+async function copyDir(src: string, dest: string) {
+  await fs.mkdir(dest, { recursive: true })
+  const entries = await fs.readdir(src, { withFileTypes: true })
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name)
+    const destPath = path.join(dest, entry.name)
+    if (entry.isDirectory()) {
+      await copyDir(srcPath, destPath)
+    } else {
+      await fs.copyFile(srcPath, destPath)
+    }
+  }
+}
+
+/**
+ * Generates a fresh temporary workspace for a fixture folder.
+ * Sets the active tracking path for cleanup.
+ */
+export async function setupTempFolder(fixtureName: string): Promise<string> {
+  const originalCwd = path.join(doctorTests, fixtureName)
+  currentTempDir = await fs.mkdtemp(path.join(os.tmpdir(), `ncu-doctor-${fixtureName}-`))
+  await copyDir(originalCwd, currentTempDir)
+  return currentTempDir
+}
+
+/** Clears the active sandbox directory tracked by setupTempFolder */
+export async function cleanupTempFolder() {
+  if (currentTempDir) {
+    await fs.rm(currentTempDir, { recursive: true, force: true }).catch(() => {})
+    currentTempDir = null
+  }
+}
+
+/** Used to manually hook custom programmatic tests into the shared sandbox tracking */
+export function setTrackedTempFolder(dirPath: string) {
+  currentTempDir = dirPath
 }
 
 /**
@@ -42,9 +81,8 @@ export function createNcuRegExp(input: string): RegExp {
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
-    const cwd = path.join(doctorTests, 'pass')
+    const cwd = await setupTempFolder('pass')
     const pkgPath = path.join(cwd, 'package.json')
-    const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
       packageManager === 'yarn'
@@ -55,9 +93,6 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
             ? 'bun.lockb'
             : 'package-lock.json',
     )
-    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-    let stdout = ''
-    let stderr = ''
 
     // touch yarn.lock
     // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
@@ -65,34 +100,10 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
       await fs.writeFile(lockfilePath, '')
     }
 
-    try {
-      // explicitly set packageManager to avoid auto yarn detection
-      await ncu(
-        ['--doctor', '-u', '-p', packageManager],
-        {
-          stdout: function (data: string) {
-            stdout += data
-          },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        },
-        { cwd },
-      )
-    } catch (e) {}
+    // explicitly set packageManager to avoid auto yarn detection
+    let { stdout, stderr } = await ncu(['--doctor', '-u', '-p', packageManager], { rejectOnError: false }, { cwd })
 
     const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-    // cleanup before assertions in case they fail
-    await fs.writeFile(pkgPath, pkgOriginal)
-    await fs.rm(nodeModulesPath, { recursive: true, force: true })
-    await fs.rm(lockfilePath, { recursive: true, force: true })
-
-    // delete yarn cache
-    if (packageManager === 'yarn') {
-      await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
-      await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
-    }
 
     // bun prints the run header to stderr instead of stdout
     if (packageManager === 'bun') {
@@ -122,9 +133,8 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
 /** Assertions for npm or yarn when tests fail. */
 export const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('identify broken upgrade', async function () {
-    const cwd = path.join(doctorTests, 'fail')
+    const cwd = await setupTempFolder('fail')
     const pkgPath = path.join(cwd, 'package.json')
-    const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
       packageManager === 'yarn'
@@ -135,44 +145,16 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
             ? 'bun.lockb'
             : 'package-lock.json',
     )
-    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-    let stdout = ''
-    let stderr = ''
-    let pkgUpgraded
 
     // touch yarn.lock (see fail/README)
     if (packageManager === 'yarn') {
       await fs.writeFile(lockfilePath, '')
     }
 
-    // TODO:
+    // explicitly set packageManager to avoid auto yarn detection
+    const { stdout, stderr } = await ncu(['--doctor', '-u', '-p', packageManager], { rejectOnError: false }, { cwd })
 
-    try {
-      // explicitly set packageManager to avoid auto yarn detection
-      await ncu(
-        ['--doctor', '-u', '-p', packageManager],
-        {
-          stdout: function (data: string) {
-            stdout += data
-          },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        },
-        { cwd },
-      )
-    } finally {
-      pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-
-      // delete yarn cache
-      if (packageManager === 'yarn') {
-        await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
-        await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
-      }
-    }
+    const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
     const testVersion = createNcuRegExp('ncu-test-return-version ~1.0.0 →')
     const testV2 = createNcuRegExp('ncu-test-v2 ~1.0.0 →')

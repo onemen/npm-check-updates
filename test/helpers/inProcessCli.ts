@@ -29,6 +29,8 @@ export async function spawn(
 
   let stdout = ''
   let stderr = ''
+  const internalOut = ''
+  let internalErr = ''
 
   if (spawnOptions.cwd) {
     process.chdir(spawnOptions.cwd)
@@ -59,23 +61,28 @@ export async function spawn(
     return true
   })
 
-  // vi.spyOn(console, 'log').mockImplementation(msg => {
-  //   stdout += msg + '\n'
-  // })
-  // vi.spyOn(console, 'info').mockImplementation(msg => {
-  //   stdout += msg + '\n'
-  // })
-  // vi.spyOn(console, 'warn').mockImplementation(msg => {
-  //   stdout += msg + '\n'
-  // })
+  vi.spyOn(console, 'log').mockImplementation(msg => {
+    stdout += msg + '\n'
+  })
+  vi.spyOn(console, 'info').mockImplementation(msg => {
+    stdout += msg + '\n'
+  })
+  vi.spyOn(console, 'warn').mockImplementation(msg => {
+    stdout += msg + '\n'
+  })
 
   vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
-    stderr += chunk.toString()
+    const msg = chunk.toString()
+    if (msg.includes('MaxListenersExceededWarning') || msg.includes('trace-warnings')) {
+      internalErr += msg + '\n'
+    } else {
+      stderr += msg + '\n'
+    }
     return true
   })
-  // vi.spyOn(console, 'error').mockImplementation(msg => {
-  //   stderr += msg + '\n'
-  // })
+  vi.spyOn(console, 'error').mockImplementation(msg => {
+    stderr += msg + '\n'
+  })
 
   vi.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
     if (typeof code === 'number' ? code : 0) {
@@ -100,6 +107,13 @@ export async function spawn(
   if (options.rejectOnError !== false && result.error) {
     const errorMessage = stderr || result.stderr?.trim() || result.error?.message || String(result.error)
     throw new Error(errorMessage)
+  }
+
+  if (internalOut) {
+    process.stdout.write(internalOut)
+  }
+  if (internalErr) {
+    process.stderr.write(internalErr)
   }
 
   return { stdout: result.stdout, stderr: result.stderr }
