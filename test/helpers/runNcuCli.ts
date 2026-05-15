@@ -141,19 +141,15 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
   let hasError = false
 
   try {
-    const result = await ncuCli()
-      .then(() => ({ error: null }))
-      .catch(error => ({ error }))
-
+    await ncuCli()
+    return { stdout: captured.stdout, stderr: captured.stderr }
+  } catch (error: any) {
     // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
-    if (result.error && !(result.error instanceof ExitSuccessSignal)) {
-      if (options.rejectOnError !== false) {
-        hasError = true
-        const errorMessage = captured.stderr || result.error?.message || String(result.error)
-        throw new Error(errorMessage)
-      }
+    if (options.rejectOnError !== false && error && !(error instanceof ExitSuccessSignal)) {
+      hasError = true
+      const errorMessage = captured.stderr || error?.message || String(error)
+      throw new Error(errorMessage, { cause: error })
     }
-
     return { stdout: captured.stdout, stderr: captured.stderr }
   } finally {
     process.argv = original.argv
