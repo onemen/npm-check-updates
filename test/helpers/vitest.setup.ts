@@ -1,6 +1,6 @@
 import { afterEach, beforeAll } from 'vitest'
 import globalSetup from './globalSetup'
-import { cleanupCliMocks } from './inProcessCli'
+import { cleanupCliMocks } from './runNcuCli.js'
 
 beforeAll(() => {
   globalSetup()

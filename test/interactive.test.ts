@@ -3,8 +3,8 @@ import os from 'os'
 import path, { dirname } from 'path'
 import spawnPlease from 'spawn-please'
 import { fileURLToPath } from 'url'
-import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -40,7 +40,7 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--interactive'],
         {},
@@ -79,7 +79,7 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      await spawn(
+      await runNcuCli(
         'node',
         [bin, '--interactive', '--format', 'group'],
         {},
@@ -121,7 +121,7 @@ describe('--interactive', () => {
     const configFile = path.join(tempDir, '.ncurc.js')
     await fs.writeFile(configFile, `module.exports = { groupFunction: () => 'minor' }`, 'utf-8')
     try {
-      await spawn(
+      await runNcuCli(
         'node',
         [bin, '--interactive', '--format', 'group', '--configFilePath', tempDir],
         {},
@@ -160,7 +160,7 @@ describe('--interactive', () => {
     )
     try {
       await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--interactive', '--format', 'repo'],
         {},

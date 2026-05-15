@@ -15,7 +15,7 @@ import {
   testFail,
   testPass,
 } from './helpers/doctorHelpers'
-import { spawn } from './helpers/inProcessCli.js'
+import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -32,7 +32,7 @@ const mockNpmVersions = {
 /** Run the ncu CLI. */
 // TODO: replace ncu with the real function
 const ncu = async (args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
-  return spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
+  return runNcuCli('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
 }
 
 describe('doctor', function () {

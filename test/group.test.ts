@@ -5,8 +5,8 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import { type GroupFunction } from '../src/types/GroupFunction'
-import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -42,7 +42,7 @@ async function groupTestScaffold(
   const configFile = path.join(tempDir, '.ncurc.js')
   await fs.writeFile(configFile, `module.exports = { groupFunction: ${groupFn.toString()} }`, 'utf-8')
   try {
-    const { stdout } = await spawn(
+    const { stdout } = await runNcuCli(
       'node',
       [bin, '--format', 'group', '--configFilePath', tempDir],
       {},

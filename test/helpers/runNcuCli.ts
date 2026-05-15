@@ -88,7 +88,7 @@ export function cleanupCliMocks(): void {
  * Captures stdout/stderr, handles dynamic directory switching, and
  * intercepts process exits seamlessly.
  */
-export async function spawn(
+export async function runNcuCli(
   command: string,
   args: string[] = [],
   options: any = {},

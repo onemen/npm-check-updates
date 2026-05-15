@@ -5,7 +5,7 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
-import { spawn } from '../helpers/inProcessCli.js'
+import { runNcuCli } from './runNcuCli.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -18,7 +18,7 @@ let currentTempDir: string | null = null
 // TODO: replace ncu with the real function
 /** Run the ncu CLI. */
 const ncu = async (args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
-  return spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
+  return runNcuCli('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
 }
 
 /** Helper to recursively copy directory contents to a temporary folder */

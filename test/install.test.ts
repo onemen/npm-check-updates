@@ -8,8 +8,8 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import exists from '../src/lib/exists'
-import { spawn } from './helpers/inProcessCli.js'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -31,7 +31,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
+        const { stdout } = await runNcuCli('node', [bin, '-u', '--packageFile', pkgFile])
         stripAnsi(stdout).should.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
@@ -55,7 +55,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
+        const { stdout } = await runNcuCli('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
         stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
@@ -78,7 +78,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
+        const { stdout } = await runNcuCli('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
         stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
@@ -104,7 +104,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
+        await runNcuCli(
           'node',
           [bin, '-iu', '--packageFile', pkgFile],
           {},
@@ -133,7 +133,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
+        await runNcuCli(
           'node',
           [bin, '-iu', '--packageFile', pkgFile],
           {},
@@ -162,7 +162,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
+        await runNcuCli(
           'node',
           [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'],
           {},
@@ -193,7 +193,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
+        await runNcuCli(
           'node',
           [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'],
           {},

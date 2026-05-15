@@ -3,7 +3,7 @@ import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src'
 import { type Index } from '../src/types/IndexType'
-import { spawn } from './helpers/inProcessCli.js'
+import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -215,7 +215,7 @@ describe('filter', () => {
     afterAll(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'], {
+      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -224,7 +224,7 @@ describe('filter', () => {
     })
 
     it('filter by package name with -f', async () => {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '-f', 'express'], {
+      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '-f', 'express'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -240,7 +240,7 @@ describe('filter', () => {
         },
       }
 
-      await spawn('node', [bin, '--jsonUpgraded', '--filter', 'lodash.map', 'lodash.filter'], {
+      await runNcuCli('node', [bin, '--jsonUpgraded', '--filter', 'lodash.map', 'lodash.filter'], {
         stdin: JSON.stringify(pkgData),
       }).should.eventually.be.rejected
     })
@@ -253,7 +253,7 @@ describe('filter', () => {
         },
       }
 
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', 'lodash.map', 'lodash.filter'],
         { stdin: JSON.stringify(pkgData) },
@@ -271,7 +271,7 @@ describe('filter', () => {
         },
       }
 
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', ' '],
         { stdin: JSON.stringify(pkgData) },
@@ -289,7 +289,7 @@ describe('filter', () => {
         },
       }
 
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--jsonUpgraded', '--stdin', '--filter', 'ncu-test-v2', '--filter', 'ncu-test-tag'],
         { stdin: JSON.stringify(pkgData) },
@@ -308,7 +308,7 @@ describe('reject', () => {
     afterAll(() => stub.restore())
 
     it('reject by package name with --reject', async () => {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'], {
+      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -317,7 +317,7 @@ describe('reject', () => {
     })
 
     it('reject by package name with -x', async () => {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '-x', 'chalk'], {
+      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--stdin', '-x', 'chalk'], {
         stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -326,7 +326,7 @@ describe('reject', () => {
     })
 
     it('reject with empty string should not reject anything', async () => {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--reject', '""', '--stdin', '-x', 'chalk'], {
+      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded', '--reject', '""', '--stdin', '-x', 'chalk'], {
         stdin: '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "1.0.0" } }',
       })
       const pkgData = JSON.parse(stdout)
@@ -342,7 +342,7 @@ describe('reject', () => {
         },
       }
 
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--jsonUpgraded', '--stdin', '--reject', 'ncu-test-v2', '--reject', 'ncu-test-tag'],
         { stdin: JSON.stringify(pkgData) },

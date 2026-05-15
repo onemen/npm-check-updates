@@ -1,7 +1,7 @@
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src'
-import { spawn } from './helpers/inProcessCli.js'
+import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -127,7 +127,7 @@ describe('filterVersion', () => {
         },
       }
 
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--jsonUpgraded', '--verbose', '--stdin', '--filterVersion', '1.0.0', '--filterVersion', '1.0.9'],
         { stdin: JSON.stringify(pkgData) },
@@ -151,7 +151,7 @@ describe('rejectVersion', () => {
         },
       }
 
-      const { stdout } = await spawn(
+      const { stdout } = await runNcuCli(
         'node',
         [bin, '--jsonUpgraded', '--verbose', '--stdin', '--rejectVersion', '1.0.0', '--rejectVersion', '1.0.9'],
         { stdin: JSON.stringify(pkgData) },

@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
-import { spawn } from './helpers/inProcessCli.js'
+import { runNcuCli } from './helpers/runNcuCli.js'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -19,14 +19,14 @@ describe('timeout', function () {
   })
 
   it('exit with error when timeout is exceeded', async () => {
-    return spawn('node', [bin, '--timeout', '1'], {
+    return runNcuCli('node', [bin, '--timeout', '1'], {
       stdin: '{ "dependencies": { "express": "1" } }',
     }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
   })
 
   it('completes successfully with timeout', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    await spawn('node', [bin, '--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
+    await runNcuCli('node', [bin, '--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
     stub.restore()
   })
 })

@@ -3,8 +3,8 @@ import os from 'node:os'
 import path, { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import parseJson from '../../../src/lib/utils/parseJson'
-import { spawn } from '../../helpers/inProcessCli.js'
 import removeDir from '../../helpers/removeDir'
+import { runNcuCli } from '../../helpers/runNcuCli.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -21,7 +21,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const { stdout } = await spawn('node', [
+      const { stdout } = await runNcuCli('node', [
         bin,
         '--jsonUpgraded',
         '--packageManager',
@@ -46,7 +46,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded'], undefined, {
         cwd: tempDir,
       })
       const pkg = parseJson(stdout)
@@ -66,7 +66,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
+      await runNcuCli('node', [bin, '-u'], undefined, { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
       const pkg = parseJson(pkgDataNew)
       pkg.should.deep.equal({
@@ -90,7 +90,7 @@ describe('deno', async function () {
 }`
     await fs.writeFile(pkgFile, pkgString)
     try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      const { stdout } = await runNcuCli('node', [bin, '--jsonUpgraded'], undefined, {
         cwd: tempDir,
       })
       const pkg = parseJson(stdout)
@@ -110,7 +110,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
+      await runNcuCli('node', [bin, '-u'], undefined, { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
       const pkg = parseJson(pkgDataNew)
       pkg.should.deep.equal({
