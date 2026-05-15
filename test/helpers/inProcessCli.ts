@@ -16,6 +16,17 @@ interface CapturedOutputs {
 }
 
 /**
+ * Custom signaling class to cleanly pass successful early exits (like --help or --version)
+ * back through the asynchronous control flow chain.
+ */
+class ExitSuccessSignal extends Error {
+  constructor() {
+    super('Process exited successfully')
+    this.name = 'ExitSuccessSignal'
+  }
+}
+
+/**
  * Attaches Vitest spies to cleanly capture all process and console outputs,
  * using the local mutable object references passed from the spawn function.
  */
@@ -61,7 +72,7 @@ function mockOutputs(context: CapturedOutputs): void {
     if (exitCode !== 0) {
       throw new Error(context.stderr.trim() || `CLI exited with code ${exitCode}`)
     }
-    throw new Error('Process exited successfully')
+    throw new ExitSuccessSignal()
   })
 }
 
@@ -121,9 +132,12 @@ export async function spawn(
       .then(() => ({ error: null }))
       .catch(error => ({ error }))
 
-    if (options.rejectOnError !== false && result.error) {
-      const errorMessage = captured.stderr.trim() || result.error?.message || String(result.error)
-      throw new Error(errorMessage)
+    // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
+    if (result.error && !(result.error instanceof ExitSuccessSignal)) {
+      if (options.rejectOnError !== false) {
+        const errorMessage = captured.stderr.trim() || result.error?.message || String(result.error)
+        throw new Error(errorMessage)
+      }
     }
 
     if (captured.runnerWarning) {
