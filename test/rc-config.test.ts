@@ -441,7 +441,11 @@ describe('rc-config', () => {
     await fs.writeFile(configFile, 'export default { filter: "test" }', 'utf-8')
     await fs.writeFile(pkgFile, JSON.stringify({ type: 'commonjs', dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
     try {
-      const { stderr } = await runNcuCli(['--mergeConfig'], { rejectOnError: false, cwd: tempDir })
+      const { stderr } = await runNcuCli(['--mergeConfig'], {
+        rejectOnError: false,
+        cwd: tempDir,
+        silenceRunnerWarning: true,
+      })
       stderr.should.contain('ESM syntax')
       stderr.should.contain('.mjs')
     } finally {

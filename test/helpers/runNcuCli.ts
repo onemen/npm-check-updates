@@ -23,6 +23,7 @@ interface RunCliOptions {
   inject?: PromptValue[]
   rejectOnError?: boolean
   stdin?: string
+  silenceRunnerWarning?: boolean
 }
 
 /**
@@ -166,7 +167,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     }
     cleanupCliMocks()
 
-    if (captured.runnerWarning) {
+    if (captured.runnerWarning && !options.silenceRunnerWarning) {
       process.stdout.write(`\n[Test Runner Warning Intercepted]:\n${captured.runnerWarning}\n`)
     }
   }
