@@ -90,7 +90,7 @@ function mockOutputs(context: CapturedOutputs): void {
  * Tears down all Vitest output spies safely.
  * Directly checks Vitest's wrapper properties to see if an active spy is present.
  */
-export function cleanupCliMocks(): void {
+function cleanupCliMocks(): void {
   const isSpied = typeof console.error === 'function' && '_isMockFunction' in console.error
   if (isSpied) {
     vi.restoreAllMocks()
@@ -143,6 +143,8 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       .then(() => ({ error: null }))
       .catch(error => ({ error }))
 
+    cleanupCliMocks()
+
     // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
     if (result.error && !(result.error instanceof ExitSuccessSignal)) {
       if (options.rejectOnError !== false) {
@@ -163,5 +165,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
 
     for (const key in process.env) delete process.env[key]
     Object.assign(process.env, original.env)
+
+    cleanupCliMocks()
   }
 }
