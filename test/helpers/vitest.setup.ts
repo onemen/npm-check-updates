@@ -1,10 +1,11 @@
-import { beforeAll } from 'vitest'
+import { afterEach, beforeAll } from 'vitest'
 import globalSetup from './globalSetup'
+import { cleanupCliMocks } from './inProcessCli'
 
-/**
- * Global setup for Vitest.
- * Called before all tests run.
- */
 beforeAll(() => {
   globalSetup()
+})
+
+afterEach(() => {
+  cleanupCliMocks()
 })
