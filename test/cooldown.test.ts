@@ -12,7 +12,6 @@ import type { Packument } from '../src/types/Packument'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import stubVersions from './helpers/stubVersions'
 
-
 const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()
 

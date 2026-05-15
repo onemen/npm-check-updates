@@ -3,10 +3,6 @@ import prompts from 'prompts-ncu'
 import { vi } from 'vitest'
 import { ncuCli } from '../../src/ncuCli.js'
 
-if (typeof process.setMaxListeners === 'function') {
-  process.setMaxListeners(50)
-}
-
 type PromptValue = string[] | boolean
 
 interface CapturedOutputs {

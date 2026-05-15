@@ -327,13 +327,15 @@ export async function run(
 ): Promise<PackageFile | Index<VersionSpec> | void> {
   const options = await initOptions(runOptions, { cli })
 
-  // ensure that the process exits with an error code if there was an unhandled rejection
   const bugsUrl = pkg.bugs.url
-  process.on('exit', () => {
+  /** ensure that the process exits with an error code if there was an unhandled rejection */
+  const exitListener = () => {
     if (unhandledRejectionError) {
       programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
     }
-  })
+  }
+
+  process.on('exit', exitListener)
 
   // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent
@@ -365,23 +367,29 @@ export async function run(
     })
   }
 
-  // doctor mode
-  if (options.doctor) {
-    // execute with -u
-    if (options.upgrade) {
-      // we have to pass run directly since it would be a circular require if doctor included this file
-      return Promise.race([timeoutPromise, doctor(run, options)])
+  try {
+    // doctor mode
+    if (options.doctor) {
+      // execute with -u
+      if (options.upgrade) {
+        // we have to pass run directly since it would be a circular require if doctor included this file
+        // await the return to prevnet process.off in finally to run before this promise resolved
+        return await Promise.race([timeoutPromise, doctor(run, options)])
+      }
+      // print help otherwise
+      else {
+        const help =
+          typeof cliOptionsMap.doctor.help === 'function' ? cliOptionsMap.doctor.help({}) : cliOptionsMap.doctor.help
+        print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
+      }
     }
-    // print help otherwise
+    // normal mode
     else {
-      const help =
-        typeof cliOptionsMap.doctor.help === 'function' ? cliOptionsMap.doctor.help({}) : cliOptionsMap.doctor.help
-      print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
+      // await the return to prevnet process.off in finally to run before this promise resolved
+      return await Promise.race([timeoutPromise, runUpgrades(options, timeout)])
     }
-  }
-  // normal mode
-  else {
-    return Promise.race([timeoutPromise, runUpgrades(options, timeout)])
+  } finally {
+    process.off('exit', exitListener)
   }
 }
 
