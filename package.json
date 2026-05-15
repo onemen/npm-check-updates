@@ -51,9 +51,9 @@
     "prettier:fix": "prettier . --write",
     "test": "tsc --noEmit && npm run test:unit && npm run test:e2e",
     "test:bun": "vitest run test/bun",
-    "test:unit": "vitest run test test/package-managers --exclude \"test/bun/**\"",
-    "test:coverage": "vitest run --coverage",
-    "test:coverage:html": "vitest run --coverage && open coverage/index.html",
+    "test:unit": "vitest run --exclude \"test/bun/**\"",
+    "test:unit:coverage": "vitest run --exclude \"test/bun/**\" --coverage",
+    "test:all:coverage": "vitest run --coverage",
     "test:e2e": "./test/e2e.sh",
     "typecheck": "tsc --noEmit",
     "ncu": "node build/cli.js"

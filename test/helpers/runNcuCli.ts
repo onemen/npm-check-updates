@@ -138,23 +138,20 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
 
   mockOutputs(captured)
 
+  let hasError = false
+
   try {
     const result = await ncuCli()
       .then(() => ({ error: null }))
       .catch(error => ({ error }))
 
-    cleanupCliMocks()
-
     // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
     if (result.error && !(result.error instanceof ExitSuccessSignal)) {
       if (options.rejectOnError !== false) {
+        hasError = true
         const errorMessage = captured.stderr || result.error?.message || String(result.error)
         throw new Error(errorMessage)
       }
-    }
-
-    if (captured.runnerWarning) {
-      process.stdout.write(`\n[Test Runner Warning Intercepted]:\n${captured.runnerWarning}\n`)
     }
 
     return { stdout: captured.stdout, stderr: captured.stderr }
@@ -166,6 +163,15 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     for (const key in process.env) delete process.env[key]
     Object.assign(process.env, original.env)
 
+    if (hasError) {
+      // ⏳ Give the async event loop one tick to finish flushing
+      // any pending console logs before we restore the real terminal
+      await new Promise(resolve => setTimeout(resolve, 0))
+    }
     cleanupCliMocks()
+
+    if (captured.runnerWarning) {
+      process.stdout.write(`\n[Test Runner Warning Intercepted]:\n${captured.runnerWarning}\n`)
+    }
   }
 }
