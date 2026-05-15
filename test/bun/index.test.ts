@@ -18,7 +18,6 @@ describe('bun', function () {
   // Use a synchronous check to fail the suite immediately if bun is missing
   beforeAll(function () {
     const result = spawnSync('bun', ['--version'], {
-      shell: true,
       encoding: 'utf8',
     })
 

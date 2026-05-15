@@ -148,7 +148,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
     if (result.error && !(result.error instanceof ExitSuccessSignal)) {
       if (options.rejectOnError !== false) {
-        const errorMessage = captured.stderr.trim() || result.error?.message || String(result.error)
+        const errorMessage = captured.stderr || result.error?.message || String(result.error)
         throw new Error(errorMessage)
       }
     }
@@ -157,7 +157,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       process.stdout.write(`\n[Test Runner Warning Intercepted]:\n${captured.runnerWarning}\n`)
     }
 
-    return { stdout: captured.stdout, stderr: captured.stderr.trim() }
+    return { stdout: captured.stdout, stderr: captured.stderr }
   } finally {
     process.argv = original.argv
     if (process.cwd() !== original.cwd) process.chdir(original.cwd)
