@@ -41,6 +41,9 @@ describe('doctor', function () {
     process.env.npm_config_loglevel = 'error'
     process.env.yarn_config_prefer_offline = 'true'
     process.env.YARN_CACHE_FOLDER = YARN_CACHE_PATH
+    process.env.TMPDIR = YARN_CACHE_PATH
+    process.env.TEMP = YARN_CACHE_PATH
+    process.env.TMP = YARN_CACHE_PATH
   })
   afterAll(async () => {
     stub.restore()
@@ -51,6 +54,9 @@ describe('doctor', function () {
     delete process.env.npm_config_loglevel
     delete process.env.yarn_config_prefer_offline
     delete process.env.YARN_CACHE_FOLDER
+    delete process.env.TMPDIR
+    delete process.env.TEMP
+    delete process.env.TMP
     await cleanupFixtureCache()
     await fs.rm(YARN_CACHE_PATH, { recursive: true, force: true }).catch(() => {})
   })

@@ -11,6 +11,7 @@ import { runNcuCli } from './runNcuCli'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const doctorTests = path.join(__dirname, '../test-data/doctor')
 const FIXTURE_CACHE_DIR = path.join(os.tmpdir(), 'ncu-doctor-cache')
+const YARN_CACHE_DIR = path.join(FIXTURE_CACHE_DIR, 'yarn-cache')
 
 // Track the active sandbox path for the currently running test block
 let currentTempDir: string | null = null
@@ -54,11 +55,27 @@ async function ensureFixtureCached(fixtureName: string, packageManager: PackageM
 
       const installArgs =
         packageManager === 'yarn'
-          ? ['--prefer-offline', '--no-progress', '--non-interactive', '--silent']
+          ? ['--prefer-offline', '--no-progress', '--non-interactive', '--silent', '--cache-folder', YARN_CACHE_DIR]
           : ['install', '--no-audit', '--no-fund', '--prefer-offline', '--loglevel', 'error', '--no-package-lock']
 
       // Initial install to populate node_modules in cache
-      await spawnPlease(installCmd, installArgs, {}, { cwd: cachePath, timeout: 60000 })
+      await spawnPlease(
+        installCmd,
+        installArgs,
+        {},
+        {
+          cwd: cachePath,
+          timeout: 60000,
+          env: {
+            ...process.env,
+            // Redirect Yarn's internal temp folders to our tracked cache dir
+            TMPDIR: FIXTURE_CACHE_DIR,
+            TEMP: FIXTURE_CACHE_DIR,
+            TMP: FIXTURE_CACHE_DIR,
+            YARN_CACHE_FOLDER: YARN_CACHE_DIR,
+          },
+        },
+      )
     }
     resolvedFixturePaths.set(cacheKey, cachePath)
   }
