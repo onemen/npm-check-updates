@@ -6,6 +6,7 @@ import spawnPlease from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import {
+  cleanupFixtureCache,
   cleanupTempFolder,
   createNcuRegExp,
   setTrackedTempFolder,
@@ -27,8 +28,32 @@ describe('doctor', function () {
   // 3 min timeout
 
   let stub: { restore: () => void }
-  beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-  afterAll(() => stub.restore())
+  const YARN_CACHE_PATH = path.join(os.tmpdir(), `ncu-test-yarn-cache-${Math.random().toString(36).slice(2, 7)}`)
+
+  beforeAll(async () => {
+    stub = stubVersions(mockNpmVersions, { spawn: true })
+    // Speed up package manager commands spawned by doctor mode during tests
+    await fs.mkdir(YARN_CACHE_PATH, { recursive: true })
+    process.env.npm_config_prefer_offline = 'true'
+    process.env.npm_config_audit = 'false'
+    process.env.npm_config_fund = 'false'
+    process.env.npm_config_update_notifier = 'false'
+    process.env.npm_config_loglevel = 'error'
+    process.env.yarn_config_prefer_offline = 'true'
+    process.env.YARN_CACHE_FOLDER = YARN_CACHE_PATH
+  })
+  afterAll(async () => {
+    stub.restore()
+    delete process.env.npm_config_prefer_offline
+    delete process.env.npm_config_audit
+    delete process.env.npm_config_fund
+    delete process.env.npm_config_update_notifier
+    delete process.env.npm_config_loglevel
+    delete process.env.yarn_config_prefer_offline
+    delete process.env.YARN_CACHE_FOLDER
+    await cleanupFixtureCache()
+    await fs.rm(YARN_CACHE_PATH, { recursive: true, force: true }).catch(() => {})
+  })
 
   describe('npm', () => {
     // Automatically clears the active temporary directory after every single test

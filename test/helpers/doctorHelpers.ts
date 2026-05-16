@@ -4,38 +4,102 @@ import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
+import spawnPlease from 'spawn-please'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
 import { runNcuCli } from './runNcuCli'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const doctorTests = path.join(__dirname, '../test-data/doctor')
+const FIXTURE_CACHE_DIR = path.join(os.tmpdir(), 'ncu-doctor-cache')
+const YARN_CACHE_DIR = path.join(FIXTURE_CACHE_DIR, 'yarn-cache')
 
 // Track the active sandbox path for the currently running test block
 let currentTempDir: string | null = null
+const resolvedFixturePaths = new Map<string, string>()
 
-/** Helper to recursively copy directory contents to a temporary folder */
-async function copyDir(src: string, dest: string) {
-  await fs.mkdir(dest, { recursive: true })
-  const entries = await fs.readdir(src, { withFileTypes: true })
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name)
-    const destPath = path.join(dest, entry.name)
-    if (entry.isDirectory()) {
-      await copyDir(srcPath, destPath)
-    } else {
-      await fs.copyFile(srcPath, destPath)
+/** Ensures that a fixture is built and cached with its node_modules */
+async function ensureFixtureCached(fixtureName: string, packageManager: PackageManagerName = 'npm'): Promise<string> {
+  const cacheKey = `${fixtureName}-${packageManager}`
+  const cachePath = path.join(FIXTURE_CACHE_DIR, cacheKey)
+  const fixtureSource = path.join(doctorTests, fixtureName)
+
+  if (!resolvedFixturePaths.has(cacheKey)) {
+    const pkgPath = path.join(fixtureSource, 'package.json')
+    const hasPkg = await fs
+      .access(pkgPath)
+      .then(() => true)
+      .catch(() => false)
+
+    if (!hasPkg) {
+      resolvedFixturePaths.set(cacheKey, fixtureSource)
+      return fixtureSource
     }
+
+    const pkgData = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
+    if (!pkgData.dependencies && !pkgData.devDependencies) {
+      resolvedFixturePaths.set(cacheKey, fixtureSource)
+      return fixtureSource
+    }
+
+    const cacheExists = await fs
+      .access(cachePath)
+      .then(() => true)
+      .catch(() => false)
+    if (!cacheExists) {
+      const buildPath = `${cachePath}.building`
+      await fs.rm(buildPath, { recursive: true, force: true }).catch(() => {})
+      await fs.mkdir(FIXTURE_CACHE_DIR, { recursive: true })
+      await fs.cp(fixtureSource, buildPath, { recursive: true, force: true })
+
+      const installCmd =
+        packageManager === 'yarn'
+          ? 'yarn'
+          : packageManager === 'pnpm'
+            ? 'pnpm'
+            : packageManager === 'bun'
+              ? 'bun'
+              : 'npm'
+
+      const installArgs =
+        packageManager === 'yarn'
+          ? [
+              '--prefer-offline',
+              '--no-progress',
+              '--non-interactive',
+              '--silent',
+              '--cache-folder',
+              YARN_CACHE_DIR,
+              '--mutex',
+              'network:30330',
+            ]
+          : ['install', '--no-audit', '--no-fund', '--prefer-offline', '--loglevel', 'error']
+
+      // Initial install to populate node_modules in cache
+      try {
+        await spawnPlease(installCmd, installArgs, {}, { cwd: buildPath, timeout: 120000 })
+        await fs.rename(buildPath, cachePath)
+      } catch (e) {
+        await fs.rm(buildPath, { recursive: true, force: true }).catch(() => {})
+        resolvedFixturePaths.set(cacheKey, fixtureSource)
+        return fixtureSource
+      }
+    }
+    resolvedFixturePaths.set(cacheKey, cachePath)
   }
+  return resolvedFixturePaths.get(cacheKey)!
 }
 
 /**
  * Generates a fresh temporary workspace for a fixture folder.
  * Sets the active tracking path for cleanup.
  */
-export async function setupTempFolder(fixtureName: string): Promise<string> {
-  const originalCwd = path.join(doctorTests, fixtureName)
-  currentTempDir = await fs.mkdtemp(path.join(os.tmpdir(), `ncu-doctor-${fixtureName}-`))
-  await copyDir(originalCwd, currentTempDir)
+export async function setupTempFolder(
+  fixtureName: string,
+  packageManager: PackageManagerName = 'npm',
+): Promise<string> {
+  const cachePath = await ensureFixtureCached(fixtureName, packageManager)
+  currentTempDir = await fs.mkdtemp(path.join(os.tmpdir(), `ncu-doctor-${fixtureName}-${packageManager}-`))
+  await fs.cp(cachePath, currentTempDir, { recursive: true, force: true })
   return currentTempDir
 }
 
@@ -45,6 +109,12 @@ export async function cleanupTempFolder() {
     await fs.rm(currentTempDir, { recursive: true, force: true }).catch(() => {})
     currentTempDir = null
   }
+}
+
+/** Clears the fixture cache directory */
+export async function cleanupFixtureCache() {
+  resolvedFixturePaths.clear()
+  await fs.rm(FIXTURE_CACHE_DIR, { recursive: true, force: true }).catch(() => {})
 }
 
 /** Used to manually hook custom programmatic tests into the shared sandbox tracking */
@@ -73,7 +143,7 @@ export function createNcuRegExp(input: string): RegExp {
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
-    const cwd = await setupTempFolder('pass')
+    const cwd = await setupTempFolder('pass', packageManager)
     const pkgPath = path.join(cwd, 'package.json')
     const lockfilePath = path.join(
       cwd,
@@ -125,7 +195,7 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
 /** Assertions for npm or yarn when tests fail. */
 export const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('identify broken upgrade', async function () {
-    const cwd = await setupTempFolder('fail')
+    const cwd = await setupTempFolder('fail', packageManager)
     const pkgPath = path.join(cwd, 'package.json')
     const lockfilePath = path.join(
       cwd,
