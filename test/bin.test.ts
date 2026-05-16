@@ -7,7 +7,7 @@ import path from 'path'
 import { type Index } from '../src/types/IndexType'
 import { type Version } from '../src/types/Version'
 import removeDir from './helpers/removeDir'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

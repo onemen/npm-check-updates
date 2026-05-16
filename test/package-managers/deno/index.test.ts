@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import parseJson from '../../../src/lib/utils/parseJson'
 import removeDir from '../../helpers/removeDir'
-import { runNcuCli } from '../../helpers/runNcuCli.js'
+import { runNcuCli } from '../../helpers/runNcuCli'
 
 describe('deno', async function () {
   it('handle import map', async () => {

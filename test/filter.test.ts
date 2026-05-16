@@ -3,7 +3,7 @@ import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src'
 import { type Index } from '../src/types/IndexType'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

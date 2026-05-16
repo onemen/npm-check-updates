@@ -5,7 +5,7 @@ import os from 'os'
 import path from 'path'
 import ncu from '../src/'
 import removeDir from './helpers/removeDir'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 /** Creates a temp directory with nested package files for --workspaces testing. Returns the temp directory name (should be removed by caller).

@@ -7,7 +7,7 @@ import os from 'os'
 import path from 'path'
 import exists from '../src/lib/exists'
 import removeDir from './helpers/removeDir'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 describe('install', () => {

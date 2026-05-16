@@ -1,5 +1,5 @@
 import ncu from '../src'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 describe('filterVersion', () => {

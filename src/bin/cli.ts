@@ -1,4 +1,4 @@
-import { ncuCli } from '../ncuCli.js'
+import { ncuCli } from '../ncuCli'
 
 ;(async () => {
   ncuCli()

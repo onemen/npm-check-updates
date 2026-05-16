@@ -5,7 +5,7 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
-import { runNcuCli } from './runNcuCli.js'
+import { runNcuCli } from './runNcuCli'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const doctorTests = path.join(__dirname, '../test-data/doctor')

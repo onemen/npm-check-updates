@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 
 describe('global', () => {
   // TODO: Hangs on Windows

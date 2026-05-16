@@ -5,7 +5,7 @@ import path from 'path'
 import spawnPlease from 'spawn-please'
 import { format as timeAgoFormat } from 'timeago.js'
 import removeDir from './helpers/removeDir'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 describe('format', () => {

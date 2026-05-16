@@ -13,7 +13,7 @@ import {
   testFail,
   testPass,
 } from './helpers/doctorHelpers'
-import { runNcuCli } from './helpers/runNcuCli.js'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 const mockNpmVersions = {

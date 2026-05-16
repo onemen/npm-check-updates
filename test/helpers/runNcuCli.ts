@@ -3,7 +3,7 @@ import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import prompts from 'prompts-ncu'
 import { vi } from 'vitest'
-import { ncuCli } from '../../src/ncuCli.js'
+import { ncuCli } from '../../src/ncuCli'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 

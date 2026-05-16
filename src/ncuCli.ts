@@ -3,13 +3,13 @@ import createCloneDeep from 'rfdc'
 import semver from 'semver'
 import updateNotifier from 'update-notifier'
 import pkg from '../package.json'
-import cliOptions, { cliOptionsMap, renderExtendedHelp } from './cli-options.js'
+import cliOptions, { cliOptionsMap, renderExtendedHelp } from './cli-options'
 import ncu from './index'
-import { chalkInit, getChalk } from './lib/chalk.js'
+import { chalkInit, getChalk } from './lib/chalk'
 // async global contexts are only available in esm modules -> function
-import getNcuRc from './lib/getNcuRc.js'
-import { pickBy } from './lib/pick.js'
-import { type RunOptions } from './types/RunOptions.js'
+import getNcuRc from './lib/getNcuRc'
+import { pickBy } from './lib/pick'
+import { type RunOptions } from './types/RunOptions'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
