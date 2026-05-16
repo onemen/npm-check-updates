@@ -12,12 +12,6 @@ const CLI_BIN_PATH = path.join(__dirname, '../../build/cli.js')
 
 type PromptValue = string[] | boolean
 
-interface CapturedOutputs {
-  stdout: string
-  stderr: string
-  generalLogs: string
-}
-
 interface RunCliOptions {
   cwd?: string
   env?: Record<string, string | undefined>
@@ -38,118 +32,95 @@ class ExitSuccessSignal extends Error {
   }
 }
 
+/** Detect warnings you to isolate */
+function isWarning(text: string): boolean {
+  return (
+    text.includes('MaxListenersExceededWarning') ||
+    text.includes('trace-warnings') ||
+    text.includes('DeprecationWarning') ||
+    text.includes('ExperimentalWarning')
+  )
+}
+
 /**
  * Attaches Vitest spies to cleanly capture all process and console outputs,
  * using the local mutable object references passed from the spawn function.
  */
-function mockOutputs(context: CapturedOutputs): void {
-  // 1. Unified routing map for all terminal outputs
-  const logMap = {
-    // Console methods
-    log: 'stdout',
-    info: 'stdout',
-    warn: 'stdout',
-    error: 'stderr',
-    trace: 'generalLogs',
-    // Low-level streams
-    stdout: 'stdout',
-    stderr: 'stderr',
-  } as const
+function mockOutput() {
+  let stdout = ''
+  let stderr = ''
+  let general = ''
 
-  /** Unified router that checks for engine/listener warnings before assigning context */
-  const routeText = (text: string, targetContext: (typeof logMap)[keyof typeof logMap]) => {
-    if (text.includes('MaxListenersExceededWarning') || text.includes('trace-warnings')) {
-      context.generalLogs += text
-    } else {
-      context[targetContext] += text
-    }
-  }
-
-  // --- 2. Low-Level Stream Interceptors Loop ---
-  const streams = ['stdout', 'stderr'] as const
-  streams.forEach(stream => {
-    vi.spyOn(process[stream], 'write').mockImplementation(chunk => {
-      routeText(chunk.toString(), logMap[stream])
-      return true
-    })
+  const restoreStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
+    const text = chunk.toString()
+    if (isWarning(text)) general += text
+    else stdout += text
+    return true
   })
 
-  // --- 3. Console Methods Interceptor Loop ---
-  const consoleMethods = ['log', 'info', 'warn', 'error', 'trace'] as const
-  consoleMethods.forEach(method => {
-    vi.spyOn(console, method).mockImplementation((...args: unknown[]) => {
-      const formatted = format(...args) + '\n'
-      routeText(formatted, logMap[method])
-    })
+  const restoreStderr = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
+    const text = chunk.toString()
+    if (isWarning(text)) general += text
+    else stderr += text
+    return true
   })
 
-  // --- 4. Performance/Timer State Tracking ---
-  const timers = new Map<string, number>()
+  const restoreConsole = [
+    vi.spyOn(console, 'log').mockImplementation((...a) => {
+      stdout += format(...a) + '\n'
+    }),
+    vi.spyOn(console, 'info').mockImplementation((...a) => {
+      stdout += format(...a) + '\n'
+    }),
+    vi.spyOn(console, 'warn').mockImplementation((...a) => {
+      stderr += format(...a) + '\n'
+    }),
+    vi.spyOn(console, 'error').mockImplementation((...a) => {
+      stderr += format(...a) + '\n'
+    }),
 
-  vi.spyOn(console, 'time').mockImplementation((label = 'default') => {
-    timers.set(label, performance.now())
-  })
+    // Timers → general
+    vi.spyOn(console, 'time').mockImplementation(label => {
+      general += `[timer:start] ${label ?? 'default'}\n`
+    }),
+    vi.spyOn(console, 'timeLog').mockImplementation((label, ...data) => {
+      general += `[timer:log] ${label ?? 'default'} ${format(...data)}\n`
+    }),
+    vi.spyOn(console, 'timeEnd').mockImplementation(label => {
+      general += `[timer:end] ${label ?? 'default'}\n`
+    }),
 
-  /** time log helper */
-  const handleTimerLog = (label: string, appendData = '') => {
-    const start = timers.get(label)
-    if (start) {
-      const duration = (performance.now() - start).toFixed(3)
-      context.generalLogs += `${label}: ${duration}ms${appendData}\n`
-    }
-  }
+    // Traces → general
+    vi.spyOn(console, 'trace').mockImplementation((...a) => {
+      general += `[trace] ${format(...a)}\n`
+    }),
+  ]
 
-  vi.spyOn(console, 'timeLog').mockImplementation((label = 'default', ...data: unknown[]) => {
-    const extra = data.length > 0 ? ' ' + format(...data) : ''
-    handleTimerLog(label, extra)
-  })
-
-  vi.spyOn(console, 'timeEnd').mockImplementation((label = 'default') => {
-    handleTimerLog(label)
-    timers.delete(label)
-  })
-
-  vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null): never => {
-    const exitCode = typeof code === 'number' ? code : 0
-    if (exitCode !== 0) {
-      throw new Error(context.stderr.trim() || `CLI exited with code ${exitCode}`)
+  // --- 3. Prevent process.exit from killing the worker ---
+  const restoreExit = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null): never => {
+    if (code && code !== 0) {
+      throw new Error(stderr.trim() || `CLI exited with code ${code}`)
     }
     throw new ExitSuccessSignal()
   })
-}
 
-/**
- * Tears down all Vitest output spies safely.
- * Validates that all mocks were successfully cleaned up.
- * Directly checks Vitest's wrapper properties to see if an active spy is present.
- *
- * @throws Will log warnings to console if mocks fail to clean up
- */
-function cleanupCliMocks(): void {
-  try {
-    vi.restoreAllMocks()
-  } catch (error) {
-    console.warn('⚠️  Error while restoring mocks:', error)
-  }
+  return {
+    get stdout() {
+      return stdout
+    },
+    get stderr() {
+      return stderr
+    },
+    get generalLogs() {
+      return general
+    },
 
-  // Validate that mocks were actually cleaned up
-  const stillMocked = [
-    { name: 'console.error', fn: console.error },
-    { name: 'console.warn', fn: console.warn },
-    { name: 'console.log', fn: console.log },
-    { name: 'console.info', fn: console.info },
-    { name: 'console.time', fn: console.time },
-    { name: 'console.timeLog', fn: console.timeLog },
-    { name: 'console.timeEnd', fn: console.timeEnd },
-    { name: 'process.stdout.write', fn: process.stdout.write },
-    { name: 'process.stderr.write', fn: process.stderr.write },
-    { name: 'process.exit', fn: process.exit },
-  ].filter(({ fn }) => typeof fn === 'function' && '_isMockFunction' in fn)
-
-  if (stillMocked.length > 0) {
-    console.warn(
-      `⚠️  Warning: ${stillMocked.length} mock(s) not properly cleaned up: ${stillMocked.map(m => m.name).join(', ')}`,
-    )
+    restore() {
+      restoreStdout.mockRestore()
+      restoreStderr.mockRestore()
+      restoreConsole.forEach(r => r.mockRestore())
+      restoreExit.mockRestore()
+    },
   }
 }
 
@@ -186,34 +157,29 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     Object.defineProperty(process, 'stdin', { value: mockStdin, configurable: true })
   }
 
-  const captured: CapturedOutputs = {
-    stdout: '',
-    stderr: '',
-    generalLogs: '',
-  }
-
-  mockOutputs(captured)
+  const out = mockOutput()
 
   let hasError = false
 
   try {
     await ncuCli()
-    return { stdout: captured.stdout, stderr: captured.stderr }
+    return { stdout: out.stdout, stderr: out.stderr }
   } catch (error: any) {
     // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
     if (options.rejectOnError !== false && error && !(error instanceof ExitSuccessSignal)) {
       hasError = true
-      const errorMessage = captured.stderr || error?.message || String(error)
+      const errorMessage = out.stderr || error?.message || String(error)
       throw new Error(errorMessage, { cause: error })
     }
-    return { stdout: captured.stdout, stderr: captured.stderr }
+    return { stdout: out.stdout, stderr: out.stderr }
   } finally {
     if (hasError) {
       // ⏳ Give the async event loop one tick to finish flushing
       // any pending console logs before we restore the real terminal
       await new Promise(resolve => setTimeout(resolve, 0))
     }
-    cleanupCliMocks()
+    out.restore()
+
     try {
       process.argv = original.argv
       if (process.cwd() !== original.cwd) process.chdir(original.cwd)
@@ -223,8 +189,8 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       console.warn('⚠️  Error during state restoration:', error)
     }
 
-    if (captured.generalLogs && !options.silenceRunnerWarning) {
-      process.stdout.write(`\n[General Logs]:\n${captured.generalLogs}\n`)
+    if (out.generalLogs && !options.silenceRunnerWarning) {
+      process.stdout.write(`\n[General Logs]:\n${out.generalLogs}\n`)
     }
   }
 }
