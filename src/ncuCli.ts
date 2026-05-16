@@ -250,10 +250,14 @@ ${chalk.dim.underline(
  * This function is designed strictly for CLI execution. It consumes arguments,
  * performs logic, and outputs results directly to the terminal (stdout/stderr).
  *
- * NOTE FOR TESTING:
+ * ⚠️  NO RETURN VALUE BY DESIGN
  * Because this function does not return the result data, tests must capture
  * output by mocking 'process.stdout.write', 'process.stderr.write', and 'console'
  * methods. This ensures tests validate exactly what the user sees in the terminal.
+ *
+ * This design maintains a clear separation between:
+ * - `ncu()` function: business logic, returns RunResults
+ * - `ncuCli()` function: CLI interface, prints to terminal only
  */
 export async function ncuCli(): Promise<void> {
   const options = await getCliOptions()

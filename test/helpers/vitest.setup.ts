@@ -2,17 +2,24 @@ import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 
-// In Chai 5+, should() is an imported function that initializes the prototype
 const should = initShould()
 
-// Use the named 'use' function instead of 'chai.use'
 use(chaiAsPromised)
 use(chaiString)
 
-// do not truncate strings in error messages
 config.truncateThreshold = 0
 
 process.env.NCU_TESTS = 'true'
-
-// Make should available globally for tests that use should.exist(), etc.
 ;(global as any).should = should
+
+/**
+ * Unhandled error handlers for test debugging.
+ * These help catch and log errors that would otherwise be silently swallowed.
+ */
+process.on('unhandledRejection', reason => {
+  console.error('[Unhandled Rejection]:', reason)
+})
+
+process.on('uncaughtException', error => {
+  console.error('[Uncaught Exception]:', error)
+})

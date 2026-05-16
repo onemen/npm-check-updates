@@ -18,6 +18,7 @@ export default defineConfig({
       // functions: 80,
       // branches: 75,
       // statements: 80,
+      excludeAfterRemap: true,
     },
 
     // Performance & setup

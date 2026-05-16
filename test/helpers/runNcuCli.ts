@@ -89,12 +89,33 @@ function mockOutputs(context: CapturedOutputs): void {
 
 /**
  * Tears down all Vitest output spies safely.
+ * Validates that all mocks were successfully cleaned up.
  * Directly checks Vitest's wrapper properties to see if an active spy is present.
+ *
+ * @throws Will log warnings to console if mocks fail to clean up
  */
 function cleanupCliMocks(): void {
-  const isSpied = typeof console.error === 'function' && '_isMockFunction' in console.error
-  if (isSpied) {
+  try {
     vi.restoreAllMocks()
+  } catch (error) {
+    console.warn('⚠️  Error while restoring mocks:', error)
+  }
+
+  // Validate that mocks were actually cleaned up
+  const stillMocked = [
+    { name: 'console.error', fn: console.error },
+    { name: 'console.warn', fn: console.warn },
+    { name: 'console.log', fn: console.log },
+    { name: 'console.info', fn: console.info },
+    { name: 'process.stdout.write', fn: process.stdout.write },
+    { name: 'process.stderr.write', fn: process.stderr.write },
+    { name: 'process.exit', fn: process.exit },
+  ].filter(({ fn }) => typeof fn === 'function' && '_isMockFunction' in fn)
+
+  if (stillMocked.length > 0) {
+    console.warn(
+      `⚠️  Warning: ${stillMocked.length} mock(s) not properly cleaned up: ${stillMocked.map(m => m.name).join(', ')}`,
+    )
   }
 }
 
@@ -153,19 +174,22 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     }
     return { stdout: captured.stdout, stderr: captured.stderr }
   } finally {
-    process.argv = original.argv
-    if (process.cwd() !== original.cwd) process.chdir(original.cwd)
-    Object.defineProperty(process, 'stdin', { value: original.stdin, configurable: true })
-
-    for (const key in process.env) delete process.env[key]
-    Object.assign(process.env, original.env)
-
     if (hasError) {
       // ⏳ Give the async event loop one tick to finish flushing
       // any pending console logs before we restore the real terminal
       await new Promise(resolve => setTimeout(resolve, 0))
     }
     cleanupCliMocks()
+    try {
+      process.argv = original.argv
+      if (process.cwd() !== original.cwd) process.chdir(original.cwd)
+      Object.defineProperty(process, 'stdin', { value: original.stdin, configurable: true })
+
+      for (const key in process.env) delete process.env[key]
+      Object.assign(process.env, original.env)
+    } catch (error) {
+      console.warn('⚠️  Error during state restoration:', error)
+    }
 
     if (captured.runnerWarning && !options.silenceRunnerWarning) {
       process.stdout.write(`\n[Test Runner Warning Intercepted]:\n${captured.runnerWarning}\n`)
