@@ -1,6 +1,7 @@
 import path, { dirname } from 'node:path'
 import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
+import { format } from 'node:util'
 import prompts from 'prompts-ncu'
 import { vi } from 'vitest'
 import { ncuCli } from '../../src/ncuCli'
@@ -14,7 +15,7 @@ type PromptValue = string[] | boolean
 interface CapturedOutputs {
   stdout: string
   stderr: string
-  runnerWarning: string
+  generalLogs: string
 }
 
 interface RunCliOptions {
@@ -42,40 +43,70 @@ class ExitSuccessSignal extends Error {
  * using the local mutable object references passed from the spawn function.
  */
 function mockOutputs(context: CapturedOutputs): void {
-  vi.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
-    context.stdout += chunk.toString()
-    return true
-  })
+  // 1. Unified routing map for all terminal outputs
+  const logMap = {
+    // Console methods
+    log: 'stdout',
+    info: 'stdout',
+    warn: 'stdout',
+    error: 'stderr',
+    trace: 'generalLogs',
+    // Low-level streams
+    stdout: 'stdout',
+    stderr: 'stderr',
+  } as const
 
-  vi.spyOn(console, 'log').mockImplementation((msg: string) => {
-    context.stdout += msg + '\n'
-  })
-
-  vi.spyOn(console, 'info').mockImplementation((msg: string) => {
-    context.stdout += msg + '\n'
-  })
-
-  vi.spyOn(console, 'warn').mockImplementation((msg: string) => {
-    context.stdout += msg + '\n'
-  })
-
-  vi.spyOn(console, 'error').mockImplementation((...msg: unknown[]) => {
-    const formatted = msg.join(' ')
-    if (formatted.includes('MaxListenersExceededWarning') || formatted.includes('trace-warnings')) {
-      context.runnerWarning += formatted + '\n'
+  /** Unified router that checks for engine/listener warnings before assigning context */
+  const routeText = (text: string, targetContext: (typeof logMap)[keyof typeof logMap]) => {
+    if (text.includes('MaxListenersExceededWarning') || text.includes('trace-warnings')) {
+      context.generalLogs += text
     } else {
-      context.stderr += formatted + '\n'
+      context[targetContext] += text
     }
+  }
+
+  // --- 2. Low-Level Stream Interceptors Loop ---
+  const streams = ['stdout', 'stderr'] as const
+  streams.forEach(stream => {
+    vi.spyOn(process[stream], 'write').mockImplementation(chunk => {
+      routeText(chunk.toString(), logMap[stream])
+      return true
+    })
   })
 
-  vi.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
-    const str = chunk.toString()
-    if (str.includes('MaxListenersExceededWarning') || str.includes('trace-warnings')) {
-      context.runnerWarning += str + '\n'
-      return true
+  // --- 3. Console Methods Interceptor Loop ---
+  const consoleMethods = ['log', 'info', 'warn', 'error', 'trace'] as const
+  consoleMethods.forEach(method => {
+    vi.spyOn(console, method).mockImplementation((...args: unknown[]) => {
+      const formatted = format(...args) + '\n'
+      routeText(formatted, logMap[method])
+    })
+  })
+
+  // --- 4. Performance/Timer State Tracking ---
+  const timers = new Map<string, number>()
+
+  vi.spyOn(console, 'time').mockImplementation((label = 'default') => {
+    timers.set(label, performance.now())
+  })
+
+  /** time log helper */
+  const handleTimerLog = (label: string, appendData = '') => {
+    const start = timers.get(label)
+    if (start) {
+      const duration = (performance.now() - start).toFixed(3)
+      context.generalLogs += `${label}: ${duration}ms${appendData}\n`
     }
-    context.stderr += str
-    return true
+  }
+
+  vi.spyOn(console, 'timeLog').mockImplementation((label = 'default', ...data: unknown[]) => {
+    const extra = data.length > 0 ? ' ' + format(...data) : ''
+    handleTimerLog(label, extra)
+  })
+
+  vi.spyOn(console, 'timeEnd').mockImplementation((label = 'default') => {
+    handleTimerLog(label)
+    timers.delete(label)
   })
 
   vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null): never => {
@@ -107,6 +138,9 @@ function cleanupCliMocks(): void {
     { name: 'console.warn', fn: console.warn },
     { name: 'console.log', fn: console.log },
     { name: 'console.info', fn: console.info },
+    { name: 'console.time', fn: console.time },
+    { name: 'console.timeLog', fn: console.timeLog },
+    { name: 'console.timeEnd', fn: console.timeEnd },
     { name: 'process.stdout.write', fn: process.stdout.write },
     { name: 'process.stderr.write', fn: process.stderr.write },
     { name: 'process.exit', fn: process.exit },
@@ -155,7 +189,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
   const captured: CapturedOutputs = {
     stdout: '',
     stderr: '',
-    runnerWarning: '',
+    generalLogs: '',
   }
 
   mockOutputs(captured)
@@ -189,8 +223,8 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       console.warn('⚠️  Error during state restoration:', error)
     }
 
-    if (captured.runnerWarning && !options.silenceRunnerWarning) {
-      process.stdout.write(`\n[Test Runner Warning Intercepted]:\n${captured.runnerWarning}\n`)
+    if (captured.generalLogs && !options.silenceRunnerWarning) {
+      process.stdout.write(`\n[General Logs]:\n${captured.generalLogs}\n`)
     }
   }
 }
