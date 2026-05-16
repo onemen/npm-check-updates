@@ -55,12 +55,12 @@ describe('doctor', function () {
     await fs.rm(YARN_CACHE_PATH, { recursive: true, force: true }).catch(() => {})
   })
 
-  describe('npm', () => {
-    // Automatically clears the active temporary directory after every single test
-    afterEach(async () => {
-      await cleanupTempFolder()
-    })
+  // Automatically clears all tracked temporary directories after every single test
+  afterEach(async () => {
+    await cleanupTempFolder()
+  })
 
+  describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
       const cwd = await setupTempFolder('nopackagefile')

@@ -11,10 +11,10 @@ import { runNcuCli } from './runNcuCli'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const doctorTests = path.join(__dirname, '../test-data/doctor')
 const FIXTURE_CACHE_DIR = path.join(os.tmpdir(), 'ncu-doctor-cache')
-const YARN_CACHE_DIR = path.join(FIXTURE_CACHE_DIR, 'yarn-cache')
 
 // Track the active sandbox path for the currently running test block
 let currentTempDir: string | null = null
+const trackedTempDirs = new Set<string>()
 const resolvedFixturePaths = new Map<string, string>()
 
 /** Ensures that a fixture is built and cached with its node_modules */
@@ -35,21 +35,13 @@ async function ensureFixtureCached(fixtureName: string, packageManager: PackageM
       return fixtureSource
     }
 
-    const pkgData = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
-    if (!pkgData.dependencies && !pkgData.devDependencies) {
-      resolvedFixturePaths.set(cacheKey, fixtureSource)
-      return fixtureSource
-    }
-
     const cacheExists = await fs
       .access(cachePath)
       .then(() => true)
       .catch(() => false)
     if (!cacheExists) {
-      const buildPath = `${cachePath}.building`
-      await fs.rm(buildPath, { recursive: true, force: true }).catch(() => {})
       await fs.mkdir(FIXTURE_CACHE_DIR, { recursive: true })
-      await fs.cp(fixtureSource, buildPath, { recursive: true, force: true })
+      await fs.cp(fixtureSource, cachePath, { recursive: true, force: true })
 
       const installCmd =
         packageManager === 'yarn'
@@ -62,27 +54,11 @@ async function ensureFixtureCached(fixtureName: string, packageManager: PackageM
 
       const installArgs =
         packageManager === 'yarn'
-          ? [
-              '--prefer-offline',
-              '--no-progress',
-              '--non-interactive',
-              '--silent',
-              '--cache-folder',
-              YARN_CACHE_DIR,
-              '--mutex',
-              'network:30330',
-            ]
-          : ['install', '--no-audit', '--no-fund', '--prefer-offline', '--loglevel', 'error']
+          ? ['--prefer-offline', '--no-progress', '--non-interactive', '--silent']
+          : ['install', '--no-audit', '--no-fund', '--prefer-offline', '--loglevel', 'error', '--no-package-lock']
 
       // Initial install to populate node_modules in cache
-      try {
-        await spawnPlease(installCmd, installArgs, {}, { cwd: buildPath, timeout: 120000 })
-        await fs.rename(buildPath, cachePath)
-      } catch (e) {
-        await fs.rm(buildPath, { recursive: true, force: true }).catch(() => {})
-        resolvedFixturePaths.set(cacheKey, fixtureSource)
-        return fixtureSource
-      }
+      await spawnPlease(installCmd, installArgs, {}, { cwd: cachePath, timeout: 60000 })
     }
     resolvedFixturePaths.set(cacheKey, cachePath)
   }
@@ -98,17 +74,19 @@ export async function setupTempFolder(
   packageManager: PackageManagerName = 'npm',
 ): Promise<string> {
   const cachePath = await ensureFixtureCached(fixtureName, packageManager)
-  currentTempDir = await fs.mkdtemp(path.join(os.tmpdir(), `ncu-doctor-${fixtureName}-${packageManager}-`))
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `ncu-doctor-${fixtureName}-${packageManager}-`))
+  trackedTempDirs.add(tempDir)
+  currentTempDir = tempDir
   await fs.cp(cachePath, currentTempDir, { recursive: true, force: true })
   return currentTempDir
 }
 
 /** Clears the active sandbox directory tracked by setupTempFolder */
 export async function cleanupTempFolder() {
-  if (currentTempDir) {
-    await fs.rm(currentTempDir, { recursive: true, force: true }).catch(() => {})
-    currentTempDir = null
-  }
+  const dirs = Array.from(trackedTempDirs)
+  trackedTempDirs.clear()
+  currentTempDir = null
+  await Promise.all(dirs.map(dir => fs.rm(dir, { recursive: true, force: true }).catch(() => {})))
 }
 
 /** Clears the fixture cache directory */
@@ -119,6 +97,7 @@ export async function cleanupFixtureCache() {
 
 /** Used to manually hook custom programmatic tests into the shared sandbox tracking */
 export function setTrackedTempFolder(dirPath: string) {
+  trackedTempDirs.add(dirPath)
   currentTempDir = dirPath
 }
 
