@@ -184,9 +184,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       process.argv = original.argv
       if (process.cwd() !== original.cwd) process.chdir(original.cwd)
       Object.defineProperty(process, 'stdin', { value: original.stdin, configurable: true })
-
-      for (const key in process.env) delete process.env[key]
-      Object.assign(process.env, original.env)
+      for (const key in options.env) process.env[key] = original.env[key]
     } catch (error) {
       console.warn('⚠️  Error during state restoration:', error)
     }
