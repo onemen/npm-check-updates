@@ -268,12 +268,10 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         return {
           ...packages,
           // index by relative path if cwd was specified
-          [pkgOptions.cwd
-            ? path
-                .relative(path.resolve(pkgOptions.cwd), indexKey)
-                // convert Windows path to *nix path for consistency
-                .replace(/\\/g, '/')
-            : indexKey]: await runLocal(pkgOptions, pkgData, pkgFile),
+          [path
+            .relative(path.resolve(pkgOptions.cwd || './'), indexKey)
+            // convert Windows path to *nix path for consistency
+            .replace(/\\/g, '/')]: await runLocal(pkgOptions, pkgData, pkgFile),
         }
       },
       Promise.resolve({} as Index<PackageFile> | PackageFile),

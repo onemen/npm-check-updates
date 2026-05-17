@@ -18,4 +18,12 @@ export type Options = RunOptions & {
   // A list of local workspace packages by name.
   // This is used to ignore local workspace packages when fetching new versions.
   workspacePackages?: string[]
+  // Indicates that `cwd` was injected internally (e.g., by test helpers such as runNcuCli)
+  // rather than provided explicitly by the user via the CLI. This allows the program to
+  // preserve the original deep‑mode behavior:
+  //   - user‑provided --cwd → output uses relative paths
+  //   - internally injected cwd → output uses absolute paths
+  //   - no cwd at all → output uses absolute paths
+  // This flag is never exposed to users and is only used to avoid altering behavior in tests.
+  _internalInjectedCwd?: boolean
 }

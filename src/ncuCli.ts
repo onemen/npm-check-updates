@@ -9,6 +9,7 @@ import { chalkInit, getChalk } from './lib/chalk'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from './lib/getNcuRc'
 import { pickBy } from './lib/pick'
+import { type Options } from './types/Options'
 import { type RunOptions } from './types/RunOptions'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
@@ -19,7 +20,7 @@ const uncode = (s: string) => s.replace(/`/g, '')
 const cloneDeep = createCloneDeep()
 
 /** Read ncu options from cli */
-export async function getCliOptions() {
+export async function getCliOptions(): Promise<Partial<Options>> {
   // check if a new version of ncu is available and print an update notification
   //
   // For testing from specific versions, use:
@@ -259,8 +260,10 @@ ${chalk.dim.underline(
  * - `ncu()` function: business logic, returns RunResults
  * - `ncuCli()` function: CLI interface, prints to terminal only
  */
-export async function ncuCli(): Promise<void> {
+export async function ncuCli(internalInjectedCwd?: boolean): Promise<void> {
   const options = await getCliOptions()
+
+  options._internalInjectedCwd = internalInjectedCwd
 
   // Execute ncu with the cli flag enabled.
   // We do not return the result here; ncu handles the printing internally.

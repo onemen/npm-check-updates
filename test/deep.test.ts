@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 import removeDir from './helpers/removeDir'
-import { runNcuCli } from './helpers/runNcuCli'
+import { runNcuCli, runNcuCliSpawn } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -67,6 +67,25 @@ describe('--deep', function () {
     }
   })
 
+  it('CLI output is identical when run from cwd or via --cwd', async () => {
+    const tempDir = await setupDeepTest()
+
+    try {
+      const viaFlag = await runNcuCli(['--jsonAll', '--deep', '--cwd', tempDir])
+      const viaSpawn = await runNcuCliSpawn(['--jsonAll', '--deep'], { cwd: tempDir })
+
+      const jsonFlag = JSON.parse(viaFlag.stdout)
+      const jsonSpawn = JSON.parse(viaSpawn.stdout)
+
+      jsonSpawn.should.deep.equal(jsonFlag)
+      jsonSpawn.should.have.property('package.json')
+      jsonSpawn.should.have.property('packages/sub1/package.json')
+      jsonSpawn.should.have.property('packages/sub2/package.json')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
   it('ignore stdin if --packageFile glob is specified', async () => {
     const tempDir = await setupDeepTest()
     try {
@@ -103,9 +122,9 @@ describe('--deep', function () {
 
       const json = JSON.parse(stdout)
       // Make sure to fix windows paths with replace
-      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
-      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
-      json.should.have.property(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
+      json.should.have.property('packages/sub1/package.json')
+      json.should.have.property('packages/sub2/package.json')
+      json.should.have.property('package.json')
     } finally {
       await removeDir(tempDir)
     }

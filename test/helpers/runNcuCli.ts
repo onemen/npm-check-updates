@@ -3,6 +3,7 @@ import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import { format } from 'node:util'
 import prompts from 'prompts-ncu'
+import spawn from 'spawn-please'
 import { vi } from 'vitest'
 import { ncuCli } from '../../src/ncuCli'
 
@@ -21,6 +22,32 @@ interface RunCliOptions {
   silenceRunnerWarning?: boolean
 }
 
+/** shorten error message */
+function shorten(p: string) {
+  // Show only last 2 path segments for readability
+  const parts = p.replace(/\\/g, '/').split('/')
+  if (parts.length <= 2) return p
+  return `…/${parts.slice(-2).join('/')}`
+}
+
+/** Tests must not specify both --cwd and options.cwd */
+function validateCwdConflict(args: string[], options: RunCliOptions) {
+  if (!options.cwd) return
+
+  const index = args.indexOf('--cwd')
+  if (index === -1) return
+
+  const argValue = shorten(args[index + 1])
+  const optValue = shorten(options.cwd)
+
+  throw new Error(
+    `Conflicting cwd values:\n` +
+      `  options.cwd → ${optValue}\n` +
+      `  args --cwd → ${argValue}\n\n` +
+      `Tests must not specify both. Remove --cwd from args or remove options.cwd.`,
+  )
+}
+
 /**
  * Custom signaling class to cleanly pass successful early exits (like --help or --version)
  * back through the asynchronous control flow chain.
@@ -32,9 +59,10 @@ class ExitSuccessSignal extends Error {
   }
 }
 
-/** Detect warnings you to isolate */
-function isWarning(text: string): boolean {
+/** Detect logs that are not part of the output */
+function isGeneralLog(text: string): boolean {
   return (
+    text.startsWith('NCU_DEBUG:') ||
     text.includes('MaxListenersExceededWarning') ||
     text.includes('trace-warnings') ||
     text.includes('DeprecationWarning') ||
@@ -52,22 +80,24 @@ function mockOutput() {
   let general = ''
 
   const restoreStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
-    const text = chunk.toString()
-    if (isWarning(text)) general += text
+    const text = typeof chunk === 'string' ? chunk : format(chunk)
+    if (isGeneralLog(text)) general += text
     else stdout += text
     return true
   })
 
   const restoreStderr = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
-    const text = chunk.toString()
-    if (isWarning(text)) general += text
+    const text = typeof chunk === 'string' ? chunk : format(chunk)
+    if (isGeneralLog(text)) general += text
     else stderr += text
     return true
   })
 
   const restoreConsole = [
     vi.spyOn(console, 'log').mockImplementation((...a) => {
-      stdout += format(...a) + '\n'
+      const text = format(...a) + '\n'
+      if (isGeneralLog(text)) general += text
+      else stdout += text
     }),
     vi.spyOn(console, 'info').mockImplementation((...a) => {
       stdout += format(...a) + '\n'
@@ -115,6 +145,13 @@ function mockOutput() {
       return general
     },
 
+    get all() {
+      return {
+        stdout,
+        stderr,
+      }
+    },
+
     restore() {
       restoreStdout.mockRestore()
       restoreStderr.mockRestore()
@@ -122,14 +159,6 @@ function mockOutput() {
       restoreExit.mockRestore()
     },
   }
-}
-
-/** shorten error message */
-function shorten(p: string) {
-  // Show only last 2 path segments for readability
-  const parts = p.replace(/\\/g, '/').split('/')
-  if (parts.length <= 2) return p
-  return `…/${parts.slice(-2).join('/')}`
 }
 
 /**
@@ -144,23 +173,10 @@ function shorten(p: string) {
  * @returns An object containing the accumulated `stdout` and `stderr` strings.
  */
 export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
+  let internalInjectedCwd = false
   if (options.cwd) {
-    const existingIndex = args.indexOf('--cwd')
-
-    if (existingIndex !== -1) {
-      const existingValue = args[existingIndex + 1]
-
-      const shortOpt = shorten(options.cwd)
-      const shortArg = shorten(existingValue)
-
-      throw new Error(
-        `runNcuCli: conflicting cwd values\n` +
-          `  options.cwd → ${shortOpt}\n` +
-          `  args --cwd → ${shortArg}\n\n` +
-          `Tests must not specify both. Remove --cwd from args or remove options.cwd.`,
-      )
-    }
-
+    validateCwdConflict(args, options)
+    internalInjectedCwd = true
     args.push('--cwd', options.cwd)
   }
 
@@ -188,8 +204,8 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
   let hasError = false
 
   try {
-    await ncuCli()
-    return { stdout: out.stdout, stderr: out.stderr }
+    await ncuCli(internalInjectedCwd)
+    return out.all
   } catch (error: any) {
     // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
     if (options.rejectOnError !== false && error && !(error instanceof ExitSuccessSignal)) {
@@ -197,7 +213,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       const errorMessage = out.stderr || error?.message || String(error)
       throw new Error(errorMessage, { cause: error })
     }
-    return { stdout: out.stdout, stderr: out.stderr }
+    return out.all
   } finally {
     if (hasError) {
       // ⏳ Give the async event loop one tick to finish flushing
@@ -218,4 +234,31 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       process.stdout.write(`\n[General Logs]:\n${out.generalLogs}\n`)
     }
   }
+}
+
+/**
+ * runNcuCliSpawn
+ *
+ * Purpose:
+ * Execute the real built CLI (`build/cli.js`) in a separate Node process.
+ * This allows tests to run the CLI exactly as a user would, with full
+ * argument parsing, real exit codes, and an isolated working directory.
+ *
+ * Unlike runNcuCli (which runs in‑process), this version:
+ * • does NOT load TypeScript or Vite
+ * • does NOT affect coverage
+ * • does NOT change the parent process cwd
+ * • is fast because it runs the compiled JS directly
+ *
+ * Usage:
+ * runNcuCliSpawn(['--doctor', '--packageFile', 'package.json'], { cwd: '...' })
+ */
+export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions = {}) {
+  const bin = path.resolve(__dirname, '../../build/cli.js')
+  return spawn(
+    'node',
+    [bin, ...args],
+    { ...(options.stdin ? { stdin: options.stdin } : null) },
+    { ...options, stdin: undefined },
+  )
 }
