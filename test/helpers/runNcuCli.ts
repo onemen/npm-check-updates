@@ -124,6 +124,14 @@ function mockOutput() {
   }
 }
 
+/** shorten error message */
+function shorten(p: string) {
+  // Show only last 2 path segments for readability
+  const parts = p.replace(/\\/g, '/').split('/')
+  if (parts.length <= 2) return p
+  return `…/${parts.slice(-2).join('/')}`
+}
+
 /**
  * Executes the NCU CLI in-process for testing.
  * Simulates a full command-line execution by forwarding arguments directly to the
@@ -136,14 +144,32 @@ function mockOutput() {
  * @returns An object containing the accumulated `stdout` and `stderr` strings.
  */
 export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
+  if (options.cwd) {
+    const existingIndex = args.indexOf('--cwd')
+
+    if (existingIndex !== -1) {
+      const existingValue = args[existingIndex + 1]
+
+      const shortOpt = shorten(options.cwd)
+      const shortArg = shorten(existingValue)
+
+      throw new Error(
+        `runNcuCli: conflicting cwd values\n` +
+          `  options.cwd → ${shortOpt}\n` +
+          `  args --cwd → ${shortArg}\n\n` +
+          `Tests must not specify both. Remove --cwd from args or remove options.cwd.`,
+      )
+    }
+
+    args.push('--cwd', options.cwd)
+  }
+
   const original = {
     argv: process.argv,
-    cwd: process.cwd(),
     env: { ...process.env },
     stdin: process.stdin,
   }
 
-  if (options.cwd) process.chdir(options.cwd)
   if (options.env) Object.assign(process.env, options.env)
   if (options.inject) prompts.inject(options.inject)
 
@@ -182,7 +208,6 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
 
     try {
       process.argv = original.argv
-      if (process.cwd() !== original.cwd) process.chdir(original.cwd)
       Object.defineProperty(process, 'stdin', { value: original.stdin, configurable: true })
       for (const key in options.env) process.env[key] = original.env[key]
     } catch (error) {
