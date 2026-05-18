@@ -41,6 +41,19 @@ describe('peer dependencies', function () {
   })
 
   it('peer dependencies are ignored by default', async () => {
+    const stub = stubVersions({
+      'ncu-test-peer': {
+        version: '1.0.0',
+        versions: { '1.0.0': { version: '1.0.0' } as Packument },
+      },
+      'ncu-test-return-version': {
+        version: '2.0.0',
+        versions: {
+          '1.0.0': { version: '1.0.0' } as Packument,
+          '2.0.0': { version: '2.0.0' } as Packument,
+        },
+      },
+    })
     const upgrades = await ncu({
       packageData: {
         dependencies: {
@@ -52,9 +65,23 @@ describe('peer dependencies', function () {
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '2.0.0',
     })
+    stub.restore()
   })
 
   it('peer dependencies are checked when using option peer', async () => {
+    const stub = stubVersions({
+      'ncu-test-peer': {
+        version: '1.0.0',
+        versions: { '1.0.0': { version: '1.0.0' } as Packument },
+      },
+      'ncu-test-return-version': {
+        version: '1.1.0',
+        versions: {
+          '1.0.0': { version: '1.0.0' } as Packument,
+          '1.1.0': { version: '1.1.0' } as Packument,
+        },
+      },
+    })
     const upgrades = await ncu({
       peer: true,
       packageData: {
@@ -67,9 +94,26 @@ describe('peer dependencies', function () {
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '1.1.0',
     })
+    stub.restore()
   })
 
   it('peer dependencies are checked iteratively when using option peer', async () => {
+    const stub = stubVersions({
+      'ncu-test-peer-update': {
+        version: '1.1.0',
+        versions: {
+          '1.0.0': { version: '1.0.0' } as Packument,
+          '1.1.0': { version: '1.1.0' } as Packument,
+        },
+      },
+      'ncu-test-return-version': {
+        version: '1.1.0',
+        versions: {
+          '1.0.0': { version: '1.0.0' } as Packument,
+          '1.1.0': { version: '1.1.0' } as Packument,
+        },
+      },
+    })
     const upgrades = await ncu({
       peer: true,
       packageData: {
@@ -83,9 +127,21 @@ describe('peer dependencies', function () {
       'ncu-test-return-version': '1.1.0',
       'ncu-test-peer-update': '1.1.0',
     })
+    stub.restore()
   })
 
   it('circular peer dependencies are ignored', async () => {
+    const vitest = {
+      version: '1.6.0',
+      versions: {
+        '1.3.1': { version: '1.3.1' } as Packument,
+        '1.6.0': { version: '1.6.0' } as Packument,
+      },
+    }
+    const stub = stubVersions({
+      vitest,
+      '@vitest/ui': { ...vitest },
+    })
     const upgrades = await ncu({
       peer: true,
       packageData: {
@@ -96,6 +152,7 @@ describe('peer dependencies', function () {
       },
     })
     upgrades!.should.contain.keys('@vitest/ui', 'vitest')
+    stub.restore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1437
