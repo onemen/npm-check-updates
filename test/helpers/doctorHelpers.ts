@@ -138,7 +138,7 @@ export function createNcuRegExp(input: string): RegExp {
 
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
-  it.only('upgrade dependencies when tests pass', async function () {
+  it('upgrade dependencies when tests pass', async function () {
     const cwd = await setupTempFolder('pass', packageManager)
     const pkgPath = path.join(cwd, 'package.json')
     const lockfilePath = path.join(

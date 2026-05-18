@@ -9,7 +9,7 @@ import programError from './programError'
 const loadPackageInfoFromFile = async (options: Options, filepath: string): Promise<PackageInfo> => {
   let pkg: PackageFile, pkgFile: string
 
-  const fullpath = path.resolve(options.cwd || process.cwd(), filepath).replace(/\\/g, '/')
+  const fullpath = path.resolve(options.cwd || process.cwd(), filepath)
 
   // assert package.json
   try {
@@ -23,7 +23,7 @@ const loadPackageInfoFromFile = async (options: Options, filepath: string): Prom
     name: undefined, // defined by workspace code only
     pkg,
     pkgFile,
-    filepath: !options.cwd ? filepath : fullpath,
+    filepath: !options.cwd ? filepath : fullpath.replace(/\\/g, '/'),
   }
 }
 

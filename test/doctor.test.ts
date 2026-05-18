@@ -284,7 +284,7 @@ else {
     })
   })
 
-  describe.skip('yarn', () => {
+  describe('yarn', () => {
     testPass({ packageManager: 'yarn' })
     testFail({ packageManager: 'yarn' })
   })
