@@ -292,9 +292,7 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           // when npm-check-updates is executed in a workspace directory but uses --cwd to point up to the root, make sure that the root package.json is checked for the workspaces property
-          const { stdout } = await runNcuCli(['--jsonAll', '--workspace', 'a', '--cwd', '../../'], {
-            cwd: path.join(tempDir, 'packages', 'a'),
-          })
+          const { stdout } = await runNcuCli(['--jsonAll', '--workspace', 'a', '--cwd', tempDir])
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')

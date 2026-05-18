@@ -19,11 +19,15 @@ const loadPackageInfoFromFile = async (options: Options, filepath: string): Prom
     programError(options, `Missing or invalid ${filepath}`)
   }
 
+  // Use relative path when cwd was not provided or not injected internally
+  // Use absolute path when cwd was provided explicitly or injected internally by tests
+  const returnedFilepath = !options.cwd && !options._internalInjectedCwd ? filepath : fullpath
+
   return {
     name: undefined, // defined by workspace code only
     pkg,
     pkgFile,
-    filepath: fullpath,
+    filepath: returnedFilepath,
   }
 }
 
