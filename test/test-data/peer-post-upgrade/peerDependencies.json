@@ -1,0 +1,96 @@
+{
+  "ncu-test-peer": {
+    "1.0.0": {
+      "ncu-test-return-version": "1.x"
+    }
+  },
+  "ncu-test-return-version": {
+    "1.0.0": {},
+    "1.1.0": {},
+    "1.0.1": {},
+    "catalog:": {
+      "error": {
+        "code": "EUNSUPPORTEDPROTOCOL",
+        "summary": "Unsupported URL Type \"catalog:\": catalog:",
+        "detail": ""
+      }
+    }
+  },
+  "ncu-test-peer-update": {
+    "1.0.0": {
+      "ncu-test-return-version": "1.0.x"
+    },
+    "1.1.0": {
+      "ncu-test-return-version": "1.1.x"
+    }
+  },
+  "@vitest/ui": {
+    "1.3.1": {
+      "vitest": "1.3.1"
+    },
+    "4.1.6": {
+      "vitest": "4.1.6"
+    },
+    "1.6.0": {
+      "vitest": "1.6.0"
+    }
+  },
+  "vitest": {
+    "1.3.1": {
+      "jsdom": "*",
+      "happy-dom": "*",
+      "@types/node": "^18.0.0 || >=20.0.0",
+      "@vitest/browser": "1.3.1",
+      "@edge-runtime/vm": "*"
+    },
+    "4.1.6": {
+      "@edge-runtime/vm": "*",
+      "@opentelemetry/api": "^1.9.0",
+      "@types/node": "^20.0.0 || ^22.0.0 || >=24.0.0",
+      "happy-dom": "*",
+      "jsdom": "*",
+      "vite": "^6.0.0 || ^7.0.0 || ^8.0.0",
+      "@vitest/browser-playwright": "4.1.6",
+      "@vitest/browser-preview": "4.1.6",
+      "@vitest/coverage-v8": "4.1.6",
+      "@vitest/browser-webdriverio": "4.1.6",
+      "@vitest/ui": "4.1.6",
+      "@vitest/coverage-istanbul": "4.1.6"
+    },
+    "1.6.0": {
+      "jsdom": "*",
+      "happy-dom": "*",
+      "@vitest/ui": "1.6.0",
+      "@types/node": "^18.0.0 || >=20.0.0",
+      "@vitest/browser": "1.6.0",
+      "@edge-runtime/vm": "*"
+    }
+  },
+  "@libraries/project-4-utils": {
+    "git+gitlab.com/projects/libraries/project-4-utils.git": {
+      "error": {
+        "code": "ENOENT",
+        "summary": "Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\code\\ncu\\npm-check-updates\\git+gitlab.com\\projects\\libraries\\project-4-utils.git\\package.json'",
+        "detail": "This is related to npm not being able to find a file."
+      }
+    }
+  },
+  "eslint": {
+    "8.57.0": {}
+  },
+  "eslint-plugin-import": {
+    "2.29.1": {
+      "eslint": "^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8"
+    }
+  },
+  "eslint-plugin-unused-imports": {
+    "3.0.0": {
+      "eslint": "^8.0.0",
+      "@typescript-eslint/eslint-plugin": "^6.0.0"
+    },
+    "4.0.0": {
+      "eslint": "9",
+      "@typescript-eslint/eslint-plugin": "8"
+    }
+  }
+}
