@@ -24,8 +24,7 @@ const mockNpmVersions = {
   'ncu-test-v2': '2.0.0',
 }
 
-// TODO skip until it can work with --cwd argument
-describe.skip('doctor', function () {
+describe('doctor', function () {
   // 3 min timeout
 
   let stub: { restore: () => void }
@@ -285,7 +284,7 @@ else {
     })
   })
 
-  describe('yarn', () => {
+  describe.skip('yarn', () => {
     testPass({ packageManager: 'yarn' })
     testFail({ packageManager: 'yarn' })
   })
