@@ -267,7 +267,6 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         }
         return {
           ...packages,
-          // index by relative path if cwd was specified
           [path
             .relative(path.resolve(pkgOptions.cwd || './'), indexKey)
             // convert Windows path to *nix path for consistency
