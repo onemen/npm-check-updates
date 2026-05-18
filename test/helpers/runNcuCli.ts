@@ -173,10 +173,8 @@ function mockOutput() {
  * @returns An object containing the accumulated `stdout` and `stderr` strings.
  */
 export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
-  let internalInjectedCwd = false
   if (options.cwd) {
     validateCwdConflict(args, options)
-    internalInjectedCwd = true
     args.push('--cwd', options.cwd)
   }
 
@@ -204,7 +202,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
   let hasError = false
 
   try {
-    await ncuCli(internalInjectedCwd)
+    await ncuCli()
     return out.all
   } catch (error: any) {
     // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules

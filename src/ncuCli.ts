@@ -260,10 +260,8 @@ ${chalk.dim.underline(
  * - `ncu()` function: business logic, returns RunResults
  * - `ncuCli()` function: CLI interface, prints to terminal only
  */
-export async function ncuCli(internalInjectedCwd?: boolean): Promise<void> {
+export async function ncuCli(): Promise<void> {
   const options = await getCliOptions()
-
-  options._internalInjectedCwd = internalInjectedCwd
 
   // Execute ncu with the cli flag enabled.
   // We do not return the result here; ncu handles the printing internally.
