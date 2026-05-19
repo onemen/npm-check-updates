@@ -782,6 +782,10 @@ async function spawnNpm(
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
+  console.trace()
+  console.log(new Error('spawnNpm called with args: ' + JSON.stringify(args)).stack)
+  console.log('running original spawnNpm !!!!!\n' + JSON.stringify(args))
+
   const { stdout } = await spawnCommand('npm', fullArgs, spawnPleaseOptions, spawnOptions)
   return stdout
 }

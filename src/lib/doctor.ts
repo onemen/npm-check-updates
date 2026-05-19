@@ -19,43 +19,44 @@ import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
-/** Run npm, yarn, pnpm, or bun. */
-const npm = (
-  args: string[],
-  options: Options,
-  print?: boolean,
-  { spawnOptions, spawnPleaseOptions }: { spawnOptions?: SpawnOptions; spawnPleaseOptions?: SpawnPleaseOptions } = {},
-): Promise<string> => {
-  if (print) {
-    console.log(chalk.blue([options.packageManager, ...args].join(' ')))
-  }
+export const pm = {
+  /** Spawns a package manager command (npm, pnpm, yarn, bun) */
+  async run(
+    args: string[],
+    options: Options,
+    print?: boolean,
+    extraOptions: { spawnOptions?: SpawnOptions; spawnPleaseOptions?: SpawnPleaseOptions } = {},
+  ): Promise<string> {
+    if (print) {
+      console.log(chalk.blue([options.packageManager, ...args].join(' ')))
+    }
 
-  const spawnOptionsMerged = {
-    cwd: options.cwd || process.cwd(),
-    env: {
-      ...process.env,
-      // TODO: Why does CI break pnpm install?
-      ...(options.packageManager !== 'pnpm' ? { CI: '1' } : null),
-      FORCE_COLOR: '1',
-      ...spawnOptions?.env,
-    },
-    ...spawnOptions,
-  }
+    const spawnOptionsMerged = {
+      cwd: options.cwd || process.cwd(),
+      env: {
+        ...process.env,
+        ...(options.packageManager !== 'pnpm' ? { CI: '1' } : null),
+        FORCE_COLOR: '1',
+        ...extraOptions.spawnOptions?.env,
+      },
+      ...extraOptions.spawnOptions,
+    }
 
-  const npmOptions = {
-    ...(options.global ? { global: true } : null),
-    ...(options.prefix ? { prefix: options.prefix } : null),
-  }
+    const npmOptions = {
+      ...(options.global ? { global: true } : null),
+      ...(options.prefix ? { prefix: options.prefix } : null),
+    }
 
-  return (
-    options.packageManager === 'pnpm'
-      ? spawnPnpm
-      : options.packageManager === 'yarn'
-        ? spawnYarn
-        : options.packageManager === 'bun'
-          ? spawnBun
-          : spawnNpm
-  )(args, npmOptions, spawnPleaseOptions, spawnOptionsMerged)
+    return (
+      options.packageManager === 'pnpm'
+        ? spawnPnpm
+        : options.packageManager === 'yarn'
+          ? spawnYarn
+          : options.packageManager === 'bun'
+            ? spawnBun
+            : spawnNpm
+    )(args, npmOptions, extraOptions.spawnPleaseOptions, spawnOptionsMerged)
+  },
 }
 
 /** Load and validate package file and tests. */
@@ -121,7 +122,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       console.log(chalk.blue(options.doctorInstall))
       await spawn(installCommand, testArgs, {}, { cwd })
     } else {
-      await npm(['install'], options, true)
+      await pm.run(['install'], options, true)
     }
   }
 
@@ -149,7 +150,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       console.log(chalk.blue(options.doctorTest))
       await spawn(testCommand, testArgs, spawnPleaseOptions, { cwd })
     } else {
-      await npm(['run', 'test'], options, true, { spawnPleaseOptions })
+      await pm.run(['run', 'test'], options, true, { spawnPleaseOptions })
     }
   }
 
@@ -270,7 +271,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     for ([name, version] of Object.entries(upgrades)) {
       try {
         // install single dependency
-        await npm(
+        await pm.run(
           [
             ...(options.packageManager === 'yarn' ||
             options.packageManager === 'pnpm' ||
@@ -287,7 +288,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // https://github.com/raineorshine/npm-check-updates/issues/1170
         if (pkg.scripts?.prepare) {
           try {
-            await npm(['run', 'prepare'], options, true)
+            await pm.run(['run', 'prepare'], options, true)
           } catch (e) {
             console.error(chalk.red('Prepare script failed'))
             throw e
