@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
-import { testFail, testPass } from '../helpers/doctorHelpers'
+import { sandbox, testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -49,7 +49,10 @@ describe('bun', function () {
 
     let stub: { restore: () => void }
     beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-    afterAll(() => stub.restore())
+    afterAll(async () => {
+      stub.restore()
+      await sandbox.cleanup()
+    })
 
     testPass({ packageManager: 'bun' })
     testFail({ packageManager: 'bun' })

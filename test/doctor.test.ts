@@ -5,15 +5,7 @@ import path from 'path'
 import spawnPlease from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
-import {
-  cleanupFixtureCache,
-  cleanupTempFolder,
-  createNcuRegExp,
-  setTrackedTempFolder,
-  setupTempFolder,
-  testFail,
-  testPass,
-} from './helpers/doctorHelpers'
+import { createNcuRegExp, sandbox, testFail, testPass } from './helpers/doctorHelpers'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
@@ -25,50 +17,20 @@ const mockNpmVersions = {
 }
 
 describe('doctor', function () {
-  // 3 min timeout
-
   let stub: { restore: () => void }
-  let originalEnv: NodeJS.ProcessEnv
-  let testEnv: Record<string, string>
-  const YARN_CACHE_PATH = path.join(os.tmpdir(), `ncu-test-yarn-cache-${Math.random().toString(36).slice(2, 7)}`)
 
   beforeAll(async () => {
-    originalEnv = { ...process.env }
     stub = stubVersions(mockNpmVersions, { spawn: true })
-    // Speed up package manager commands spawned by doctor mode during tests
-    await fs.mkdir(YARN_CACHE_PATH, { recursive: true })
-    testEnv = {
-      npm_config_prefer_offline: 'true',
-      npm_config_audit: 'false',
-      npm_config_fund: 'false',
-      npm_config_update_notifier: 'false',
-      npm_config_loglevel: 'error',
-      yarn_config_prefer_offline: 'true',
-      YARN_CACHE_FOLDER: YARN_CACHE_PATH,
-      TMPDIR: YARN_CACHE_PATH,
-      TEMP: YARN_CACHE_PATH,
-      TMP: YARN_CACHE_PATH,
-    }
-    Object.assign(process.env, testEnv)
   })
   afterAll(async () => {
     stub.restore()
-
-    for (const key in testEnv) process.env[key] = originalEnv[key]
-
-    await cleanupFixtureCache()
-    await fs.rm(YARN_CACHE_PATH, { recursive: true, force: true }).catch(() => {})
-  })
-
-  // Automatically clears all tracked temporary directories after every single test
-  afterEach(async () => {
-    await cleanupTempFolder()
+    await sandbox.cleanup()
   })
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
-      const cwd = await setupTempFolder('nopackagefile')
+      const cwd = await sandbox.createTestFolder('nopackagefile')
       const { stdout } = await runNcuCli(['--doctor'], { cwd })
       return stripAnsi(stdout).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
@@ -78,12 +40,12 @@ describe('doctor', function () {
     })
 
     it('throw an error if there is no package file', async () => {
-      const cwd = await setupTempFolder('nopackagefile')
+      const cwd = await sandbox.createTestFolder('nopackagefile')
       return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
-      const cwd = await setupTempFolder('notestscript')
+      const cwd = await sandbox.createTestFolder('notestscript')
       return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
     })
 
@@ -102,7 +64,7 @@ describe('doctor', function () {
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async function () {
-      const cwd = await setupTempFolder('options')
+      const cwd = await sandbox.createTestFolder('options')
       const pkgPath = path.join(cwd, 'package.json')
 
       let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--filter', 'ncu-test-v2'], {
@@ -133,7 +95,7 @@ describe('doctor', function () {
     })
 
     it('custom install script with --doctorInstall', async function () {
-      const cwd = await setupTempFolder('custominstall')
+      const cwd = await sandbox.createTestFolder('custominstall')
       const pkgPath = path.join(cwd, 'package.json')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
@@ -164,7 +126,7 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest', async function () {
-      const cwd = await setupTempFolder('customtest')
+      const cwd = await sandbox.createTestFolder('customtest')
       const pkgPath = path.join(cwd, 'package.json')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
@@ -195,7 +157,7 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
-      const cwd = await setupTempFolder('customtest2')
+      const cwd = await sandbox.createTestFolder('customtest2')
       const pkgPath = path.join(cwd, 'package.json')
       const echoPath = path.join(cwd, 'echo.js')
 
@@ -217,8 +179,9 @@ describe('doctor', function () {
     })
 
     it('handle failed prepare script', async () => {
+      // TODO fix this to use sandbox
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-      setTrackedTempFolder(tempDir)
+      // setTrackedTempFolder(tempDir)
       const pkgPath = path.join(tempDir, 'package.json')
 
       // package.json
