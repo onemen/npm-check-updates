@@ -49,10 +49,10 @@ describe('bun', function () {
   describe('doctor', function () {
     // Note: Vitest has testTimeout in config; per-suite timeout not needed here
 
-    let stub: { restore: () => void }
+    let stub: { mockRestore: () => void }
     beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
     afterAll(async () => {
-      stub.restore()
+      stub.mockRestore()
       await sandbox.cleanup()
     })
 

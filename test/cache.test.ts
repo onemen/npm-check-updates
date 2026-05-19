@@ -48,7 +48,7 @@ describe('cache', () => {
       })
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -111,7 +111,7 @@ describe('cache', () => {
       })
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -135,7 +135,7 @@ describe('cache', () => {
       noCacheFile = true
     }
     expect(noCacheFile).eq(true)
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('expires cache when schema version does not match', async () => {
@@ -162,7 +162,7 @@ describe('cache', () => {
       expect(newCache.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).eq('2.0.0')
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -188,7 +188,7 @@ describe('cache', () => {
       expect(cacheData.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).eq('2.0.0')
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
-      stub.restore()
+      stub.mockRestore()
     }
   })
 })

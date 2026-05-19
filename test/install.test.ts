@@ -32,7 +32,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -55,7 +55,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -79,7 +79,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
   })
@@ -109,7 +109,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -133,7 +133,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -159,7 +159,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -185,7 +185,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
   })

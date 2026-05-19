@@ -4,7 +4,7 @@ import stubVersions from './helpers/stubVersions'
 
 describe('filterVersion', () => {
   describe('module', () => {
-    let stub: { restore: () => void }
+    let stub: { mockRestore: () => void }
     beforeAll(() => {
       stub = stubVersions({
         'ncu-test-v2': '2.0.0',
@@ -12,7 +12,7 @@ describe('filterVersion', () => {
       })
     })
     afterAll(() => {
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('filter by package version with string', async () => {
@@ -31,7 +31,7 @@ describe('filterVersion', () => {
       upgraded!.should.have.property('ncu-test-v2')
       upgraded!.should.not.have.property('ncu-test-return-version')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('filter by package version with space-delimited list of strings', async () => {
@@ -128,7 +128,7 @@ describe('filterVersion', () => {
       const upgraded = JSON.parse(stdout)
       upgraded.should.have.property('ncu-test-v2')
       upgraded.should.have.property('ncu-test-10')
-      stub.restore()
+      stub.mockRestore()
     })
   })
 })
@@ -151,7 +151,7 @@ describe('rejectVersion', () => {
       const upgraded = JSON.parse(stdout)
       upgraded.should.not.have.property('ncu-test-v2')
       upgraded.should.not.have.property('ncu-test-10')
-      stub.restore()
+      stub.mockRestore()
     })
   })
 })

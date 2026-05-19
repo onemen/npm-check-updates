@@ -27,7 +27,7 @@ describe('--dep', () => {
     upgraded!.should.have.property('ncu-test-tag')
     upgraded!.should.not.have.property('ncu-test-10')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('only upgrade devDependencies with --dep dev', async () => {
@@ -39,7 +39,7 @@ describe('--dep', () => {
     upgraded!.should.have.property('ncu-test-tag')
     upgraded!.should.not.have.property('ncu-test-10')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
@@ -50,7 +50,7 @@ describe('--dep', () => {
     upgraded!.should.have.property('ncu-test-tag')
     upgraded!.should.have.property('ncu-test-10')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   describe('section isolation', () => {
@@ -97,7 +97,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -144,7 +144,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -191,7 +191,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
   })
@@ -234,7 +234,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -276,7 +276,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -315,7 +315,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -357,7 +357,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -398,7 +398,7 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
   })

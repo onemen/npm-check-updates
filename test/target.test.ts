@@ -552,7 +552,7 @@ describe('tags', () => {
 
     upgraded!.should.not.have.property('ncu-test-tag')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('do not downgrade to latest with lower version by default', async () => {
@@ -568,7 +568,7 @@ describe('tags', () => {
 
     upgraded!.should.not.have.property('ncu-test-tag')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('do not downgrade to latest with lower version with --target latest', async () => {
@@ -585,7 +585,7 @@ describe('tags', () => {
 
     upgraded!.should.not.have.property('ncu-test-tag')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('downgrade to latest with lower version with explicit --target @latest', async () => {
@@ -602,7 +602,7 @@ describe('tags', () => {
 
     upgraded['ncu-test-tag'].should.equal('^1.1.0')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('downgrade to latest with lower version with target function returning @latest', async () => {
@@ -619,6 +619,6 @@ describe('tags', () => {
 
     upgraded['ncu-test-tag'].should.equal('^1.1.0')
 
-    stub.restore()
+    stub.mockRestore()
   })
 }) // end 'tags'

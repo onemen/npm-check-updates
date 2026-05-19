@@ -42,7 +42,7 @@ async function groupTestScaffold(
     stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
   } finally {
     await removeDir(tempDir)
-    stub.restore()
+    stub.mockRestore()
   }
 }
 

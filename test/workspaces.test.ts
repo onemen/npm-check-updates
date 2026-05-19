@@ -106,7 +106,7 @@ const setupSymlinkedPackages = async (
   return tempDir
 }
 
-let stub: { restore: () => void }
+let stub: { mockRestore: () => void }
 
 describe('workspaces', () => {
   describe('stubbed', () => {
@@ -121,7 +121,7 @@ describe('workspaces', () => {
       )
     })
     afterAll(() => {
-      stub.restore()
+      stub.mockRestore()
     })
 
     describe('--workspaces', function () {

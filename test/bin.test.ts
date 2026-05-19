@@ -28,7 +28,7 @@ describe('bin', async function () {
     })
     const pkgData = JSON.parse(stdout)
     pkgData.should.have.property('ncu-test-v2')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('--loglevel verbose', async () => {
@@ -39,7 +39,7 @@ describe('bin', async function () {
     stdout.should.containIgnoreCase('Initializing')
     stdout.should.containIgnoreCase('Running in local mode')
     stdout.should.containIgnoreCase('Finding package file data')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('--verbose', async () => {
@@ -50,7 +50,7 @@ describe('bin', async function () {
     stdout.should.containIgnoreCase('Initializing')
     stdout.should.containIgnoreCase('Running in local mode')
     stdout.should.containIgnoreCase('Finding package file data')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('accept stdin', async () => {
@@ -59,7 +59,7 @@ describe('bin', async function () {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     })
     stdout.trim().should.startWith('express')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('reject out-of-date stdin with errorLevel 2', async () => {
@@ -67,7 +67,7 @@ describe('bin', async function () {
     await runNcuCli(['--stdin', '--errorLevel', '2'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('fall back to package.json search when receiving empty content on stdin', async () => {
@@ -77,7 +77,7 @@ describe('bin', async function () {
       .toString()
       .trim()
       .should.match(/^Checking .+package.json/)
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('use package.json in cwd by default', async () => {
@@ -85,7 +85,7 @@ describe('bin', async function () {
     const { stdout } = await runNcuCli(['--jsonUpgraded'], { cwd: path.join(__dirname, 'test-data/ncu') })
     const pkgData = JSON.parse(stdout)
     pkgData.should.have.property('express')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('throw error if there is no package', async () => {
@@ -114,7 +114,7 @@ describe('bin', async function () {
       pkgData.should.have.property('express')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -131,7 +131,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -151,7 +151,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -168,7 +168,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -187,7 +187,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -197,7 +197,7 @@ describe('bin', async function () {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     })
     stdout.trim().should.equal('')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('quote arguments with spaces in upgrade hint', async () => {
@@ -216,7 +216,7 @@ describe('bin', async function () {
       stdout.should.include('"ncu-test-v2 ncu-test-tag"')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -230,7 +230,7 @@ describe('bin', async function () {
     const { stdout } = await runNcuCli(['--stdin'], { stdin: JSON.stringify({ dependencies }) })
 
     stripAnsi(stdout)!.should.not.include('No package versions were returned.')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('combine boolean flags with arguments', async () => {
@@ -242,14 +242,14 @@ describe('bin', async function () {
     upgraded.should.deep.equal({
       'ncu-test-v2': '99.9.9',
     })
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('combine short boolean options with long options', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     const promise = runNcuCli(['-mp', 'foo'])
     await promise.should.eventually.be.rejectedWith('Invalid package manager: foo')
-    stub.restore()
+    stub.mockRestore()
   })
 
   // TODO
@@ -271,7 +271,7 @@ describe('bin', async function () {
       upgradedPkg.devDependencies.should.deep.equal({ 'ncu-test-v2': '99.9.9' })
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -293,7 +293,7 @@ describe('bin', async function () {
       }
       const { stdout } = await runNcuCli(['--stdin'], { stdin: JSON.stringify({ dependencies }) })
       stripAnsi(stdout).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  99.9.9')
-      stub.restore()
+      stub.mockRestore()
     })
   })
 

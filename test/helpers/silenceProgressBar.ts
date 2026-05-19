@@ -1,5 +1,4 @@
 import ProgressBar from 'progress'
-import Sinon from 'sinon'
 
 /**
  * Silences the ProgressBar output during tests.
@@ -16,17 +15,17 @@ import Sinon from 'sinon'
  * describe('my suite', () => {
  *   let pb: ReturnType<typeof silenceProgressBar>
  *   beforeEach(() => { pb = silenceProgressBar() })
- *   afterEach(() => pb.restore())
+ *   afterEach(() => pb.mockRestore())
  * })
  */
 export function silenceProgressBar() {
-  const stubs = [
-    Sinon.stub(ProgressBar.prototype, 'render'),
-    Sinon.stub(ProgressBar.prototype, 'tick'),
-    Sinon.stub(ProgressBar.prototype, 'update'),
+  const spies = [
+    vi.spyOn(ProgressBar.prototype, 'render').mockImplementation(() => {}),
+    vi.spyOn(ProgressBar.prototype, 'tick').mockImplementation(() => {}),
+    vi.spyOn(ProgressBar.prototype, 'update').mockImplementation(() => {}),
   ]
 
   return {
-    restore: () => stubs.forEach(s => s.restore()),
+    mockRestore: () => spies.forEach(s => s.mockRestore()),
   }
 }

@@ -6,7 +6,7 @@ describe('queryVersions', function () {
     const stub = stubVersions('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('valid packages', async () => {
@@ -14,7 +14,7 @@ describe('queryVersions', function () {
     const latestVersions = await queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
     latestVersions.should.have.property('npm')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('unavailable packages should be ignored', async () => {
@@ -35,7 +35,7 @@ describe('queryVersions', function () {
       },
     })
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('local file urls should be ignored', async () => {
@@ -50,14 +50,14 @@ describe('queryVersions', function () {
     const stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
     result.should.have.property('async')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('set the target to greatest', async () => {
     const stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
     result.should.have.property('async')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('return an error for an unsupported target', () => {

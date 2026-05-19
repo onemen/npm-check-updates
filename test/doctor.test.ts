@@ -17,7 +17,7 @@ const mockNpmVersions = {
 }
 
 describe('doctor', function () {
-  let stub: { restore: () => void }
+  let stub: { mockRestore: () => void }
 
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
@@ -25,7 +25,7 @@ describe('doctor', function () {
   })
 
   afterAll(async () => {
-    stub.restore()
+    stub.mockRestore()
     vi.restoreAllMocks()
     await sandbox.cleanup()
   })

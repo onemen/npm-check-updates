@@ -7,7 +7,7 @@ import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 describe('--interactive', () => {
-  let stub: { restore: () => void }
+  let stub: { mockRestore: () => void }
   beforeAll(() => {
     stub = stubVersions(
       {
@@ -21,7 +21,7 @@ describe('--interactive', () => {
     )
   })
   afterAll(() => {
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('prompt for each upgraded dependency', async () => {

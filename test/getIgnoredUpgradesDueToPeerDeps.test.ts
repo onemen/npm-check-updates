@@ -8,7 +8,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
   beforeEach(() => {
     pb = silenceProgressBar()
   })
-  afterEach(() => pb.restore())
+  afterEach(() => pb.mockRestore())
 
   it('ncu-test-peer-update', async () => {
     const data = await getIgnoredUpgradesDueToPeerDeps(
@@ -141,6 +141,6 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         to: '4.0.0',
       },
     })
-    stub.restore()
+    stub.mockRestore()
   })
 })

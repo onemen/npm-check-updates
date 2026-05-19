@@ -8,7 +8,7 @@ describe('getPeerDependenciesFromRegistry', function () {
     await chalkInit()
     pb = silenceProgressBar()
   })
-  afterEach(() => pb.restore())
+  afterEach(() => pb.mockRestore())
 
   it('single package', async () => {
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, {})

@@ -152,7 +152,7 @@ function mockOutput() {
       }
     },
 
-    restore() {
+    mockRestore() {
       restoreStdout.mockRestore()
       restoreStderr.mockRestore()
       restoreConsole.forEach(r => r.mockRestore())
@@ -218,7 +218,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       // any pending console logs before we restore the real terminal
       await new Promise(resolve => setTimeout(resolve, 0))
     }
-    out.restore()
+    out.mockRestore()
 
     try {
       process.argv = original.argv

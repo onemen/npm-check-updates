@@ -48,7 +48,7 @@ describe('filterResults', () => {
       expect(upgraded).to.not.have.property('ncu-test-return-version')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 })

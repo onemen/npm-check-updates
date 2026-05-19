@@ -8,7 +8,7 @@ describe('getEnginesNodeFromRegistry', function () {
     await chalkInit()
     pb = silenceProgressBar()
   })
-  afterEach(() => pb.restore())
+  afterEach(() => pb.mockRestore())
 
   it('single package', async () => {
     const data = await getEnginesNodeFromRegistry({ del: '2.0.0' }, {})

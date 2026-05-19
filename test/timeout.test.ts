@@ -25,6 +25,6 @@ describe('timeout', function () {
   it('completes successfully with timeout', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     await runNcuCli(['--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
-    stub.restore()
+    stub.mockRestore()
   })
 })

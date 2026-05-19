@@ -51,7 +51,7 @@ describe('format', () => {
       stdout.should.include('optional')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -181,7 +181,7 @@ describe('format', () => {
       stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -211,7 +211,7 @@ describe('format', () => {
       )
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -241,7 +241,7 @@ describe('format', () => {
       )
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -271,7 +271,7 @@ describe('format', () => {
       )
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 })

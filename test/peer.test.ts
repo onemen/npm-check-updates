@@ -65,7 +65,7 @@ describe('peer dependencies', function () {
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '2.0.0',
     })
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('peer dependencies are checked when using option peer', async () => {
@@ -94,7 +94,7 @@ describe('peer dependencies', function () {
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '1.1.0',
     })
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('peer dependencies are checked iteratively when using option peer', async () => {
@@ -127,7 +127,7 @@ describe('peer dependencies', function () {
       'ncu-test-return-version': '1.1.0',
       'ncu-test-peer-update': '1.1.0',
     })
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('circular peer dependencies are ignored', async () => {
@@ -152,7 +152,7 @@ describe('peer dependencies', function () {
       },
     })
     upgrades!.should.contain.keys('@vitest/ui', 'vitest')
-    stub.restore()
+    stub.mockRestore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1437
@@ -232,7 +232,7 @@ describe('peer dependencies', function () {
       },
     })
     upgrades!.should.have.all.keys('@vitest/ui', 'vitest')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('ignores if post upgrade peers are unmet - no upgrades', async () => {
@@ -277,7 +277,7 @@ describe('peer dependencies', function () {
       },
     })
     upgrades!.should.deep.equal({})
-    stub.restore()
+    stub.mockRestore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1604

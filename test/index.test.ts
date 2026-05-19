@@ -19,7 +19,7 @@ describe('run', function () {
       express: '^99.9.9',
     })
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('pass object as packageData', async () => {
@@ -34,7 +34,7 @@ describe('run', function () {
     })
     output!.should.have.property('MOCK_PACKAGE')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimal is true', async () => {
@@ -48,7 +48,7 @@ describe('run', function () {
 
     upgraded!.should.not.have.property('MOCK_PACKAGE')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
@@ -70,7 +70,7 @@ describe('run', function () {
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -203,7 +203,7 @@ describe('run', function () {
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
     })
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('update dependency when duplicate devDependency is up-to-date', async () => {
@@ -221,7 +221,7 @@ describe('run', function () {
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
     })
-    stub.restore()
+    stub.mockRestore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1129
@@ -287,7 +287,7 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -333,7 +333,7 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -377,7 +377,7 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -425,7 +425,7 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
   })
