@@ -452,8 +452,7 @@ export const npmApi = {} as NpmApi
 npmApi.findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   // If it's a test, completely bypass reading environment variables or local host files
   // (Unless the test explicitly passed a configPath to test a specific behavior)
-  const isTest = process.env.VITEST || process.env.NODE_ENV === 'test'
-  if (isTest && !configPath) {
+  if (process.env.NCU_TESTS && !configPath) {
     return {
       configNames: ['npmrc', '.npmrc'],
       envPrefix: {},

@@ -66,15 +66,17 @@ function getModuleMismatchError(errorMessage: string, filename: string): string 
  * where local `.ncurc` files would break test assertions.
  */
 function getTestStopDir(cwd: string): string | undefined {
-  const isTest = process.env.VITEST || process.env.NODE_ENV === 'test'
-  if (!isTest) return undefined
+  if (!process.env.NCU_TESTS) return undefined
 
   if (cwd.includes(os.tmpdir())) {
     return os.tmpdir()
   }
 
-  // Find where 'test' or 'src/test' ends in the path and establish that as the hard boundary
-  const testDirMarker = cwd.includes(path.join('src', 'test')) ? path.join('src', 'test') : 'test'
+  cwd = path.isAbsolute(cwd) ? cwd : path.resolve(process.cwd(), cwd)
+
+  // Find where 'test' or 'test/test-data' ends in the path and establish that as the hard boundary
+  const testData = path.join('test', 'test-data')
+  const testDirMarker = cwd.includes(testData) ? path.join('test', 'test-data') : 'test'
   const index = cwd.indexOf(testDirMarker)
 
   return index !== -1 ? cwd.slice(0, index + testDirMarker.length) : cwd

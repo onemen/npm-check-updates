@@ -183,25 +183,29 @@ export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions
   // Create a safe, blank home path in the OS temp directory
   const sandboxHome = path.join(os.tmpdir(), 'ncu-isolated-spawn-home')
 
-  // Build the clean environment mapping
+  const { inject, rejectOnError, stdin, ...testOptions } = options
+
+  // Prepare environment variables for the child process
   const isolatedEnv = {
-    ...process.env, // Inherit default environment variables
-    ...options.env, // Keep test-specific custom overrides if present
+    ...process.env,
+    ...testOptions?.env,
+    ...(inject ? { INJECT_PROMPTS: JSON.stringify(inject) } : null),
     HOME: sandboxHome,
     USERPROFILE: sandboxHome,
   }
 
-  // Explicitly remove any active shell overrides that bleed through from your machine
+  // Remove any active shell overrides that bleed through from host machine
   delete (isolatedEnv as any).npm_config_min_release_age
   delete (isolatedEnv as any).npm_config_userconfig
   delete (isolatedEnv as any).npm_config_globalconfig
 
-  const spawnPleaseOptions = { ...(options.stdin ? { stdin: options.stdin } : null) }
+  const spawnPleaseOptions = {
+    rejectOnError,
+    stdin,
+  }
 
-  // Extract or default the spawnOptions dictionary
   const spawnOptions = {
-    ...options,
-    stdin: undefined,
+    ...testOptions,
     env: isolatedEnv,
   }
 
@@ -221,9 +225,9 @@ export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions
  * @returns An object containing the accumulated `stdout` and `stderr` strings.
  */
 export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
-  // if (42) {
-  //   return runNcuCliSpawn(args, options)
-  // }
+  if (process.env.TEST_SPAWN_CLI) {
+    return runNcuCliSpawn(args, options)
+  }
 
   if (options.cwd) {
     validateCwdConflict(args, options)

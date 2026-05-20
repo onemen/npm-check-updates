@@ -26,6 +26,12 @@ import { type VersionSpec } from './types/VersionSpec'
 export { default as defineConfig } from './lib/defineConfig'
 export type { RcOptions } from './types/RcOptions'
 
+// Allow prompt injection from an environment variable for testing purposes
+// specifically used by spawned child-process tests where runner memory isolation applies
+if (process.env.INJECT_PROMPTS) {
+  prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
+}
+
 /** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
 let unhandledRejectionError = false
 
