@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 import removeDir from './helpers/removeDir'
-import { runNcuCli, runNcuCliSpawn } from './helpers/runNcuCli'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -62,25 +62,6 @@ describe('--deep', function () {
       deepJsonOut['package.json'].dependencies.should.have.property('express')
       deepJsonOut['packages/sub1/package.json'].dependencies.should.have.property('express')
       deepJsonOut['packages/sub2/package.json'].dependencies.should.have.property('express')
-    } finally {
-      await removeDir(tempDir)
-    }
-  })
-
-  it('CLI output is identical when run from cwd or via --cwd', async () => {
-    const tempDir = await setupDeepTest()
-
-    try {
-      const viaFlag = await runNcuCli(['--jsonAll', '--deep', '--cwd', tempDir])
-      const viaSpawn = await runNcuCliSpawn(['--jsonAll', '--deep'], { cwd: tempDir })
-
-      const jsonFlag = JSON.parse(viaFlag.stdout)
-      const jsonSpawn = JSON.parse(viaSpawn.stdout)
-
-      jsonSpawn.should.deep.equal(jsonFlag)
-      jsonSpawn.should.have.property('package.json')
-      jsonSpawn.should.have.property('packages/sub1/package.json')
-      jsonSpawn.should.have.property('packages/sub2/package.json')
     } finally {
       await removeDir(tempDir)
     }

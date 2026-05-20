@@ -203,9 +203,21 @@ describe('doctor', function () {
       )
 
       // prepare.js
+      // This script is intended for child process execution only,
+      // where the environment does not mock the 'npm run prepare' command.
       await fs.writeFile(
         path.join(tempDir, 'prepare.js'),
-        `// run by mocked 'npm run prepare' to simulate a failed install during doctor tests`,
+        `import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const ncuTestPkg = require('./node_modules/ncu-test-return-version/package.json');
+if (ncuTestPkg.version === '1.0.0') {
+  console.log('done')
+  process.exitCode = 0;
+}
+else {
+  console.error('Breaks with v2.x :(')
+  process.exitCode = 1;
+}`,
         'utf-8',
       )
 

@@ -174,10 +174,15 @@ function mockOutput() {
  * • does NOT load TypeScript or Vite
  * • does NOT affect coverage
  * • does NOT change the parent process cwd
- * • is fast because it runs the compiled JS directly
+ * • it is slower than runNcuCli
  *
  * Usage:
  * runNcuCliSpawn(['--doctor', '--packageFile', 'package.json'], { cwd: '...' })
+ *
+ * Note:
+ * This function exists primarily as a debug tool to simulate the previous
+ * behavior of testing in a child process. Ensure `process.env.TEST_SPAWN_CLI`
+ * is set to 'true' before running the tests.
  */
 export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions = {}) {
   // Create a safe, blank home path in the OS temp directory
