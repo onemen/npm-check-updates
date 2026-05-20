@@ -450,6 +450,16 @@ export const npmApi = {} as NpmApi
 
 /** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
 npmApi.findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
+  // If it's a test, completely bypass reading environment variables or local host files
+  // (Unless the test explicitly passed a configPath to test a specific behavior)
+  const isTest = process.env.VITEST || process.env.NODE_ENV === 'test'
+  if (isTest && !configPath) {
+    return {
+      configNames: ['npmrc', '.npmrc'],
+      envPrefix: {},
+    } as unknown as NpmConfig
+  }
+
   let config
 
   if (configPath) {

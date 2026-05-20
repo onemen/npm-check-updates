@@ -54,6 +54,32 @@ function getModuleMismatchError(errorMessage: string, filename: string): string 
   return null
 }
 
+/**
+ * Determines the directory boundary where configuration searching should stop during tests.
+ *
+ * This is necessary to isolate tests from the host machine's configuration files:
+ * 1. For dynamic tests running in temporary OS folders, it locks the search to the OS temp root.
+ * 2. For static fixture tests running inside the repository, it locks the search to the project's 'test' folder.
+ *
+ * This allows nested test setups to climb up and inherit mock configs inside their respective test trees,
+ * while preventing cosmiconfig from escaping into the project root or the developer's home directory
+ * where local `.ncurc` files would break test assertions.
+ */
+function getTestStopDir(cwd: string): string | undefined {
+  const isTest = process.env.VITEST || process.env.NODE_ENV === 'test'
+  if (!isTest) return undefined
+
+  if (cwd.includes(os.tmpdir())) {
+    return os.tmpdir()
+  }
+
+  // Find where 'test' or 'src/test' ends in the path and establish that as the hard boundary
+  const testDirMarker = cwd.includes(path.join('src', 'test')) ? path.join('src', 'test') : 'test'
+  const index = cwd.indexOf(testDirMarker)
+
+  return index !== -1 ? cwd.slice(0, index + testDirMarker.length) : cwd
+}
+
 /** Loads the .ncurc config file. */
 async function getNcuRc({
   configFileName,
@@ -71,16 +97,22 @@ async function getNcuRc({
 }) {
   const chalk = getChalk(options?.color)
 
-  const explorer = cosmiconfig('ncu', {
-    searchPlaces: ['.ncurc', '.ncurc.json', '.ncurc.yaml', '.ncurc.yml', '.ncurc.mjs', '.ncurc.cjs', '.ncurc.js'],
-    // Preserve historical ncu behavior from rc-config-loader: start from cwd and
-    // walk up parent directories so child packages can inherit a parent .ncurc.
-    searchStrategy: 'global',
-  })
-
   // Determine the base directory for searching or resolving
   const cwd =
     configFilePath || (global ? os.homedir() : packageFile ? path.dirname(packageFile) : options.cwd || process.cwd())
+
+  const explorer = cosmiconfig('ncu', {
+    searchPlaces: ['.ncurc', '.ncurc.json', '.ncurc.yaml', '.ncurc.yml', '.ncurc.mjs', '.ncurc.cjs', '.ncurc.js'],
+
+    // Preserve historical ncu behavior from rc-config-loader: start from cwd and
+    // walk up parent directories so child packages can inherit a parent .ncurc.
+    searchStrategy: 'global',
+
+    // Limits directory traversal during tests to prevent host config file leakage.
+    // Returns a path boundary (like os.tmpdir or the test folder) during test runs,
+    // and returns undefined in production to allow full system traversal.
+    stopDir: getTestStopDir(cwd),
+  })
 
   let rawResult: Awaited<ReturnType<typeof explorer.search>> = null
   let targetFile: string | undefined

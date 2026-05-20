@@ -1,3 +1,4 @@
+import os from 'node:os'
 import path, { dirname } from 'node:path'
 import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
@@ -162,6 +163,53 @@ function mockOutput() {
 }
 
 /**
+ * runNcuCliSpawn
+ *
+ * Purpose:
+ * Execute the real built CLI (`build/cli.js`) in a separate Node process.
+ * This allows tests to run the CLI exactly as a user would, with full
+ * argument parsing, real exit codes, and an isolated working directory.
+ *
+ * Unlike runNcuCli (which runs in‑process), this version:
+ * • does NOT load TypeScript or Vite
+ * • does NOT affect coverage
+ * • does NOT change the parent process cwd
+ * • is fast because it runs the compiled JS directly
+ *
+ * Usage:
+ * runNcuCliSpawn(['--doctor', '--packageFile', 'package.json'], { cwd: '...' })
+ */
+export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions = {}) {
+  // Create a safe, blank home path in the OS temp directory
+  const sandboxHome = path.join(os.tmpdir(), 'ncu-isolated-spawn-home')
+
+  // Build the clean environment mapping
+  const isolatedEnv = {
+    ...process.env, // Inherit default environment variables
+    ...options.env, // Keep test-specific custom overrides if present
+    HOME: sandboxHome,
+    USERPROFILE: sandboxHome,
+  }
+
+  // Explicitly remove any active shell overrides that bleed through from your machine
+  delete (isolatedEnv as any).npm_config_min_release_age
+  delete (isolatedEnv as any).npm_config_userconfig
+  delete (isolatedEnv as any).npm_config_globalconfig
+
+  const spawnPleaseOptions = { ...(options.stdin ? { stdin: options.stdin } : null) }
+
+  // Extract or default the spawnOptions dictionary
+  const spawnOptions = {
+    ...options,
+    stdin: undefined,
+    env: isolatedEnv,
+  }
+
+  const bin = path.resolve(__dirname, '../../build/cli.js')
+  return spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
+}
+
+/**
  * Executes the NCU CLI in-process for testing.
  * Simulates a full command-line execution by forwarding arguments directly to the
  * application entry point without mutating the global `process.argv`. Captures all
@@ -173,6 +221,10 @@ function mockOutput() {
  * @returns An object containing the accumulated `stdout` and `stderr` strings.
  */
 export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
+  // if (42) {
+  //   return runNcuCliSpawn(args, options)
+  // }
+
   if (options.cwd) {
     validateCwdConflict(args, options)
     args.push('--cwd', options.cwd)
@@ -232,31 +284,4 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       process.stdout.write(`\n[General Logs]:\n${out.generalLogs}\n`)
     }
   }
-}
-
-/**
- * runNcuCliSpawn
- *
- * Purpose:
- * Execute the real built CLI (`build/cli.js`) in a separate Node process.
- * This allows tests to run the CLI exactly as a user would, with full
- * argument parsing, real exit codes, and an isolated working directory.
- *
- * Unlike runNcuCli (which runs in‑process), this version:
- * • does NOT load TypeScript or Vite
- * • does NOT affect coverage
- * • does NOT change the parent process cwd
- * • is fast because it runs the compiled JS directly
- *
- * Usage:
- * runNcuCliSpawn(['--doctor', '--packageFile', 'package.json'], { cwd: '...' })
- */
-export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions = {}) {
-  const bin = path.resolve(__dirname, '../../build/cli.js')
-  return spawn(
-    'node',
-    [bin, ...args],
-    { ...(options.stdin ? { stdin: options.stdin } : null) },
-    { ...options, stdin: undefined },
-  )
 }
