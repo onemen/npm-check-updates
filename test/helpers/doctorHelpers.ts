@@ -1,10 +1,10 @@
 import fs from 'fs/promises'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import path from 'path'
-import { pm } from '../../src/lib/doctor.js'
-import { stripRange } from '../../src/lib/version-util.js'
+import { pm } from '../../src/lib/doctor'
+import { stripRange } from '../../src/lib/version-util'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
-import { TestSandbox } from './TestSandbox.js'
+import { TestSandbox } from './TestSandbox'
 import { runNcuCli } from './runNcuCli'
 
 export const sandbox = await TestSandbox.create('ncu-doctor-tests', '../test-data/doctor')
