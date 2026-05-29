@@ -6,19 +6,23 @@ import { stubGetGitTags } from './helpers/stubGetGitTags.js'
 import stubVersions from './helpers/stubVersions'
 
 describe('queryVersions', function () {
+  let stub: { mockRestore: () => void }
+
+  afterEach(() => {
+    stub?.mockRestore()
+  })
+
   it('valid single package', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
-    stub.mockRestore()
   })
 
   it('valid packages', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
     latestVersions.should.have.property('npm')
-    stub.mockRestore()
   })
 
   it('unavailable packages should be ignored', async () => {
@@ -27,7 +31,7 @@ describe('queryVersions', function () {
   })
 
   it('error while querying version should be handled', async () => {
-    const stub = stubVersions(() => {
+    stub = stubVersions(() => {
       throw new Error(`Package inaccessible`)
     })
 
@@ -38,8 +42,6 @@ describe('queryVersions', function () {
         version: null,
       },
     })
-
-    stub.mockRestore()
   })
 
   it('local file urls should be ignored', async () => {
@@ -51,14 +53,13 @@ describe('queryVersions', function () {
   })
 
   it('set the target explicitly to latest', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
     result.should.have.property('async')
-    stub.mockRestore()
   })
 
   it('set the target to greatest', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
     result.should.have.property('async')
     stub.mockRestore()
@@ -70,6 +71,11 @@ describe('queryVersions', function () {
   })
 
   it('npm aliases should upgrade the installed package', async () => {
+    stub = stubVersions({
+      name: 'ncu-test-v2',
+      version: '2.0.0',
+      time: { '2.0.0': '2023-08-12' },
+    })
     const result = await queryVersions(
       {
         request: 'npm:ncu-test-v2@1.0.0',
@@ -78,6 +84,7 @@ describe('queryVersions', function () {
     )
     result.should.deep.equal({
       request: {
+        time: '2023-08-12',
         version: 'npm:ncu-test-v2@2.0.0',
       },
     })

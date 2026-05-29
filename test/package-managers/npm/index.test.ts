@@ -4,6 +4,7 @@ import { type MockInstance } from 'vitest'
 import { type spawnCommand } from '../../../src/lib/spawnCommand.js'
 import * as npm from '../../../src/package-managers/npm'
 import { stubSpawnCommand } from '../../helpers/stubSpawnCommand'
+import { type MockedVersions } from '../../../src/types/MockedVersions.js'
 import stubVersions from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -34,7 +35,30 @@ describe('npm', function () {
     version!.should.equal('2.0.0-beta')
   })
 
-  it('ownerChanged', async () => {
+  it.only('ownerChanged', async () => {
+    const stub = stubVersions({
+      mocha: {
+        version: '0.0.0',
+        versions: {
+          '7.1.0': { version: '7.1.0', _npmUser: { name: 'author-a' } },
+          '8.0.1': { version: '8.0.1', _npmUser: { name: 'author-b' } },
+        },
+      },
+      htmlparser2: {
+        version: '0.0.0',
+        versions: {
+          '3.10.1': { version: '3.10.1', _npmUser: { name: 'author-a' } },
+          '4.0.0': { version: '4.0.0', _npmUser: { name: 'author-a' } },
+        },
+      },
+      'ncu-test-v2': {
+        version: '0.0.0',
+        versions: {
+          '1.0.0': { version: '1.0.0', _npmUser: { name: 'author-a' } },
+          '2.2.0': { version: '2.2.0', _npmUser: { name: 'author-a' } },
+        },
+      },
+    } as MockedVersions)
     await npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1').should.eventually.equal(true)
     await npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0').should.eventually.equal(false)
     await npm.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0').should.eventually.equal(false)

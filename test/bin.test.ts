@@ -14,11 +14,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('bin', async function () {
   it('fetch latest version from registry (not stubbed)', async () => {
+    const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
     const pkgData = JSON.parse(stdout)
     pkgData.should.have.property('ncu-test-v2')
+    stub.mockRestore()
   })
 
   it('output only upgraded with --jsonUpgraded', async () => {

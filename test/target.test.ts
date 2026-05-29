@@ -1,12 +1,35 @@
 import ncu from '../src/'
 import { type FilterFunction } from '../src/types/FilterFunction'
 import { type Index } from '../src/types/IndexType'
+import { type MockedVersions } from '../src/types/MockedVersions'
 import { type TargetFunction } from '../src/types/TargetFunction'
 import { type Version } from '../src/types/Version'
 import stubVersions from './helpers/stubVersions'
+import ncuMockPreData from './test-data/packages/ncu-mock-pre.json'
 
 // TODO: Mock based on real output of viewMany
 describe('target', () => {
+  let stub: { mockRestore: () => void }
+  beforeEach(() => {
+    stub = stubVersions({
+      chalk: '2.4.2',
+      'ncu-mock-pre': ncuMockPreData,
+      'ncu-test-semver': {
+        version: '0.0.0',
+        versions: [{ version: '1.0.0' }, { version: '1.0.1' }, { version: '1.1.0' }, { version: '1.2.0' }],
+      },
+      'ncu-test-pre1': '0.1.2',
+      'eslint-plugin-jsdoc': '36.1.1',
+      jsonlines: '0.1.1',
+      juggernaut: '2.1.1',
+      mocha: '8.4.0',
+    } as MockedVersions)
+  })
+
+  afterEach(() => {
+    stub.mockRestore()
+  })
+
   describe('minor', () => {
     it('do not update major versions with --target minor', async () => {
       const pkgData = await ncu({ target: 'minor', packageData: { dependencies: { chalk: '3.0.0' } } })

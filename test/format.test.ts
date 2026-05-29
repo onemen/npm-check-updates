@@ -68,11 +68,13 @@ describe('format', () => {
         }),
         'utf-8',
       )
+      const stub = stubVersions('2.0.0', { spawn: true })
       try {
         const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         stdout.should.include('https://npmdiff.dev/ncu-test-v2/1.0.0/2.0.0')
       } finally {
         await removeDir(tempDir)
+        stub.mockRestore()
       }
     })
 
@@ -89,12 +91,14 @@ describe('format', () => {
         }),
         'utf-8',
       )
+      const stub = stubVersions('1.1.0', { spawn: true })
       try {
         const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         // purposefully omit 'to' version since this is a live package
         stdout.should.include('https://npmdiff.dev/%40types%2Fjsonlines/0.1.0/')
       } finally {
         await removeDir(tempDir)
+        stub.mockRestore()
       }
     })
   })

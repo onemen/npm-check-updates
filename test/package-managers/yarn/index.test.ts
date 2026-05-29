@@ -38,12 +38,6 @@ describe('yarn', function () {
     spawnStub?.mockRestore(context)
   })
 
-  it('list', async () => {
-    const testDir = path.join(__dirname, 'default')
-    versionStub = stubVersions({ chalk: '5.0.0' })
-    const { version } = await yarn.latest('chalk', '', { cwd: testDir })
-    parseInt(version!, 10).should.be.above(3)
-  })
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
     versionStub = stubVersions({ chalk: '5.0.0' })

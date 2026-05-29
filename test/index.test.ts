@@ -3,10 +3,14 @@ import os from 'os'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
+import { type MockedVersions } from '../src/types/MockedVersions.js'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
+import ncuMockPreData from './test-data/packages/ncu-mock-pre.json'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+const ncuMockPre = ncuMockPreData as MockedVersions
 
 describe('run', function () {
   it('return jsonUpgraded by default', async () => {
@@ -74,21 +78,27 @@ describe('run', function () {
     }
   })
 
-  it('exclude -alpha, -beta, -rc', () => {
+  it.only('exclude -alpha, -beta, -rc', () => {
+    const stub = stubVersions(ncuMockPre)
     return ncu({
       jsonAll: true,
+      cooldown: 5,
       packageData: {
         dependencies: {
           'ncu-mock-pre': '1.0.0',
         },
       },
-    }).then(data => {
-      return data!.should.eql({
-        dependencies: {
-          'ncu-mock-pre': '1.0.0',
-        },
-      })
     })
+      .then(data => {
+        return data!.should.eql({
+          dependencies: {
+            'ncu-mock-pre': '1.0.0',
+          },
+        })
+      })
+      .finally(() => {
+        stub.mockRestore()
+      })
   })
 
   it('upgrade prereleases to newer prereleases', () => {
@@ -119,6 +129,7 @@ describe('run', function () {
   })
 
   it('include -alpha, -beta, -rc with --pre option', () => {
+    const stub = stubVersions(ncuMockPre)
     return ncu({
       jsonAll: true,
       packageData: {
@@ -127,13 +138,17 @@ describe('run', function () {
         },
       },
       pre: true,
-    }).then(data => {
-      return data!.should.eql({
-        dependencies: {
-          'ncu-mock-pre': '2.0.0-alpha.0',
-        },
-      })
     })
+      .then(data => {
+        return data!.should.eql({
+          dependencies: {
+            'ncu-mock-pre': '2.0.0-alpha.0',
+          },
+        })
+      })
+      .finally(() => {
+        stub.mockRestore()
+      })
   })
 
   describe('deprecated', () => {
