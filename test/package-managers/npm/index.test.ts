@@ -35,7 +35,7 @@ describe('npm', function () {
     version!.should.equal('2.0.0-beta')
   })
 
-  it.only('ownerChanged', async () => {
+  it('ownerChanged', async () => {
     const stub = stubVersions({
       mocha: {
         version: '0.0.0',

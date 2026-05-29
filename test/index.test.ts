@@ -78,7 +78,7 @@ describe('run', function () {
     }
   })
 
-  it.only('exclude -alpha, -beta, -rc', () => {
+  it('exclude -alpha, -beta, -rc', () => {
     const stub = stubVersions(ncuMockPre)
     return ncu({
       jsonAll: true,

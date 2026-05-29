@@ -2,7 +2,6 @@ import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import spawnPlease from 'spawn-please'
 import { format as timeAgoFormat } from 'timeago.js'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
@@ -106,19 +105,27 @@ describe('format', () => {
   // do not stubVersions here, because we need to test if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
+    const stub = stubVersions({
+      'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': timestamp } },
+    })
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
       },
     }
-    const { stdout } = await runNcuCli(['--format', 'time', '--stdin'], {
-      stdin: JSON.stringify(packageData),
-    })
-    const expectedString = timeAgoFormat(timestamp, 'en_US')
-    expect(stdout).contains(expectedString)
+    try {
+      const { stdout } = await runNcuCli(['--format', 'time', '--stdin'], {
+        stdin: JSON.stringify(packageData),
+      })
+      const expectedString = timeAgoFormat(timestamp, 'en_US')
+      expect(stdout).contains(expectedString)
+    } finally {
+      stub.mockRestore()
+    }
   })
 
   it('--format repo', async () => {
+    const stub = stubVersions({ 'modern-diacritics': '2.3.1' })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -130,16 +137,25 @@ describe('format', () => {
       }),
       'utf-8',
     )
+    const modernDiacriticsPath = path.join(tempDir, 'node_modules', 'modern-diacritics')
+    await fs.mkdir(modernDiacriticsPath, { recursive: true })
+    const modernDiacriticsPkgFile = path.join(modernDiacriticsPath, 'package.json')
+    await fs.writeFile(
+      modernDiacriticsPkgFile,
+      JSON.stringify({ repository: 'https://github.com/Mitsunee/modern-diacritics' }),
+      'utf-8',
+    )
     try {
-      await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await runNcuCli(['--format', 'repo'], { cwd: tempDir })
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await removeDir(tempDir)
+      stub.mockRestore()
     }
   })
 
   it('--format homepage', async () => {
+    const stub = stubVersions({ 'hosted-git-info': '10.1.1' })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -151,12 +167,20 @@ describe('format', () => {
       }),
       'utf-8',
     )
+    const modernDiacriticsPath = path.join(tempDir, 'node_modules', 'hosted-git-info')
+    await fs.mkdir(modernDiacriticsPath, { recursive: true })
+    const modernDiacriticsPkgFile = path.join(modernDiacriticsPath, 'package.json')
+    await fs.writeFile(
+      modernDiacriticsPkgFile,
+      JSON.stringify({ homepage: 'https://github.com/npm/hosted-git-info' }),
+      'utf-8',
+    )
     try {
-      await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await runNcuCli(['--format', 'homepage'], { cwd: tempDir })
       stdout.should.include('https://github.com/npm/hosted-git-info')
     } finally {
       await removeDir(tempDir)
+      stub.mockRestore()
     }
   })
 
