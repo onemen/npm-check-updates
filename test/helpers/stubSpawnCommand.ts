@@ -30,18 +30,9 @@ export async function stubSpawnCommand(fixtureName: string) {
   const fixturePath = path.resolve(__dirname, '..', 'fixtures', 'spawnCommand', `${normalizedName}.json`)
 
   let fixtures: Record<string, any> = {}
-  const fileExists = fs.existsSync(fixturePath)
+  let fixturesLoaded = false
+  let initialFixtures = '{}'
 
-  if (fileExists) {
-    fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'))
-  } else if (!process.env.NCU_SAVE_FIXTURES) {
-    throw new Error(
-      `Fixture not found: ${fixturePath}\n` +
-        `To generate this fixture, run the test with: NCU_SAVE_FIXTURES=true npm test`,
-    )
-  }
-
-  const initialFixtures = JSON.stringify(fixtures)
   const actualModule = await vi.importActual<typeof mod>('../../src/lib/spawnCommand')
   const original = actualModule.spawnCommand
 
@@ -49,6 +40,26 @@ export async function stubSpawnCommand(fixtureName: string) {
     .spyOn(mod, 'spawnCommand')
     .mockImplementation(
       async (command: string, args: string[], spawnPleaseOptions?: SpawnPleaseOptions, spawnOptions?: SpawnOptions) => {
+        const isPackageManagerInstall =
+          ['npm', 'pnpm', 'yarn', 'bun'].includes(command) && args.length === 1 && args[0] === 'install'
+
+        if (isPackageManagerInstall) {
+          return { stdout: 'packages installed successfully', stderr: '' }
+        }
+
+        if (!fixturesLoaded) {
+          if (fs.existsSync(fixturePath)) {
+            fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'))
+          } else if (!process.env.NCU_SAVE_FIXTURES) {
+            throw new Error(
+              `Fixture not found: ${fixturePath}\n` +
+                `To generate this fixture, run the test with: NCU_SAVE_FIXTURES=true npm test`,
+            )
+          }
+          initialFixtures = JSON.stringify(fixtures)
+          fixturesLoaded = true
+        }
+
         const key = createHash('sha256').update(JSON.stringify({ command, args })).digest('hex')
 
         const entry = fixtures[key]
@@ -93,7 +104,8 @@ export async function stubSpawnCommand(fixtureName: string) {
     }
 
     const isPassed = context?.task?.result?.state === 'pass'
-    const shouldSave = process.env.NCU_SAVE_FIXTURES && JSON.stringify(fixtures) !== initialFixtures && isPassed
+    const shouldSave =
+      process.env.NCU_SAVE_FIXTURES && fixturesLoaded && JSON.stringify(fixtures) !== initialFixtures && isPassed
 
     if (shouldSave) {
       const dir = path.dirname(fixturePath)
