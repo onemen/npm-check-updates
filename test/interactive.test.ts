@@ -1,7 +1,6 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import spawnPlease from 'spawn-please'
 import { type MockInstance } from 'vitest'
 import { type spawnCommand } from '../src/lib/spawnCommand.js'
 import removeDir from './helpers/removeDir'
@@ -151,8 +150,15 @@ describe('--interactive', () => {
       }),
       'utf-8',
     )
+    const modernDiacriticsPath = path.join(tempDir, 'node_modules', 'modern-diacritics')
+    await fs.mkdir(modernDiacriticsPath, { recursive: true })
+    const modernDiacriticsPkgFile = path.join(modernDiacriticsPath, 'package.json')
+    await fs.writeFile(
+      modernDiacriticsPkgFile,
+      JSON.stringify({ repository: 'https://github.com/Mitsunee/modern-diacritics' }),
+      'utf-8',
+    )
     try {
-      await spawnPlease('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await runNcuCli(['--interactive', '--format', 'repo'], {
         cwd: tempDir,
         inject: [['modern-diacritics'], true],
