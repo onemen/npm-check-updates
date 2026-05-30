@@ -1,0 +1,18 @@
+{
+  "0631a4ee3215f0832ce87bdd125a3d2455adcfc21fedcaf79a8f5dc74846e150": {
+    "stdout": "4.9.2\n",
+    "stderr": ""
+  },
+  "274d3a52f48482432f943848cff9981d427f093baf2bf7ebdf59929c22b62f8b": {
+    "stdout": "{\"name\":\"ncu-test-return-version\"}\n",
+    "stderr": ""
+  },
+  "817452b39f5de19c2898296857b10edc3a8ff72b9385c6478be1229fb23fbb4a": {
+    "stdout": "{\"name\":\"ncu-test-peer\",\"peerDependencies\":{\"ncu-test-return-version\":\"1.x\"}}\n",
+    "stderr": ""
+  },
+  "8ffdae86da6a217b6826d83d2cedd017790ab99868de9dfaa063b316482eb0e6": {
+    "stdout": "{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"Package not found\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Response Code: 404 (Not Found)\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Request Method: GET\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Request URL: https://registry.yarnpkg.com/fffffffffffff\"}\n",
+    "stderr": ""
+  }
+}

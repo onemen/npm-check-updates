@@ -3,6 +3,7 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
 import { mockPackageManagerRun, sandbox, testFail, testPass } from '../helpers/doctorHelpers'
+import { stubSpawnCommand } from '../helpers/stubSpawnCommand.js'
 import stubVersions from '../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -15,6 +16,9 @@ const mockNpmVersions = {
 }
 
 describe('bun', function () {
+  let versionStub: { mockRestore: () => void }
+  let spawnStub: StubWithSave
+
   // Use a synchronous check to fail the suite immediately if bun is missing
   beforeAll(function () {
     const result = spawnSync('bun', ['--version'], {
@@ -33,10 +37,20 @@ describe('bun', function () {
       )
     }
 
+    versionStub = stubVersions(mockNpmVersions, { spawn: true })
     mockPackageManagerRun()
   })
 
+  afterEach(async context => {
+    spawnStub?.mockRestore(context)
+  })
+
+  afterAll(async () => {
+    versionStub.mockRestore()
+  })
+
   it('list', async () => {
+    spawnStub = await stubSpawnCommand('bun list')
     const result = await bun.list({ cwd: __dirname })
     result.should.have.property('ncu-test-v2')
   })
@@ -49,10 +63,7 @@ describe('bun', function () {
   describe('doctor', function () {
     // Note: Vitest has testTimeout in config; per-suite timeout not needed here
 
-    let stub: { mockRestore: () => void }
-    beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
     afterAll(async () => {
-      stub.mockRestore()
       await sandbox.cleanup()
     })
 

@@ -1,0 +1,18 @@
+{
+  "0631a4ee3215f0832ce87bdd125a3d2455adcfc21fedcaf79a8f5dc74846e150": {
+    "stdout": "1.22.22\n",
+    "stderr": ""
+  },
+  "7561d2c7a244926a3325f928de59aba7ebfeb4ee42d9779905ac7a70d26a5480": {
+    "stdout": "{\"type\":\"inspect\"}\n",
+    "stderr": "(node:2616) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n"
+  },
+  "e8f57c5f9b82a9f0ad180fd5fdd1d9b363cfe31e27546fcd25da6f18a88b50d4": {
+    "stdout": "{\"type\":\"inspect\",\"data\":{\"ncu-test-return-version\":\"1.x\"}}\n",
+    "stderr": "(node:11888) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n"
+  },
+  "e6079f4a3d16e5797dca7af35cea9870950985935d44cb1189af1e51646d6810": {
+    "stdout": "",
+    "stderr": "(node:3636) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n{\"type\":\"error\",\"data\":\"Received invalid response from npm.\"}\n"
+  }
+}

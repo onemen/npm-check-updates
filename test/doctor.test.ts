@@ -6,7 +6,7 @@ import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import { pm } from '../src/lib/doctor'
 import { createNcuRegExp, mockPackageManagerRun, sandbox, testFail, testPass } from './helpers/doctorHelpers'
-import removeDir from './helpers/removeDir.js'
+import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 

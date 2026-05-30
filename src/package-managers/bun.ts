@@ -2,6 +2,7 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
+import { spawnCommand } from '../lib/spawnCommand.js'
 import { type Index } from '../types/IndexType'
 import { type NpmOptions } from '../types/NpmOptions'
 import { type Options } from '../types/Options'
@@ -20,7 +21,7 @@ async function spawnBun(
     ...(Array.isArray(args) ? args : [args]),
   ]
 
-  return spawn('bun', fullArgs, spawnPleaseOptions, spawnOptions)
+  return spawnCommand('bun', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /** Returns the global directory of bun. */

@@ -2,6 +2,9 @@ import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
+import { type MockedVersions } from '../../../src/types/MockedVersions'
+import { stubSpawnCommand } from '../../helpers/stubSpawnCommand'
+import stubVersions from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -26,36 +29,59 @@ const cleanEnv = {
 }
 
 describe('yarn', function () {
+  let versionStub: { mockRestore: () => void }
+  let spawnStub: StubWithSave
+  afterEach(context => {
+    versionStub?.mockRestore()
+    spawnStub?.mockRestore(context)
+  })
+
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
+    versionStub = stubVersions({ chalk: '5.0.0' })
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
 
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
+    versionStub = stubVersions({ chalk: '5.0.0' })
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
 
   it('greatest', async () => {
+    versionStub = stubVersions({ 'ncu-test-greatest-not-newest': '2.0.0-beta' })
     const { version } = await yarn.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })
 
   it('avoids deprecated', async () => {
     const testDir = path.join(__dirname, 'default')
+    versionStub = stubVersions({
+      version: '1.15.0',
+      versions: [
+        { version: '1.15.0', deprecated: true },
+        { version: '1.16.0', deprecated: true },
+        { version: '1.16.1', deprecated: true },
+        { version: '1.16.1-lts' },
+        { version: '2.0.0-next-4' },
+      ],
+      time: {},
+    } as MockedVersions)
     const { version } = await yarn.minor('popper.js', '1.15.0', { cwd: testDir, pre: true })
     version!.should.equal('1.16.1-lts')
   })
 
   it('"No lockfile" error should be thrown on list command when there is no lockfile', async () => {
+    spawnStub = await stubSpawnCommand('yarn No lockfile error')
     const testDir = path.join(__dirname, 'nolockfile')
     const lockFileErrorMessage = 'No lockfile in this directory. Run `yarn install` to generate one.'
     await yarn.list({ cwd: testDir }, localYarnSpawnOptions).should.eventually.be.rejectedWith(lockFileErrorMessage)
   })
 
   it('getPeerDependencies v1', async () => {
+    spawnStub = await stubSpawnCommand('yarn getPeerDependencies v1')
     const testDir = path.join(__dirname, 'default')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
@@ -66,6 +92,7 @@ describe('yarn', function () {
   })
 
   it('getPeerDependencies v4', async () => {
+    spawnStub = await stubSpawnCommand('yarn getPeerDependencies v4')
     const testDir = path.join(__dirname, 'v4')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})

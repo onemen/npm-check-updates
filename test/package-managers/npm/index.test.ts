@@ -1,21 +1,33 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as npm from '../../../src/package-managers/npm'
+import { stubSpawnCommand } from '../../helpers/stubSpawnCommand'
+import stubVersions from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('npm', function () {
+  let versionStub: { mockRestore: () => void }
+  let spawnStub: StubWithSave
+  afterEach(context => {
+    versionStub?.mockRestore()
+    spawnStub?.mockRestore(context)
+  })
+
   it('list', async () => {
+    spawnStub = await stubSpawnCommand('npm list')
     const versionObject = await npm.list({ cwd: __dirname })
     versionObject.should.have.property('express')
   })
 
   it('latest', async () => {
+    versionStub = stubVersions('2.0.0')
     const { version } = await npm.latest('express', '', { cwd: __dirname })
     parseInt(version!, 10).should.be.above(1)
   })
 
   it('greatest', async () => {
+    versionStub = stubVersions('2.0.0-beta')
     const { version } = await npm.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })
@@ -27,6 +39,7 @@ describe('npm', function () {
   })
 
   it('getPeerDependencies', async () => {
+    spawnStub = await stubSpawnCommand('npm getPeerDependencies')
     const spawnOptions = { cwd: __dirname }
     await npm.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
     await npm.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions).should.eventually.deep.equal({

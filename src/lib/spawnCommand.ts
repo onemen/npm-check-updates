@@ -6,7 +6,7 @@ import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
  * Spawn a command. On Windows, prefer `<command>.cmd` but fall back to `<command>` when the
  * `.cmd` shim is not available (e.g. mise, scoop).
  */
-async function spawnCommand(
+export async function spawnCommand(
   command: string,
   args: string[],
   spawnPleaseOptions?: SpawnPleaseOptions,
@@ -26,5 +26,3 @@ async function spawnCommand(
     throw e
   }
 }
-
-export default spawnCommand
