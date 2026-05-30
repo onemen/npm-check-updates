@@ -2,8 +2,10 @@ import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
+import { type MockInstance } from 'vitest'
 import ncu from '../src/'
 import { CACHE_DELIMITER } from '../src/lib/cache'
+import { type spawnCommand } from '../src/lib/spawnCommand.js'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
 import { stubSpawnCommand } from './helpers/stubSpawnCommand'
 import stubVersions from './helpers/stubVersions'
@@ -18,7 +20,7 @@ const getTime = (daysAgo: number) => new Date(NOW - daysAgo * DAY).toISOString()
 
 describe('cache', () => {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: StubWithSave
+  let spawnStub: MockInstance<typeof spawnCommand>
   let cacheFile: string
 
   beforeEach(async () => {

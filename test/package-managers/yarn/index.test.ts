@@ -1,5 +1,7 @@
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { type MockInstance } from 'vitest'
+import { type spawnCommand } from '../../../src/lib/spawnCommand.js'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
 import { type MockedVersions } from '../../../src/types/MockedVersions'
@@ -30,7 +32,7 @@ const cleanEnv = {
 
 describe('yarn', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: StubWithSave
+  let spawnStub: MockInstance<typeof spawnCommand>
   afterEach(context => {
     versionStub?.mockRestore()
     spawnStub?.mockRestore(context)
@@ -42,7 +44,6 @@ describe('yarn', function () {
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
-
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
     versionStub = stubVersions({ chalk: '5.0.0' })

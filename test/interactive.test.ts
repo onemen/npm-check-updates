@@ -2,6 +2,8 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawnPlease from 'spawn-please'
+import { type MockInstance } from 'vitest'
+import { type spawnCommand } from '../src/lib/spawnCommand.js'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import { stubSpawnCommand } from './helpers/stubSpawnCommand.js'
@@ -9,7 +11,7 @@ import stubVersions from './helpers/stubVersions'
 
 describe('--interactive', () => {
   let stub: { mockRestore: () => void }
-  let spawnStub: StubWithSave
+  let spawnStub: MockInstance<typeof spawnCommand>
   beforeAll(() => {
     stub = stubVersions(
       {

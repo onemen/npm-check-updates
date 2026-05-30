@@ -1,6 +1,8 @@
 import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { type MockInstance } from 'vitest'
+import { type spawnCommand } from '../../src/lib/spawnCommand.js'
 import * as bun from '../../src/package-managers/bun'
 import { mockPackageManagerRun, sandbox, testFail, testPass } from '../helpers/doctorHelpers'
 import { stubSpawnCommand } from '../helpers/stubSpawnCommand.js'
@@ -17,7 +19,7 @@ const mockNpmVersions = {
 
 describe('bun', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: StubWithSave
+  let spawnStub: MockInstance<typeof spawnCommand>
 
   // Use a synchronous check to fail the suite immediately if bun is missing
   beforeAll(function () {

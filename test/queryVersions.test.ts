@@ -202,7 +202,7 @@ describe('queryVersions', function () {
     })
 
     it('valid but nonexistent github urls with tags should be ignored', async () => {
-      stub = stubVersions({ name: 'ncu-test-v2', version: '2.0.0', time: {} })
+      const stub = stubVersions({ name: 'ncu-test-v2', version: '2.0.0', time: {} })
       const upgrades = await queryVersions(
         {
           'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',
@@ -220,6 +220,7 @@ describe('queryVersions', function () {
           version: '2.0.0',
         },
       })
+      stub.mockRestore()
     })
 
     it('github urls should upgrade the embedded semver version range', async () => {

@@ -3,8 +3,10 @@ import { createHash } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { type MockInstance } from 'vitest'
 import * as mod from '../../src/lib/spawnCommand'
 import { type SpawnPleaseOptions } from '../../src/types/SpawnPleaseOptions'
+import { applyPersistentMockRestore } from './mockUtils.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -36,7 +38,7 @@ export async function stubSpawnCommand(fixtureName: string) {
   const actualModule = await vi.importActual<typeof mod>('../../src/lib/spawnCommand')
   const original = actualModule.spawnCommand
 
-  const spy: StubWithSave = vi
+  const spy: MockInstance = vi
     .spyOn(mod, 'spawnCommand')
     .mockImplementation(
       async (command: string, args: string[], spawnPleaseOptions?: SpawnPleaseOptions, spawnOptions?: SpawnOptions) => {
@@ -93,28 +95,10 @@ export async function stubSpawnCommand(fixtureName: string) {
       },
     )
 
-  const originalRestore = spy.mockRestore.bind(spy)
-
-  spy.mockRestore = (context: any) => {
-    if (!context) {
-      console.warn(
-        `[stubSpawnCommand] Warning: mockRestore() called without 'context'. ` +
-          `Fixture data will NOT be saved for: ${fixtureName}`,
-      )
-    }
-
-    const isPassed = context?.task?.result?.state === 'pass'
-    const shouldSave =
-      process.env.NCU_SAVE_FIXTURES && fixturesLoaded && JSON.stringify(fixtures) !== initialFixtures && isPassed
-
-    if (shouldSave) {
-      const dir = path.dirname(fixturePath)
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-      fs.writeFileSync(fixturePath, JSON.stringify(fixtures, null, 2))
-    }
-
-    return originalRestore()
-  }
-
-  return spy
+  return applyPersistentMockRestore(spy, {
+    fixturePath,
+    label: 'stubSpawnCommand',
+    fixtures,
+    initialFixtures,
+  })
 }

@@ -1,5 +1,7 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { type MockInstance } from 'vitest'
+import { type spawnCommand } from '../../../src/lib/spawnCommand.js'
 import * as npm from '../../../src/package-managers/npm'
 import { stubSpawnCommand } from '../../helpers/stubSpawnCommand'
 import stubVersions from '../../helpers/stubVersions'
@@ -8,7 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('npm', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: StubWithSave
+  let spawnStub: MockInstance<typeof spawnCommand>
   afterEach(context => {
     versionStub?.mockRestore()
     spawnStub?.mockRestore(context)
