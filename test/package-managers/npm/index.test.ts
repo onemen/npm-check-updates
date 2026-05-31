@@ -1,17 +1,15 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { type MockInstance } from 'vitest'
-import { type spawnCommand } from '../../../src/lib/spawnCommand'
 import * as npm from '../../../src/package-managers/npm'
 import { type MockedVersions } from '../../../src/types/MockedVersions'
-import { stubSpawnCommand } from '../../helpers/stubSpawnCommand'
+import { type SpawnCommandStub, stubSpawnCommand } from '../../helpers/stubSpawnCommand'
 import stubVersions, { stubFetchPartialPackument } from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('npm', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: MockInstance<typeof spawnCommand>
+  let spawnStub: SpawnCommandStub
   afterEach(context => {
     versionStub?.mockRestore()
     spawnStub?.mockRestore(context)

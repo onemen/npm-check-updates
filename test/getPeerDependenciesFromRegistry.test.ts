@@ -1,13 +1,11 @@
-import { type MockInstance } from 'vitest'
 import { chalkInit } from '../src/lib/chalk'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
-import { type spawnCommand } from '../src/lib/spawnCommand'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
-import { stubSpawnCommand } from './helpers/stubSpawnCommand'
+import { type SpawnCommandStub, stubSpawnCommand } from './helpers/stubSpawnCommand'
 
 describe('getPeerDependenciesFromRegistry', function () {
   let pb: ReturnType<typeof silenceProgressBar>
-  let spawnStub: MockInstance<typeof spawnCommand>
+  let spawnStub: SpawnCommandStub
   beforeEach(async () => {
     await chalkInit()
     pb = silenceProgressBar()

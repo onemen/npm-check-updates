@@ -7,6 +7,8 @@ import * as mod from '../../src/lib/spawnCommand'
 import { type SpawnPleaseOptions } from '../../src/types/SpawnPleaseOptions'
 import { applyPersistentMockRestore, getFixturePath, sanitize } from './mockUtils'
 
+export type SpawnCommandStub = MockInstance<typeof mod.spawnCommand>
+
 /**
  * Stubs `spawnCommand` and enables a record-and-replay workflow for test fixtures.
  * * Usage:
@@ -75,7 +77,7 @@ export async function stubSpawnCommand(fixtureName: string) {
 
         if (!process.env.NCU_SAVE_FIXTURES) {
           throw new Error(
-            `Missing fixture for: ${command} ${args.join(' ')}. Run with NCU_SAVE_FIXTURES=true to record.`,
+            `Missing fixture for: ${command} ${args.join(' ')}.\nRun with NCU_SAVE_FIXTURES=true to record.`,
           )
         }
 

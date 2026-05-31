@@ -1,9 +1,7 @@
-import { type MockInstance } from 'vitest'
 import queryVersions from '../src/lib/queryVersions'
-import { type spawnCommand } from '../src/lib/spawnCommand'
 import { type MockedVersions } from '../src/types/MockedVersions'
 import { getFixtureName } from './helpers/mockUtils'
-import { stubGetGitTags } from './helpers/stubGetGitTags'
+import { type GetGitTagsStub, stubGetGitTags } from './helpers/stubGetGitTags'
 import stubVersions from './helpers/stubVersions'
 
 describe('queryVersions', function () {
@@ -93,15 +91,15 @@ describe('queryVersions', function () {
   })
 
   describe('github urls', () => {
-    let spawnStub: MockInstance<typeof spawnCommand>
+    let gitTagsStub: GetGitTagsStub
 
     beforeEach(async context => {
       const fixtureName = getFixtureName(context)
-      spawnStub = await stubGetGitTags(fixtureName)
+      gitTagsStub = await stubGetGitTags(fixtureName)
     })
 
     afterEach(context => {
-      spawnStub?.mockRestore(context)
+      gitTagsStub?.mockRestore(context)
     })
 
     it('github urls should upgrade the embedded version tag', async () => {

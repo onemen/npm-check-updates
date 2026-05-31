@@ -1,16 +1,14 @@
-import { type MockInstance } from 'vitest'
 import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps'
-import { type spawnCommand } from '../src/lib/spawnCommand'
 import { type MockedVersions } from '../src/types/MockedVersions'
 import { type Packument } from '../src/types/Packument'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
-import { stubSpawnCommand } from './helpers/stubSpawnCommand'
+import { type SpawnCommandStub, stubSpawnCommand } from './helpers/stubSpawnCommand'
 import stubVersions from './helpers/stubVersions'
 
 describe('getIgnoredUpgradesDueToPeerDeps', function () {
   let pb: ReturnType<typeof silenceProgressBar>
   let versionStub: { mockRestore: () => void }
-  let spawnStub: MockInstance<typeof spawnCommand>
+  let spawnStub: SpawnCommandStub
   beforeEach(() => {
     pb = silenceProgressBar()
   })

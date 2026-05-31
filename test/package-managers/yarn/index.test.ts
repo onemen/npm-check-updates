@@ -1,11 +1,9 @@
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { type MockInstance } from 'vitest'
-import { type spawnCommand } from '../../../src/lib/spawnCommand'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
 import { type MockedVersions } from '../../../src/types/MockedVersions'
-import { stubSpawnCommand } from '../../helpers/stubSpawnCommand'
+import { type SpawnCommandStub, stubSpawnCommand } from '../../helpers/stubSpawnCommand'
 import stubVersions from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -32,7 +30,7 @@ const cleanEnv = {
 
 describe('yarn', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: MockInstance<typeof spawnCommand>
+  let spawnStub: SpawnCommandStub
   afterEach(context => {
     versionStub?.mockRestore()
     spawnStub?.mockRestore(context)

@@ -5,16 +5,14 @@ import fs from 'fs/promises'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
-import { type MockInstance } from 'vitest'
 import exists from '../src/lib/exists'
-import { type spawnCommand } from '../src/lib/spawnCommand'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
-import { stubSpawnCommand } from './helpers/stubSpawnCommand'
+import { type SpawnCommandStub, stubSpawnCommand } from './helpers/stubSpawnCommand'
 import stubVersions from './helpers/stubVersions'
 
 describe('install', () => {
-  let spawnStub: MockInstance<typeof spawnCommand>
+  let spawnStub: SpawnCommandStub
   afterEach(context => {
     spawnStub?.mockRestore(context)
   })
