@@ -1,8 +1,7 @@
 import fs from 'fs'
-import path from 'node:path'
 import { type MockInstance } from 'vitest'
 import { gitApi } from '../../src/package-managers/gitTags'
-import { applyPersistentMockRestore } from './mockUtils.js'
+import { applyPersistentMockRestore, getFixturePath } from './mockUtils.js'
 
 /**
  * Stubs `getGitTags` and enables a record-and-replay workflow for test fixtures.
@@ -18,12 +17,7 @@ import { applyPersistentMockRestore } from './mockUtils.js'
  * Spaces are automatically converted to underscores.
  */
 export async function stubGetGitTags(fixtureName: string) {
-  if (!fixtureName) {
-    throw new Error('stubGetGitTags: fixtureName is required')
-  }
-
-  const normalizedName = fixtureName.replace(/\s+/g, '_')
-  const fixturePath = path.resolve(__dirname, '..', 'fixtures', 'getGitTags', `${normalizedName}.json`)
+  const fixturePath = getFixturePath('getGitTags', fixtureName)
 
   let fixtures: Record<string, any> = {}
   let fixturesLoaded = false

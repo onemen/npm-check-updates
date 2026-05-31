@@ -1,14 +1,10 @@
 import { type SpawnOptions } from 'child_process'
 import { createHash } from 'crypto'
 import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import { type MockInstance } from 'vitest'
 import * as mod from '../../src/lib/spawnCommand'
 import { type SpawnPleaseOptions } from '../../src/types/SpawnPleaseOptions'
-import { applyPersistentMockRestore } from './mockUtils.js'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+import { applyPersistentMockRestore, getFixturePath } from './mockUtils.js'
 
 /**
  * Stubs `spawnCommand` and enables a record-and-replay workflow for test fixtures.
@@ -24,12 +20,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
  * Spaces are automatically converted to underscores.
  */
 export async function stubSpawnCommand(fixtureName: string) {
-  if (!fixtureName) {
-    throw new Error('stubSpawnCommand: fixtureName is required')
-  }
-
-  const normalizedName = fixtureName.replace(/\s+/g, '_')
-  const fixturePath = path.resolve(__dirname, '..', 'fixtures', 'spawnCommand', `${normalizedName}.json`)
+  const fixturePath = getFixturePath('spawnCommand', fixtureName)
 
   let fixtures: Record<string, any> = {}
   let fixturesLoaded = false

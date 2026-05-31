@@ -1,10 +1,10 @@
 {
-  "04b37f611832980d348f54b276a8389cb0dab5b5af6df51a00e7fcd3f836adcc": {
-    "stdout": "{\n  \"jsdom\": \"*\",\n  \"happy-dom\": \"*\",\n  \"@vitest/ui\": \"1.6.0\",\n  \"@types/node\": \"^18.0.0 || >=20.0.0\",\n  \"@vitest/browser\": \"1.6.0\",\n  \"@edge-runtime/vm\": \"*\"\n}\n",
-    "stderr": ""
-  },
   "3fc575d58835f6be3756a767f8f4f64eec9b6c12dfcbb66e7d2795ea920dce95": {
     "stdout": "{\n  \"vitest\": \"1.6.0\"\n}\n",
+    "stderr": ""
+  },
+  "04b37f611832980d348f54b276a8389cb0dab5b5af6df51a00e7fcd3f836adcc": {
+    "stdout": "{\n  \"jsdom\": \"*\",\n  \"happy-dom\": \"*\",\n  \"@vitest/ui\": \"1.6.0\",\n  \"@types/node\": \"^18.0.0 || >=20.0.0\",\n  \"@vitest/browser\": \"1.6.0\",\n  \"@edge-runtime/vm\": \"*\"\n}\n",
     "stderr": ""
   },
   "cbc88c90fb5be247b335cc7ae210ea691b6bd4abc42e6ed21bdeac6e6a87f5f6": {
