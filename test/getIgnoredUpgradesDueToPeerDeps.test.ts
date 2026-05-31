@@ -1,6 +1,7 @@
 import { type MockInstance } from 'vitest'
 import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps'
-import { type spawnCommand } from '../src/lib/spawnCommand.js'
+import { type spawnCommand } from '../src/lib/spawnCommand'
+import { type MockedVersions } from '../src/types/MockedVersions'
 import { type Packument } from '../src/types/Packument'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import { stubSpawnCommand } from './helpers/stubSpawnCommand'
@@ -8,16 +9,27 @@ import stubVersions from './helpers/stubVersions'
 
 describe('getIgnoredUpgradesDueToPeerDeps', function () {
   let pb: ReturnType<typeof silenceProgressBar>
+  let versionStub: { mockRestore: () => void }
   let spawnStub: MockInstance<typeof spawnCommand>
   beforeEach(() => {
     pb = silenceProgressBar()
   })
   afterEach(context => {
     pb.mockRestore()
+    versionStub?.mockRestore()
     spawnStub?.mockRestore(context)
   })
 
-  it('ncu-test-peer-update', async () => {
+  it.only('ncu-test-peer-update', async () => {
+    versionStub = stubVersions({
+      'ncu-test-return-version': {
+        version: '2.0.0',
+        versions: {
+          '2.0.0': { version: '2.0.0' },
+          '1.0.0': { version: '1.0.0' },
+        },
+      },
+    } as MockedVersions)
     spawnStub = await stubSpawnCommand('getIgnoredUpgradesDueToPeerDeps ncu-test-peer-update')
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {

@@ -1,7 +1,7 @@
 import { type MockInstance } from 'vitest'
 import getInstalledPackages from '../src/lib/getInstalledPackages'
-import { type spawnCommand } from '../src/lib/spawnCommand.js'
-import { stubSpawnCommand } from './helpers/stubSpawnCommand.js'
+import { type spawnCommand } from '../src/lib/spawnCommand'
+import { stubSpawnCommand } from './helpers/stubSpawnCommand'
 
 // test getInstalledPackages since we cannot test runGlobal without additional code for mocking
 describe('getInstalledPackages', () => {

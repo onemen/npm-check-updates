@@ -465,6 +465,30 @@ describe('target', () => {
 }) // end 'target'
 
 describe('tags', () => {
+  let stub: { mockRestore: () => void }
+  beforeEach(() => {
+    stub = stubVersions({
+      name: 'ncu-test-tag',
+      version: '1.1.0',
+      'dist-tags': {
+        beta: '1.0.1-beta.0',
+        latest: '1.1.0',
+        next: '1.0.0-1',
+        'task-42': '1.0.0-task-42.0',
+      },
+      versions: {
+        '1.1.0': { version: '1.1.0' },
+        '1.0.0-task-42.0': { version: '1.0.0-task-42.0' },
+        '1.0.1-beta.0': { version: '1.0.1-beta.0' },
+        '1.0.0-1': { version: '1.0.0-1' },
+        '0.1.0': { version: '0.1.0' },
+      },
+    } as MockedVersions)
+  })
+  afterEach(() => {
+    stub.mockRestore()
+  })
+
   it('upgrade nonprerelease version to specific tag', async () => {
     const upgraded = (await ncu({
       target: '@next',

@@ -615,7 +615,7 @@ npmApi.mockFetchUpgradedPackument =
 /** Filters a packument to only include requested fields. Used for testing fetchPartialPackument. */
 npmApi.mockFetchPartialPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchPartialPackument =>
-  async (name: string, fields: (keyof Packument)[], tag: string | null, _opts?: any, _version?: Version) => {
+  (name: string, fields: (keyof Packument)[], tag: string | null, _opts?: any, targetVersion?: Version) => {
     const partialPackument =
       typeof mockReturnedVersions === 'function'
         ? mockReturnedVersions({})?.[name]
@@ -623,40 +623,60 @@ npmApi.mockFetchPartialPackument =
           ? mockReturnedVersions
           : (mockReturnedVersions[name] ?? mockReturnedVersions.default)
 
-    let versionStr: string | undefined = ''
+    let version: string | undefined = ''
     if (!(partialPackument as any)?.skipVersionValidation) {
-      versionStr = isPackument(partialPackument) ? partialPackument.version : partialPackument
-      if (!versionStr) {
+      version = isPackument(partialPackument) ? partialPackument.version : partialPackument
+      if (!version) {
         throw new Error(
           `fetchPartialPackument is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
         )
       }
     }
 
-    const time = (isPackument(partialPackument) && partialPackument.time?.[versionStr]) || new Date().toISOString()
+    const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
     const packument: Packument = {
       name,
       'dist-tags': {
-        [tag || 'latest']: versionStr,
+        [tag || 'latest']: version,
       },
       engines: { node: '' },
       time: {
-        [versionStr]: time,
+        [version]: time,
       },
-      version: versionStr,
+      version,
       versions: {},
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
-    // Filter to only include requested fields
-    const result: Partial<Packument> = { name }
-    for (const field of fields) {
-      if (field in packument) {
-        ;(result[field] as any) = packument[field as keyof Packument]
-      }
+    const { versions: _, ...packumentWithoutVersions } = packument
+
+    const result = {
+      ...packument,
+      versions: {
+        ...((isPackument(partialPackument) && partialPackument.versions) || {
+          [version]: packumentWithoutVersions,
+        }),
+      },
     }
 
-    return result
+    const isExist = targetVersion ? Object.keys(result.versions).find(v => v === targetVersion) : true
+    // console.log({
+    //   result,
+    //   isExist,
+    //   test: expect?.getState?.()?.currentTestName,
+    //   arguments: {
+    //     name,
+    //     fields,
+    //     tag,
+    //     _opts,
+    //     targetVersion,
+    //   },
+    // })
+    if (!isExist) {
+      throw new Error(`404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/${targetVersion}}`)
+    }
+
+    return Promise.resolve(result)
   }
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */

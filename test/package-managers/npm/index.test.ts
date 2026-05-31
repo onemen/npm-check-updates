@@ -1,10 +1,11 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type MockInstance } from 'vitest'
-import { type spawnCommand } from '../../../src/lib/spawnCommand.js'
+import { type spawnCommand } from '../../../src/lib/spawnCommand'
 import * as npm from '../../../src/package-managers/npm'
+import { type MockedVersions } from '../../../src/types/MockedVersions'
 import { stubSpawnCommand } from '../../helpers/stubSpawnCommand'
-import stubVersions from '../../helpers/stubVersions'
+import stubVersions, { stubFetchPartialPackument } from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -35,9 +36,33 @@ describe('npm', function () {
   })
 
   it('ownerChanged', async () => {
+    const stub = stubFetchPartialPackument({
+      mocha: {
+        version: '8.0.1',
+        versions: {
+          '7.1.0': { _npmUser: { name: 'author-a' } },
+          '8.0.1': { _npmUser: { name: 'author-b' } },
+        },
+      },
+      htmlparser2: {
+        version: '4.0.0',
+        versions: {
+          '3.10.1': { _npmUser: { name: 'author-a' } },
+          '4.0.0': { _npmUser: { name: 'author-a' } },
+        },
+      },
+      'ncu-test-v2': {
+        version: '2.2.0',
+        versions: {
+          '1.0.0': { _npmUser: { name: 'author-a' } },
+          '2.2.0': { _npmUser: { name: 'author-a' } },
+        },
+      },
+    } as MockedVersions)
     await npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1').should.eventually.equal(true)
     await npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0').should.eventually.equal(false)
     await npm.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0').should.eventually.equal(false)
+    stub.mockRestore()
   })
 
   it('getPeerDependencies', async () => {
@@ -50,10 +75,21 @@ describe('npm', function () {
   })
 
   it('getEngines', async () => {
+    const stub = stubFetchPartialPackument({
+      del: {
+        version: '2.0.0',
+        engines: { node: '>=0.10.0' },
+      },
+      'ncu-test-return-version': {
+        version: '1.0.0',
+        engines: {},
+      },
+    } as MockedVersions)
     await npm.getEngines('del', '2.0.0').should.eventually.deep.equal({ node: '>=0.10.0' })
     await npm.getEngines('ncu-test-return-version', '1.0.0').should.eventually.deep.equal({})
     await npm
       .getEngines('ncu-test-return-version', '1.0')
       .should.eventually.be.rejectedWith('404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/1.0')
+    stub.mockRestore()
   })
 })

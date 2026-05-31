@@ -4,7 +4,7 @@ import fs from 'fs'
 import { type MockInstance } from 'vitest'
 import * as mod from '../../src/lib/spawnCommand'
 import { type SpawnPleaseOptions } from '../../src/types/SpawnPleaseOptions'
-import { applyPersistentMockRestore, getFixturePath } from './mockUtils.js'
+import { applyPersistentMockRestore, getFixturePath } from './mockUtils'
 
 /**
  * Stubs `spawnCommand` and enables a record-and-replay workflow for test fixtures.

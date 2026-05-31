@@ -1,7 +1,7 @@
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { type MockInstance } from 'vitest'
-import { type spawnCommand } from '../../../src/lib/spawnCommand.js'
+import { type spawnCommand } from '../../../src/lib/spawnCommand'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
 import { type MockedVersions } from '../../../src/types/MockedVersions'

@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { type MockInstance } from 'vitest'
 import { gitApi } from '../../src/package-managers/gitTags'
-import { applyPersistentMockRestore, getFixturePath } from './mockUtils.js'
+import { applyPersistentMockRestore, getFixturePath } from './mockUtils'
 
 /**
  * Stubs `getGitTags` and enables a record-and-replay workflow for test fixtures.

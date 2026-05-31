@@ -1,9 +1,9 @@
 import { type MockInstance } from 'vitest'
 import queryVersions from '../src/lib/queryVersions'
-import { type MockedVersions } from '../src/types/MockedVersions.js'
-import { type spawnCommand } from '../src/lib/spawnCommand.js'
-import { getFixtureName } from './helpers/mockUtils.js'
-import { stubGetGitTags } from './helpers/stubGetGitTags.js'
+import { type spawnCommand } from '../src/lib/spawnCommand'
+import { type MockedVersions } from '../src/types/MockedVersions'
+import { getFixtureName } from './helpers/mockUtils'
+import { stubGetGitTags } from './helpers/stubGetGitTags'
 import stubVersions from './helpers/stubVersions'
 
 describe('queryVersions', function () {

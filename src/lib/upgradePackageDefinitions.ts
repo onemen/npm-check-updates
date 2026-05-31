@@ -39,7 +39,7 @@ const checkIfInPeerViolation = (
         upgradedDependencies[peer] === undefined ||
         !validRange(peerSpec) ||
         // Non-semver specs like catalog: references cannot be compared; treat as compatible
-        !validRange(upgradedDependencies[peer]) ||
+        // !validRange(upgradedDependencies[peer]) ||
         intersects(upgradedDependencies[peer], peerSpec),
     )
   })

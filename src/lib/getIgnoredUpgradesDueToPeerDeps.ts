@@ -63,7 +63,7 @@ export async function getIgnoredUpgradesDueToPeerDeps(
             ([peer, peerSpec]) =>
               upgradedPackagesWithPeerRestriction[peer] &&
               // Non-semver specs like catalog: references cannot be compared; treat as compatible
-              !!validRange(upgradedPackagesWithPeerRestriction[peer]) &&
+              // !!validRange(upgradedPackagesWithPeerRestriction[peer]) &&
               !(!validRange(peerSpec) || intersects(upgradedPackagesWithPeerRestriction[peer], peerSpec)),
           )
           .reduce(

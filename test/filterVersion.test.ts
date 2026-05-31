@@ -9,6 +9,7 @@ describe('filterVersion', () => {
       stub = stubVersions({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
+        'fp-and-or': '1.0.2',
       })
     })
     afterAll(() => {
@@ -30,8 +31,6 @@ describe('filterVersion', () => {
 
       upgraded!.should.have.property('ncu-test-v2')
       upgraded!.should.not.have.property('ncu-test-return-version')
-
-      stub.mockRestore()
     })
 
     it('filter by package version with space-delimited list of strings', async () => {

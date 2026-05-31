@@ -1,7 +1,7 @@
 import { type MockInstance } from 'vitest'
 import { chalkInit } from '../src/lib/chalk'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
-import { type spawnCommand } from '../src/lib/spawnCommand.js'
+import { type spawnCommand } from '../src/lib/spawnCommand'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import { stubSpawnCommand } from './helpers/stubSpawnCommand'
 

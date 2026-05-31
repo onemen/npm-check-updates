@@ -2,10 +2,10 @@ import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type MockInstance } from 'vitest'
-import { type spawnCommand } from '../../src/lib/spawnCommand.js'
+import { type spawnCommand } from '../../src/lib/spawnCommand'
 import * as bun from '../../src/package-managers/bun'
 import { mockPackageManagerRun, sandbox, testFail, testPass } from '../helpers/doctorHelpers'
-import { stubSpawnCommand } from '../helpers/stubSpawnCommand.js'
+import { stubSpawnCommand } from '../helpers/stubSpawnCommand'
 import stubVersions from '../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
