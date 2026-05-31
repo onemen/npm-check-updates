@@ -28,6 +28,36 @@ import type { CooldownInfo, VersionResult } from '../types/VersionResult'
 import type { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesCooldownPeriod } from './filters'
 
+interface NpmApi {
+  fetchUpgradedPackumentMemo: (
+    packageName: string,
+    fields: (keyof Packument)[],
+    currentVersion: Version,
+    options: Options,
+    retried?: number,
+    npmConfigLocal?: NpmConfig,
+    npmConfigWorkspaceProject?: NpmConfig,
+  ) => Promise<Partial<Packument> | undefined>
+  findNpmConfig: (configPath?: string | undefined) => NpmConfig | null
+  mockFetchUpgradedPackument: (mockReturnedVersions: MockedVersions) => typeof fetchUpgradedPackument
+  fetchPartialPackument: (
+    name: string,
+    fields: (keyof Packument)[],
+    tag: string | null,
+    opts?: npmRegistryFetch.FetchOptions,
+    version?: Version,
+  ) => Promise<Partial<Packument>>
+  mockFetchPartialPackument: (mockReturnedVersions: MockedVersions) => typeof fetchPartialPackument
+}
+
+/**
+ * ES Modules cannot be stubbed
+ * To allow stubbing of npm functions in tests, we export the functions that
+ * need to be stubbed as properties of an object (npmApi) that can be
+ * imported and stubbed in tests without affecting the rest of the module.
+ */
+export const npmApi = {} as NpmApi
+
 const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
 
 /** Returns true if the spec is an explicit version range (not ~ or ^). */
@@ -130,6 +160,9 @@ const fetchPartialPackument = async (
     return fetchPartialPackument(name, fields, tag, { ...opts, fullMetadata: true }, version)
   }
 }
+
+/** Export fetchPartialPackument for testing purposes. @internal */
+npmApi.fetchPartialPackument = fetchPartialPackument
 
 interface GreatestWithFallbackResult {
   targetVersion: string | null
@@ -426,28 +459,6 @@ export const normalizeNpmConfig = (
   return config
 }
 
-interface NpmApi {
-  fetchUpgradedPackumentMemo: (
-    packageName: string,
-    fields: (keyof Packument)[],
-    currentVersion: Version,
-    options: Options,
-    retried?: number,
-    npmConfigLocal?: NpmConfig,
-    npmConfigWorkspaceProject?: NpmConfig,
-  ) => Promise<Partial<Packument> | undefined>
-  findNpmConfig: (configPath?: string | undefined) => NpmConfig | null
-  mockFetchUpgradedPackument: (mockReturnedVersions: MockedVersions) => typeof fetchUpgradedPackument
-}
-
-/**
- * ES Modules cannot be stubbed
- * To allow stubbing of npm functions in tests, we export the functions that
- * need to be stubbed as properties of an object (npmApi) that can be
- * imported and stubbed in tests without affecting the rest of the module.
- */
-export const npmApi = {} as NpmApi
-
 /** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
 npmApi.findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   // If it's a test, completely bypass reading environment variables or local host files
@@ -528,7 +539,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const result = await fetchPartialPackument(packageName, ['versions'], null, {
+  const result = await npmApi.fetchPartialPackument(packageName, ['versions'], null, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
@@ -599,6 +610,53 @@ npmApi.mockFetchUpgradedPackument =
         }),
       },
     })
+  }
+
+/** Filters a packument to only include requested fields. Used for testing fetchPartialPackument. */
+npmApi.mockFetchPartialPackument =
+  (mockReturnedVersions: MockedVersions): typeof fetchPartialPackument =>
+  async (name: string, fields: (keyof Packument)[], tag: string | null, _opts?: any, _version?: Version) => {
+    const partialPackument =
+      typeof mockReturnedVersions === 'function'
+        ? mockReturnedVersions({})?.[name]
+        : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
+          ? mockReturnedVersions
+          : (mockReturnedVersions[name] ?? mockReturnedVersions.default)
+
+    let versionStr: string | undefined = ''
+    if (!(partialPackument as any)?.skipVersionValidation) {
+      versionStr = isPackument(partialPackument) ? partialPackument.version : partialPackument
+      if (!versionStr) {
+        throw new Error(
+          `fetchPartialPackument is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
+        )
+      }
+    }
+
+    const time = (isPackument(partialPackument) && partialPackument.time?.[versionStr]) || new Date().toISOString()
+    const packument: Packument = {
+      name,
+      'dist-tags': {
+        [tag || 'latest']: versionStr,
+      },
+      engines: { node: '' },
+      time: {
+        [versionStr]: time,
+      },
+      version: versionStr,
+      versions: {},
+      ...(isPackument(partialPackument) ? partialPackument : null),
+    }
+
+    // Filter to only include requested fields
+    const result: Partial<Packument> = { name }
+    for (const field of fields) {
+      if (field in packument) {
+        ;(result[field] as any) = packument[field as keyof Packument]
+      }
+    }
+
+    return result
   }
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
@@ -720,7 +778,7 @@ async function fetchUpgradedPackument(
   let result: Partial<Packument> | undefined
   try {
     const tag = options.distTag || 'latest'
-    result = await fetchPartialPackument(
+    result = await npmApi.fetchPartialPackument(
       packageName,
       Array.from(
         new Set([
@@ -921,7 +979,7 @@ export const getEngines = async (
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<Index<VersionSpec | undefined>> => {
-  const result = await fetchPartialPackument(
+  const result = await npmApi.fetchPartialPackument(
     packageName,
     [`engines`],
     null,

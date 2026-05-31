@@ -32,4 +32,19 @@ const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?:
   }
 }
 
+/** Stubs fetchPartialPackument. Returns the stub object. Call stub.mockRestore() after assertions to restore the original function. */
+export const stubFetchPartialPackument = (mockReturnedVersions: MockedVersions) => {
+  const originalMethod = npmApi.fetchPartialPackument
+
+  const mockFn = vi.fn().mockImplementation(npmApi.mockFetchPartialPackument(mockReturnedVersions))
+
+  npmApi.fetchPartialPackument = mockFn
+
+  return {
+    mockRestore: () => {
+      npmApi.fetchPartialPackument = originalMethod
+    },
+  }
+}
+
 export default stubVersions
