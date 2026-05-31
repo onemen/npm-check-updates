@@ -5,12 +5,19 @@ import fs from 'fs/promises'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
+import { type MockInstance } from 'vitest'
 import exists from '../src/lib/exists'
+import { type spawnCommand } from '../src/lib/spawnCommand'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
+import { stubSpawnCommand } from './helpers/stubSpawnCommand'
 import stubVersions from './helpers/stubVersions'
 
 describe('install', () => {
+  let spawnStub: MockInstance<typeof spawnCommand>
+  afterEach(context => {
+    spawnStub?.mockRestore(context)
+  })
   describe('non-interactive', () => {
     it('print install hint without --install', async () => {
       const pkgData = {
@@ -43,6 +50,7 @@ describe('install', () => {
         },
       }
 
+      spawnStub = await stubSpawnCommand('install packages and do not print install')
       const stub = stubVersions('2.0.0', { spawn: true })
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
@@ -92,6 +100,7 @@ describe('install', () => {
         },
       }
 
+      spawnStub = await stubSpawnCommand('install when responding yes to prompt')
       const stub = stubVersions('2.0.0', { spawn: true })
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
@@ -144,6 +153,7 @@ describe('install', () => {
         },
       }
 
+      spawnStub = await stubSpawnCommand('install with --install always')
       const stub = stubVersions('2.0.0', { spawn: true })
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')

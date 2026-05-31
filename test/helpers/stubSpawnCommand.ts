@@ -1,6 +1,7 @@
 import { type SpawnOptions } from 'child_process'
 import { createHash } from 'crypto'
 import fs from 'fs'
+import path from 'path'
 import { type MockInstance } from 'vitest'
 import * as mod from '../../src/lib/spawnCommand'
 import { type SpawnPleaseOptions } from '../../src/types/SpawnPleaseOptions'
@@ -37,6 +38,14 @@ export async function stubSpawnCommand(fixtureName: string) {
           ['npm', 'pnpm', 'yarn', 'bun'].includes(command) && args.length === 1 && args[0] === 'install'
 
         if (isPackageManagerInstall) {
+          const cwd = spawnOptions?.cwd?.toString()
+          if (cwd) {
+            // Create the empty lockfile and empty node_module
+            const lockfilePath = path.join(cwd, 'package-lock.json')
+            await fs.promises.writeFile(lockfilePath, '', 'utf8')
+            await fs.promises.mkdir(path.join(cwd, 'node_modules'), { recursive: true })
+          }
+          console.log('stubSpawnCommand installed packages successfully')
           return { stdout: 'packages installed successfully', stderr: '' }
         }
 
