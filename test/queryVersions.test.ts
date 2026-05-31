@@ -1,5 +1,6 @@
 import { type MockInstance } from 'vitest'
 import queryVersions from '../src/lib/queryVersions'
+import { type MockedVersions } from '../src/types/MockedVersions.js'
 import { type spawnCommand } from '../src/lib/spawnCommand.js'
 import { getFixtureName } from './helpers/mockUtils.js'
 import { stubGetGitTags } from './helpers/stubGetGitTags.js'
@@ -26,6 +27,7 @@ describe('queryVersions', function () {
   })
 
   it('unavailable packages should be ignored', async () => {
+    stub = stubVersions({ default: { skipVersionValidation: true } } as MockedVersions)
     const result = await queryVersions({ abchdefntofknacuifnt: '1.2.3' }, { loglevel: 'silent' })
     result.should.deep.equal({})
   })

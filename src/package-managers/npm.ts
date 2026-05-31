@@ -561,14 +561,16 @@ npmApi.mockFetchUpgradedPackument =
         ? mockReturnedVersions(options)?.[name]
         : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
           ? mockReturnedVersions
-          : mockReturnedVersions[name]
+          : (mockReturnedVersions[name] ?? mockReturnedVersions.default)
 
-    const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
-
-    if (!version) {
-      throw new Error(
-        `fetchUpgradedPackument is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
-      )
+    let version: string | undefined = ''
+    if (!(partialPackument as any)?.skipVersionValidation) {
+      version = isPackument(partialPackument) ? partialPackument.version : partialPackument
+      if (!version) {
+        throw new Error(
+          `fetchUpgradedPackument is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
+        )
+      }
     }
 
     const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
