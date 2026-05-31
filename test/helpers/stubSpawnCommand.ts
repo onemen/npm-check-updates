@@ -5,7 +5,7 @@ import path from 'path'
 import { type MockInstance } from 'vitest'
 import * as mod from '../../src/lib/spawnCommand'
 import { type SpawnPleaseOptions } from '../../src/types/SpawnPleaseOptions'
-import { applyPersistentMockRestore, getFixturePath } from './mockUtils'
+import { applyPersistentMockRestore, getFixturePath, sanitize } from './mockUtils'
 
 /**
  * Stubs `spawnCommand` and enables a record-and-replay workflow for test fixtures.
@@ -81,13 +81,14 @@ export async function stubSpawnCommand(fixtureName: string) {
 
         try {
           const result = await original(command, args, spawnPleaseOptions, spawnOptions)
+          if (result.stderr) result.stderr = sanitize(result.stderr)
           fixtures[key] = result
           return result
         } catch (err: any) {
           fixtures[key] = {
             _isError: true,
-            message: err.message || err.toString(),
-            stderr: err.stderr || '',
+            message: sanitize(err.message || err.toString()),
+            stderr: sanitize(err.stderr || ''),
             exitCode: err.exitCode ?? 1,
           }
           throw err

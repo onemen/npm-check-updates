@@ -18,7 +18,7 @@ describe('getPeerDependenciesFromRegistry', function () {
   })
 
   it('single package', async () => {
-    spawnStub = await stubSpawnCommand('getPeerDependenciesFromRegistry single package')
+    spawnStub = await stubSpawnCommand('single package')
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, {})
     data.should.deep.equal({
       'ncu-test-peer': {
@@ -28,13 +28,13 @@ describe('getPeerDependenciesFromRegistry', function () {
   })
 
   it('single package empty', async () => {
-    spawnStub = await stubSpawnCommand('getPeerDependenciesFromRegistry single package empty')
+    spawnStub = await stubSpawnCommand('single package empty')
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
     data.should.deep.equal({ 'ncu-test-return-version': {} })
   })
 
   it('multiple packages', async () => {
-    spawnStub = await stubSpawnCommand('getPeerDependenciesFromRegistry multiple packages')
+    spawnStub = await stubSpawnCommand('multiple packages')
     const data = await getPeerDependenciesFromRegistry(
       {
         'ncu-test-return-version': '1.0.0',

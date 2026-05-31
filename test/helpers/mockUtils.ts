@@ -39,7 +39,7 @@ export function applyPersistentMockRestore(
 
     if (shouldSave) {
       fs.mkdirSync(path.dirname(fixturePath), { recursive: true })
-      fs.writeFileSync(fixturePath, JSON.stringify(fixtures, null, 2))
+      fs.writeFileSync(fixturePath, JSON.stringify(fixtures, null, 2) + '\n')
     }
 
     return originalRestore()
@@ -78,8 +78,8 @@ export function getFixturePath(stubName: string, fileName: string): string {
 
   const folderName = relativePath
     .replace(/\.test\.(ts|js)$/, '')
-    .replace(/\/index$/, '')
     .replace(/[/\\]/g, '_')
+    .replace(/_index$/, '')
   const safeFileName = safeTruncate(fileName.replace(/\s+/g, '_').replace(/\.json$/, ''), 50) + '.json'
 
   return path.join(PROJECT_ROOT, 'test/fixtures', folderName, `${stubName}_${safeFileName}`)
@@ -94,4 +94,18 @@ export function getFixtureName(context: TestContext): string {
     .replace(/\s+/g, '_')
     .replace(/[^a-z0-9_-]/g, '')
     .replace(/_+/g, '_')
+}
+
+/** replacing dynamic system data with static placeholders */
+export function sanitize(output: string): string {
+  if (!output) return output
+  return (
+    output
+      // Remove npm log paths (e.g., ...\_logs\2026-05-31...-debug-0.log)
+      .replace(/C:\\.*\\_logs\\[^ ]+\.log/g, '<NPM_LOG_PATH>')
+      // Remove Node process IDs (e.g., (node:8260))
+      .replace(/\(node:\d+\)/g, '(node:<PID>)')
+      // Remove dynamic timestamps often found in log paths or messages
+      .replace(/\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2}_\d{3}Z/g, '<TIMESTAMP>')
+  )
 }

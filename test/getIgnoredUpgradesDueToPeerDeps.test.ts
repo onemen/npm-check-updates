@@ -20,7 +20,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
     spawnStub?.mockRestore(context)
   })
 
-  it.only('ncu-test-peer-update', async () => {
+  it('ncu-test-peer-update', async () => {
     versionStub = stubVersions({
       'ncu-test-return-version': {
         version: '2.0.0',
@@ -30,7 +30,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
     } as MockedVersions)
-    spawnStub = await stubSpawnCommand('getIgnoredUpgradesDueToPeerDeps ncu-test-peer-update')
+    spawnStub = await stubSpawnCommand('ncu-test-peer-update')
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         'ncu-test-return-version': '1.0.0',
@@ -113,7 +113,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
     })
-    spawnStub = await stubSpawnCommand('getIgnoredUpgradesDueToPeerDeps ignored peer after upgrade')
+    spawnStub = await stubSpawnCommand('ignored peer after upgrade')
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         '@vitest/ui': '1.3.1',

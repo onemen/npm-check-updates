@@ -112,7 +112,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-v2': {
           version: 'https://github.com/raineorshine/ncu-test-v2#v2.0.0',
@@ -128,7 +127,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({})
     })
 
@@ -140,7 +138,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-v2': {
           version: 'git+https://github.com/raineorshine/ncu-test-v2#v2.0.0',
@@ -157,7 +154,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades1.should.deep.equal({
         'ncu-test-invalid-tag': {
           version: 'raineorshine/ncu-test-invalid-tag.git#v3.0.5',
@@ -172,7 +168,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades2.should.deep.equal({
         'angular-toasty': {
           version: 'git+https://github.com/raineorshine/ncu-test-v0.1.3a.git#1.0.7',
@@ -189,7 +184,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-invalid-tag': {
           version: 'git+https://github.com/raineorshine/ncu-test-simple-tag#v3',
@@ -206,7 +200,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({})
     })
 
@@ -223,7 +216,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-v2': {
           version: '2.0.0',
@@ -240,7 +232,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-v2': {
           version: 'https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0',
@@ -256,7 +247,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent', target: 'newest' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-greatest-not-newest': {
           version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
@@ -272,7 +262,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent', target: 'newest' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-greatest-not-newest': {
           version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
@@ -288,7 +277,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent', target: 'minor' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-return-version': {
           version: 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.2.0',
@@ -304,7 +292,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent', target: 'patch' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-return-version': {
           version: 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.1',
@@ -320,7 +307,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent' },
       )
 
-      await spawnStub.invalidate()
       upgrades.should.deep.equal({
         'ncu-test-greatest-not-newest': {
           version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.1',
@@ -336,7 +322,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent', target: 'newest' },
       )
 
-      await spawnStub.invalidate()
       upgradesNewest.should.deep.equal({
         'ncu-test-greatest-not-newest': {
           version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
@@ -350,7 +335,6 @@ describe('queryVersions', function () {
         { loglevel: 'silent', target: 'greatest' },
       )
 
-      await spawnStub.invalidate()
       upgradesGreatest.should.deep.equal({
         'ncu-test-greatest-not-newest': {
           version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',

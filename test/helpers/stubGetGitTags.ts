@@ -20,22 +20,18 @@ export async function stubGetGitTags(fixtureName: string) {
   const fixturePath = getFixturePath('getGitTags', fixtureName)
 
   let fixtures: Record<string, any> = {}
-  let fixturesLoaded = false
-  let initialFixtures = '{}'
+  let initialFixtures = ''
+
+  if (fs.existsSync(fixturePath)) {
+    fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'))
+    initialFixtures = JSON.stringify(fixtures)
+  } else if (!process.env.NCU_SAVE_FIXTURES) {
+    throw new Error(`Fixture not found: ${fixturePath}. Run with NCU_SAVE_FIXTURES=true`)
+  }
 
   const original = gitApi.getGitTags
 
   const spy: MockInstance = vi.spyOn(gitApi, 'getGitTags').mockImplementation(async (url: string) => {
-    if (!fixturesLoaded) {
-      if (fs.existsSync(fixturePath)) {
-        fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'))
-      } else if (!process.env.NCU_SAVE_FIXTURES) {
-        throw new Error(`Fixture not found: ${fixturePath}. Run with NCU_SAVE_FIXTURES=true`)
-      }
-      initialFixtures = JSON.stringify(fixtures)
-      fixturesLoaded = true
-    }
-
     const key = url // Using URL as the key
     const entry = fixtures[key]
 
@@ -61,28 +57,6 @@ export async function stubGetGitTags(fixtureName: string) {
       throw err
     }
   })
-
-  spy.invalidate = async () => {
-    const results = spy.mock.results
-    if (!results) return
-
-    for (const result of results) {
-      if (result.type === 'throw') {
-        if (result.value instanceof Error && result.value.message.includes('Fixture not found')) {
-          throw result.value
-        }
-      } else if (result.type === 'return' && result.value instanceof Promise) {
-        try {
-          await result.value
-        } catch (err: any) {
-          // Only throw if it matches our specific fixture error
-          if (err instanceof Error && err.message.includes('Fixture not found')) {
-            throw err
-          }
-        }
-      }
-    }
-  }
 
   return applyPersistentMockRestore(spy, {
     fixturePath,
