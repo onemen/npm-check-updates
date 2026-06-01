@@ -74,6 +74,7 @@ describe('yarn', function () {
   })
 
   it('getPeerDependencies v1', async () => {
+    process.env.YARN_CONFIG_PREFER_OFFLINE = 'true'
     spawnStub = await stubSpawnCommand('yarn getPeerDependencies v1')
     const testDir = path.join(__dirname, 'default')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
@@ -85,6 +86,7 @@ describe('yarn', function () {
   })
 
   it('getPeerDependencies v4', async () => {
+    process.env.YARN_ENABLE_OFFLINE_MODE = '1'
     spawnStub = await stubSpawnCommand('yarn getPeerDependencies v4')
     const testDir = path.join(__dirname, 'v4')
     const spawnOptions = { cwd: testDir, env: cleanEnv }

@@ -25,10 +25,9 @@ export class TestSandbox {
     const sandbox = new TestSandbox(prefix)
 
     // Initialize paths
-    sandbox.rootPath = fs.mkdtempSync(
-      path.join(os.tmpdir(), sandbox.rootPrefix.endsWith('-') ? sandbox.rootPrefix : `${sandbox.rootPrefix}-`),
-    )
-    sandbox.cwdPath = path.join(sandbox.rootPath, '.cwd')
+    const rootPrefix = sandbox.rootPrefix.endsWith('-') ? sandbox.rootPrefix : `${sandbox.rootPrefix}-`
+    sandbox.rootPath = fs.mkdtempSync(path.join(os.tmpdir(), rootPrefix)).replace(/\\/g, '/')
+    sandbox.cwdPath = path.join(sandbox.rootPath, '.cwd').replace(/\\/g, '/')
     fs.mkdirSync(sandbox.cwdPath, { recursive: true })
 
     // Configure environment
@@ -38,7 +37,6 @@ export class TestSandbox {
       npm_config_fund: 'false',
       npm_config_update_notifier: 'false',
       npm_config_loglevel: 'error',
-      yarn_config_prefer_offline: 'true',
       YARN_CACHE_FOLDER: sandbox.rootPath,
       TMPDIR: sandbox.rootPath,
       TEMP: sandbox.rootPath,
@@ -131,21 +129,21 @@ export class TestSandbox {
   }
 
   async cleanup(): Promise<void> {
-    process.env = this.originalEnv
     vi.restoreAllMocks()
+    process.env = this.originalEnv
 
     if (isMainThread) {
       try {
         // Move to the original project root or a neutral parent directory
         process.chdir(this.originalEnv.PWD || '../../')
-        // Give the OS a moment to release handles on the old directory
-        await new Promise(resolve => setTimeout(resolve, 250))
       } catch (err) {
         console.warn('[Cleanup] Could not revert process.cwd():', err)
       }
     }
 
     if (this.rootPath) {
+      // Give the OS a moment to release handles on the old directory
+      await new Promise(resolve => setTimeout(resolve, 200))
       try {
         await fsAsync.rm(this.rootPath, { recursive: true, force: true })
         this.rootPath = null

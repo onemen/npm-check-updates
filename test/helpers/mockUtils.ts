@@ -32,14 +32,25 @@ export function applyPersistentMockRestore(
       console.warn(`[${label}] Warning: mockRestore() called without 'context'. Fixture data will NOT be saved.`)
     }
 
-    const shouldSave =
-      !!process.env.NCU_SAVE_FIXTURES &&
-      JSON.stringify(fixtures) !== initialFixtures &&
-      context?.task?.result?.state === 'pass'
+    const shouldSave = !!process.env.NCU_SAVE_FIXTURES && context?.task?.result?.state === 'pass'
+    const keys = Object.keys(fixtures)
+    if (shouldSave && keys.length > 0) {
+      // Sort keys alphabetically
+      const sortedKeys = keys.sort()
+      const sortedFixtures = sortedKeys.reduce(
+        (acc, key) => {
+          acc[key] = fixtures[key]
+          return acc
+        },
+        {} as Record<string, any>,
+      )
 
-    if (shouldSave) {
-      fs.mkdirSync(path.dirname(fixturePath), { recursive: true })
-      fs.writeFileSync(fixturePath, JSON.stringify(fixtures, null, 2) + '\n')
+      // If the content is different, update the file
+      const newContent = JSON.stringify(sortedFixtures, null, 2) + '\n'
+      if (newContent !== initialFixtures) {
+        fs.mkdirSync(path.dirname(fixturePath), { recursive: true })
+        fs.writeFileSync(fixturePath, newContent)
+      }
     }
 
     return originalRestore()

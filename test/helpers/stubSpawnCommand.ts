@@ -27,7 +27,7 @@ export async function stubSpawnCommand(fixtureName: string) {
 
   let fixtures: Record<string, any> = {}
   let fixturesLoaded = false
-  let initialFixtures = '{}'
+  let initialFixtures = ''
 
   const actualModule = await vi.importActual<typeof mod>('../../src/lib/spawnCommand')
   const original = actualModule.spawnCommand
@@ -54,13 +54,13 @@ export async function stubSpawnCommand(fixtureName: string) {
         if (!fixturesLoaded) {
           if (fs.existsSync(fixturePath)) {
             fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'))
+            initialFixtures = JSON.stringify(fixtures)
           } else if (!process.env.NCU_SAVE_FIXTURES) {
             throw new Error(
               `Fixture not found: ${fixturePath}\n` +
                 `To generate this fixture, run the test with: NCU_SAVE_FIXTURES=true npm test`,
             )
           }
-          initialFixtures = JSON.stringify(fixtures)
           fixturesLoaded = true
         }
 
