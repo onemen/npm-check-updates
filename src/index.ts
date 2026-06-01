@@ -330,6 +330,20 @@ export async function run(
 ): Promise<PackageFile | Index<VersionSpec> | void> {
   const options = await initOptions(runOptions, { cli })
 
+  if (process.env.NCU_TESTS) {
+    const cwd = runOptions.cwd || process.cwd()
+    if (!runOptions.cwd && cwd.includes('npm-check-updates')) {
+      console.error(
+        // throw new Error(
+        'Current working directory must be a temp directory.' +
+          '\ntest file: ' +
+          expect?.getState?.()?.testPath?.replace('C:/code/ncu/npm-check-updates/', '') +
+          '\n' +
+          cwd,
+      )
+    }
+  }
+
   const bugsUrl = pkg.bugs.url
   /** ensure that the process exits with an error code if there was an unhandled rejection */
   const exitListener = () => {

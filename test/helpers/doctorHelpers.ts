@@ -1,13 +1,15 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import path from 'path'
 import { pm } from '../../src/lib/doctor'
 import { stripRange } from '../../src/lib/version-util'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
 import { TestSandbox } from './TestSandbox'
 import { runNcuCli } from './runNcuCli'
 
-export const sandbox = await TestSandbox.create('ncu-doctor-tests', '../test-data/doctor')
+// export const sandbox = await TestSandbox.create('ncu-doctor-tests', '../test-data/doctor')
+
+;(globalThis as any).sandbox = TestSandbox.create('ncu-doctor-tests')
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
 
@@ -145,7 +147,7 @@ export function createNcuRegExp(input: string): RegExp {
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
-    const cwd = await sandbox.createTestFolder('pass', packageManager)
+    const cwd = await sandbox.createTestFolder('doctor/pass')
     const pkgPath = path.join(cwd, 'package.json')
     const lockfilePath = path.join(
       cwd,
@@ -181,7 +183,7 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
 /** Assertions for npm or yarn when tests fail. */
 export const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('identify broken upgrade', async function () {
-    const cwd = await sandbox.createTestFolder('fail', packageManager)
+    const cwd = await sandbox.createTestFolder('doctor/fail')
     const pkgPath = path.join(cwd, 'package.json')
     const lockfilePath = path.join(
       cwd,

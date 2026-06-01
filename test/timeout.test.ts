@@ -7,7 +7,7 @@ import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-describe('timeout', function () {
+describe('timeout', async () => {
   it('throw an exception instead of printing to the console when timeout is exceeded', async () => {
     const pkgPath = path.join(__dirname, './test-data/ncu/package-large.json')
     return ncu({
@@ -23,6 +23,7 @@ describe('timeout', function () {
   })
 
   it('completes successfully with timeout', async () => {
+    await sandbox.createPackageJson()
     const stub = stubVersions('99.9.9', { spawn: true })
     await runNcuCli(['--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
     stub.mockRestore()

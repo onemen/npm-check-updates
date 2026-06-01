@@ -660,18 +660,6 @@ npmApi.mockFetchPartialPackument =
     }
 
     const isExist = targetVersion ? Object.keys(result.versions).find(v => v === targetVersion) : true
-    // console.log({
-    //   result,
-    //   isExist,
-    //   test: expect?.getState?.()?.currentTestName,
-    //   arguments: {
-    //     name,
-    //     fields,
-    //     tag,
-    //     _opts,
-    //     targetVersion,
-    //   },
-    // })
     if (!isExist) {
       throw new Error(`404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/${targetVersion}}`)
     }

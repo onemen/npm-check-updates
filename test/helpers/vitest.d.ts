@@ -1,4 +1,5 @@
 import { type MockInstance, type TestContext } from 'vitest'
+import { type TestSandbox } from './TestSandbox'
 
 declare module 'vitest' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -10,6 +11,7 @@ declare module 'vitest' {
 
 declare global {
   type MockImplementation<T> = Parameters<MockInstance<T>>[0]
+  var sandbox: TestSandbox
 }
 
 export {}

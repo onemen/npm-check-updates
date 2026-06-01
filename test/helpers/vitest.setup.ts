@@ -1,6 +1,7 @@
 import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
+import { setupCwdMock } from './mockCwdFactory'
 
 const should = initShould()
 
@@ -23,3 +24,12 @@ process.on('unhandledRejection', reason => {
 process.on('uncaughtException', error => {
   console.error('[Uncaught Exception]:', error)
 })
+
+// setupCwdMock()
+
+// afterAll(async () => {
+//   vi.restoreAllMocks()
+//   await sandbox.cleanup().catch(error => {
+//     console.log('Error while cleaning up sandbox:', error)
+//   })
+// })

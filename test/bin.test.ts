@@ -19,6 +19,10 @@ vi.mock('parse-github-url', async importOriginal => {
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('bin', async function () {
+  beforeEach(async () => {
+    await sandbox.cleanCwd()
+  })
+
   it('fetch latest version from registry (not stubbed)', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin'], {
@@ -40,6 +44,7 @@ describe('bin', async function () {
   })
 
   it('--loglevel verbose', async () => {
+    await sandbox.createPackageJson()
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--loglevel', 'verbose'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
@@ -51,6 +56,7 @@ describe('bin', async function () {
   })
 
   it('--verbose', async () => {
+    await sandbox.createPackageJson()
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--verbose'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
@@ -79,6 +85,7 @@ describe('bin', async function () {
   })
 
   it('fall back to package.json search when receiving empty content on stdin', async () => {
+    await sandbox.createPackageJson()
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--stdin'])
     stdout
@@ -200,6 +207,7 @@ describe('bin', async function () {
   })
 
   it('suppress stdout when --silent is provided', async () => {
+    await sandbox.createPackageJson()
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--silent'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
@@ -254,6 +262,7 @@ describe('bin', async function () {
   })
 
   it('combine short boolean options with long options', async () => {
+    await sandbox.createPackageJson()
     const stub = stubVersions('99.9.9', { spawn: true })
     const promise = runNcuCli(['-mp', 'foo'])
     await promise.should.eventually.be.rejectedWith('Invalid package manager: foo')

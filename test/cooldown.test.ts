@@ -59,9 +59,10 @@ const getNormalizedLogs = (logSpy: Mock<(...args: any[]) => void>): string[] => 
 }
 
 describe('cooldown', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
-  })
+  // TODO: clean all stub.mockRestore() to use afterEach
+  // beforeEach(() => {
+  //   vi.restoreAllMocks()
+  // })
 
   describe('invalid cooldown values', () => {
     it('throws error for negative cooldown', () => {

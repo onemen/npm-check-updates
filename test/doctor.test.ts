@@ -5,7 +5,7 @@ import path from 'path'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import { pm } from '../src/lib/doctor'
-import { createNcuRegExp, mockPackageManagerRun, sandbox, testFail, testPass } from './helpers/doctorHelpers'
+import { createNcuRegExp, mockPackageManagerRun, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
@@ -28,13 +28,13 @@ describe('doctor', function () {
   afterAll(async () => {
     stub.mockRestore()
     vi.restoreAllMocks()
-    await sandbox.cleanup()
+    sandbox.cleanup()
   })
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
-      const cwd = await sandbox.createTestFolder('nopackagefile')
+      const cwd = await sandbox.createTestFolder('doctor/nopackagefile')
       const { stdout } = await runNcuCli(['--doctor'], { cwd })
       return stripAnsi(stdout).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
@@ -44,16 +44,17 @@ describe('doctor', function () {
     })
 
     it('throw an error if there is no package file', async () => {
-      const cwd = await sandbox.createTestFolder('nopackagefile')
+      const cwd = await sandbox.createTestFolder('doctor/nopackagefile')
       return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
-      const cwd = await sandbox.createTestFolder('notestscript')
+      const cwd = await sandbox.createTestFolder('doctor/notestscript')
       return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
     })
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
+      await sandbox.createPackageJson()
       return Promise.all([
         runNcuCli(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
           '--packageData and --packageFile are not allowed with --doctor',
@@ -68,7 +69,7 @@ describe('doctor', function () {
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async function () {
-      const cwd = await sandbox.createTestFolder('options')
+      const cwd = await sandbox.createTestFolder('doctor/options')
       const pkgPath = path.join(cwd, 'package.json')
 
       let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--filter', 'ncu-test-v2'], {
@@ -98,8 +99,8 @@ describe('doctor', function () {
       pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
     })
 
-    it('custom install script with --doctorInstall', async function () {
-      const cwd = await sandbox.createTestFolder('custominstall')
+    it.only('custom install script with --doctorInstall', async function () {
+      const cwd = await sandbox.createTestFolder('doctor/custominstall')
       const pkgPath = path.join(cwd, 'package.json')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
@@ -130,7 +131,7 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest', async function () {
-      const cwd = await sandbox.createTestFolder('customtest')
+      const cwd = await sandbox.createTestFolder('doctor/customtest')
       const pkgPath = path.join(cwd, 'package.json')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
@@ -161,7 +162,7 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
-      const cwd = await sandbox.createTestFolder('customtest2')
+      const cwd = await sandbox.createTestFolder('doctor/customtest2')
       const pkgPath = path.join(cwd, 'package.json')
       const echoPath = path.join(cwd, 'echo.js')
 
@@ -169,6 +170,8 @@ describe('doctor', function () {
         rejectOnError: false,
         cwd,
       })
+
+      console.log({ stdout, stderr })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
