@@ -99,7 +99,7 @@ describe('doctor', function () {
       pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
     })
 
-    it.only('custom install script with --doctorInstall', async function () {
+    it('custom install script with --doctorInstall', async function () {
       const cwd = await sandbox.createTestFolder('doctor/custominstall')
       const pkgPath = path.join(cwd, 'package.json')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -170,8 +170,6 @@ describe('doctor', function () {
         rejectOnError: false,
         cwd,
       })
-
-      console.log({ stdout, stderr })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 

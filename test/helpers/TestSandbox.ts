@@ -3,6 +3,7 @@ import fsAsync from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isMainThread } from 'node:worker_threads'
 
 /** A test sandbox for creating isolated test environments. */
 export class TestSandbox {
@@ -16,36 +17,45 @@ export class TestSandbox {
     this.originalEnv = { ...process.env }
   }
 
-  get isInitialized(): boolean {
-    return this.rootPath !== null
-  }
-
-  static create(rootPrefix = 'test-suite-'): TestSandbox {
-    const normalizedPrefix = rootPrefix.endsWith('-') || rootPrefix.endsWith(path.sep) ? rootPrefix : `${rootPrefix}-`
-
-    const sandbox = new TestSandbox(normalizedPrefix)
+  /**
+   * Sets up a sandbox and hooks into the Vitest lifecycle to manage
+   * isolated working directories.
+   */
+  static setup(prefix = 'ncu-test-sandbox-'): TestSandbox {
+    const sandbox = new TestSandbox(prefix)
 
     // Initialize paths
-    sandbox.rootPath = fs.mkdtempSync(path.join(os.tmpdir(), sandbox.rootPrefix))
-    sandbox.cachePath = path.join(sandbox.rootPath, '.cache')
-    fs.mkdirSync(sandbox.cachePath, { recursive: true })
+    sandbox.rootPath = fs.mkdtempSync(
+      path.join(os.tmpdir(), sandbox.rootPrefix.endsWith('-') ? sandbox.rootPrefix : `${sandbox.rootPrefix}-`),
+    )
     sandbox.cwdPath = path.join(sandbox.rootPath, '.cwd')
     fs.mkdirSync(sandbox.cwdPath, { recursive: true })
 
-    // Environment configuration
-    const testEnv: NodeJS.ProcessEnv = {
+    // Configure environment
+    Object.assign(process.env, {
       npm_config_prefer_offline: 'true',
       npm_config_audit: 'false',
       npm_config_fund: 'false',
       npm_config_update_notifier: 'false',
       npm_config_loglevel: 'error',
       yarn_config_prefer_offline: 'true',
-      YARN_CACHE_FOLDER: sandbox.cachePath,
-      TMPDIR: sandbox.cachePath,
-      TEMP: sandbox.cachePath,
-      TMP: sandbox.cachePath,
+      YARN_CACHE_FOLDER: sandbox.rootPath,
+      TMPDIR: sandbox.rootPath,
+      TEMP: sandbox.rootPath,
+      TMP: sandbox.rootPath,
+    })
+
+    // Setup working directory isolation
+    if (isMainThread) {
+      process.chdir(sandbox.cwdPath)
+    } else {
+      vi.spyOn(process, 'cwd').mockImplementation(() => sandbox.cwdPath!)
     }
-    Object.assign(process.env, testEnv)
+
+    // Register cleanup in Vitest lifecycle
+    afterAll(async () => {
+      await sandbox.cleanup()
+    })
 
     return sandbox
   }
@@ -88,7 +98,7 @@ export class TestSandbox {
       ...content,
     }
 
-    const targetFolder = testFolderPath ?? this.rootPath
+    const targetFolder = testFolderPath ?? this.cwdPath!
     const packageJsonPath = path.join(targetFolder, 'package.json')
 
     await fsAsync.writeFile(packageJsonPath, JSON.stringify(defaultPackageJson, null, 2), 'utf-8')
@@ -121,22 +131,29 @@ export class TestSandbox {
   }
 
   async cleanup(): Promise<void> {
-    console.log('cleanup 1')
-
     process.env = this.originalEnv
     vi.restoreAllMocks()
-    console.log('cleanup 2 this.rootPath', this.rootPath)
+
+    if (isMainThread) {
+      try {
+        // Move to the original project root or a neutral parent directory
+        process.chdir(this.originalEnv.PWD || '../../')
+        // Give the OS a moment to release handles on the old directory
+        await new Promise(resolve => setTimeout(resolve, 250))
+      } catch (err) {
+        console.warn('[Cleanup] Could not revert process.cwd():', err)
+      }
+    }
 
     if (this.rootPath) {
-      console.log('cleanup 3')
-      this.cleanCwd()
-      console.log('cleanup 4')
-      await fsAsync.rm(this.rootPath, { recursive: true, force: true }).catch(e => console.log(e))
-      console.log('cleanup 5')
-      this.rootPath = null
-      this.cachePath = null
-      this.cwdPath = null
-      console.log('cleanup 6')
+      try {
+        await fsAsync.rm(this.rootPath, { recursive: true, force: true })
+        this.rootPath = null
+        this.cachePath = null
+        this.cwdPath = null
+      } catch (err) {
+        console.warn(`[Cleanup] Failed to remove sandbox folder: ${err instanceof Error ? err.message : err}`)
+      }
     }
   }
 }

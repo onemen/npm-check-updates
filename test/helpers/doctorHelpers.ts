@@ -4,12 +4,12 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { pm } from '../../src/lib/doctor'
 import { stripRange } from '../../src/lib/version-util'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
-import { TestSandbox } from './TestSandbox'
+// import { TestSandbox } from './TestSandbox'
 import { runNcuCli } from './runNcuCli'
 
 // export const sandbox = await TestSandbox.create('ncu-doctor-tests', '../test-data/doctor')
 
-;(globalThis as any).sandbox = TestSandbox.create('ncu-doctor-tests')
+// ;(globalThis as any).sandbox = TestSandbox.create('ncu-doctor-tests')
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
 

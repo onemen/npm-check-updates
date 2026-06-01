@@ -1,7 +1,7 @@
 import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
-import { setupCwdMock } from './mockCwdFactory'
+import { TestSandbox } from './TestSandbox'
 
 const should = initShould()
 
@@ -12,6 +12,7 @@ config.truncateThreshold = 0
 
 process.env.NCU_TESTS = 'true'
 ;(global as any).should = should
+;(globalThis as any).sandbox = TestSandbox.setup()
 
 /**
  * Unhandled error handlers for test debugging.
@@ -24,12 +25,3 @@ process.on('unhandledRejection', reason => {
 process.on('uncaughtException', error => {
   console.error('[Uncaught Exception]:', error)
 })
-
-// setupCwdMock()
-
-// afterAll(async () => {
-//   vi.restoreAllMocks()
-//   await sandbox.cleanup().catch(error => {
-//     console.log('Error while cleaning up sandbox:', error)
-//   })
-// })

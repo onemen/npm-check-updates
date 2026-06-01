@@ -1,4 +1,8 @@
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import ncu from '../src/index'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('staticRegistry', function () {
   it('upgrade to the version specified in the static registry file', async () => {
@@ -9,7 +13,7 @@ describe('staticRegistry', function () {
         },
       },
       registryType: 'json',
-      registry: './test/test-data/registry.json',
+      registry: path.join(__dirname, 'test-data/registry.json'),
     })
 
     output!.should.deep.equal({
@@ -25,7 +29,7 @@ describe('staticRegistry', function () {
         },
       },
       registryType: 'json',
-      registry: './test/test-data/registry.json',
+      registry: path.join(__dirname, 'test-data/registry.json'),
     })
 
     output!.should.deep.equal({})
@@ -54,7 +58,7 @@ describe('staticRegistry', function () {
           'ncu-test-v2': '1.0.0',
         },
       },
-      registry: './test/test-data/registry.json',
+      registry: path.join(__dirname, 'test-data/registry.json'),
     })
 
     output!.should.deep.equal({

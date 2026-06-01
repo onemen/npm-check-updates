@@ -31,6 +31,10 @@ async function getAllPackagesForTest(testPath: string, options: Options): Promis
 }
 
 describe('getAllPackages', () => {
+  beforeAll(async () => {
+    await sandbox.createPackageJson()
+  })
+
   it('returns default package without cwd', async () => {
     const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({})
     const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
