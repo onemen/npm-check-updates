@@ -20,6 +20,18 @@ import upgradePackageData from './upgradePackageData'
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
 export const pm = {
+  spawn(
+    command: string,
+    args: string[] | undefined,
+    options: any,
+    spawnOptions: any,
+  ): Promise<{
+    stdout: string
+    stderr: string
+  }> {
+    return spawn(command, args, options, spawnOptions)
+  },
+
   /** Spawns a package manager command (npm, pnpm, yarn, bun) */
   async run(
     args: string[],
@@ -120,7 +132,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     if (options.doctorInstall) {
       const [installCommand, ...testArgs] = options.doctorInstall.split(' ')
       console.log(chalk.blue(options.doctorInstall))
-      await spawn(installCommand, testArgs, {}, { cwd })
+      await pm.spawn(installCommand, testArgs, {}, { cwd })
     } else {
       await pm.run(['install'], options, true)
     }
@@ -148,7 +160,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       }
       const [testCommand, ...testArgs] = groups
       console.log(chalk.blue(options.doctorTest))
-      await spawn(testCommand, testArgs, spawnPleaseOptions, { cwd })
+      await pm.spawn(testCommand, testArgs, spawnPleaseOptions, { cwd })
     } else {
       await pm.run(['run', 'test'], options, true, { spawnPleaseOptions })
     }

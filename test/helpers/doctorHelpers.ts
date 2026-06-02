@@ -126,6 +126,26 @@ export function mockPackageManagerRun() {
   })
 }
 
+/** mock spawn for doctorTest and doctorInstall options  */
+export function mockSpawn() {
+  const originalSpawn = pm.spawn
+  return vi.spyOn(pm, 'spawn').mockImplementation(async (command, args, options, spawnOptions) => {
+    const inputStr = JSON.stringify({ command, args })
+    switch (inputStr) {
+      case '{"command":"npm.cmd","args":["run","myinstall"]}':
+        // "myinstall": "echo 'Install Success'",
+        return { stdout: 'Install Success', stderr: '' }
+      case '{"command":"npm.cmd","args":["run","mytest"]}':
+        // "mytest": "echo Success"
+        return { stdout: 'Success', stderr: '' }
+    }
+
+    // node echo.js "123 456"
+    // echo.js -> console.log(process.argv)
+    return originalSpawn(command, args, options, spawnOptions)
+  })
+}
+
 /**
  * Windows terminal environments (like Git-Bash) often render different column padding
  * than Linux, resulting in multiple spaces between the name and version.

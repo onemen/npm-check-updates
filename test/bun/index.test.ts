@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
-import { mockPackageManagerRun, testFail, testPass } from '../helpers/doctorHelpers'
+import { mockPackageManagerRun, mockSpawn, testFail, testPass } from '../helpers/doctorHelpers'
 import { type SpawnCommandStub, stubSpawnCommand } from '../helpers/stubSpawnCommand'
 import stubVersions from '../helpers/stubVersions'
 
@@ -39,6 +39,7 @@ describe('bun', function () {
 
     versionStub = stubVersions(mockNpmVersions, { spawn: true })
     mockPackageManagerRun()
+    mockSpawn()
   })
 
   afterEach(async context => {
