@@ -1,73 +1,53 @@
-export const githubUrlMap = new Map([
-  [
-    'https://github.com/raineorshine/ncu-test-v2#1.0.0',
-    { auth: null, protocol: 'https:', host: 'github.com', path: 'raineorshine/ncu-test-v2', branch: '1.0.0' },
-  ],
-  [
-    'raineorshine/ncu-test-v2#1.0.0',
-    { auth: null, protocol: null, host: 'github.com', path: 'raineorshine/ncu-test-v2', branch: '1.0.0' },
-  ],
-  [
-    'https://github.com/raineorshine/ncu-test-v2#semver:^1.0.0',
-    { auth: null, protocol: 'https:', host: 'github.com', path: 'raineorshine/ncu-test-v2', branch: 'semver:^1.0.0' },
-  ],
-  [
-    'https://github.com/raineorshine/ncu-test-v2#2.0.0',
-    { auth: null, protocol: 'https:', host: 'github.com', path: 'raineorshine/ncu-test-v2', branch: '2.0.0' },
-  ],
-  [
-    'https://github.com/raineorshine/ncu-test-v2#2.0.0',
-    { auth: null, protocol: 'https:', host: 'github.com', path: 'raineorshine/ncu-test-v2', branch: '2.0.0' },
-  ],
-  [
-    'github:raineorshine/ncu-test-v2#1.0.0',
-    { auth: null, protocol: 'github:', host: 'raineorshine', path: 'ncu-test-v2', branch: '1.0.0' },
-  ],
-  [
-    'github:raineorshine/ncu-test-v2#2.0.0',
-    { auth: null, protocol: 'github:', host: 'raineorshine', path: 'ncu-test-v2', branch: '2.0.0' },
-  ],
-  [
-    'raineorshine/ncu-test-v2#2.0.0',
-    { auth: null, protocol: null, host: 'github.com', path: 'raineorshine/ncu-test-v2', branch: '2.0.0' },
-  ],
-  [
-    'https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0',
-    { auth: null, protocol: 'https:', host: 'github.com', path: 'raineorshine/ncu-test-v2', branch: 'semver:^2.0.0' },
-  ],
-  [
-    'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
-    { auth: null, protocol: 'https:', host: 'github.com', path: 'raineorshine/ncu-test-v2.git', branch: 'v1.0.0' },
-  ],
-  [
-    'https://github.com/raineorshine/ncu-test-v2.git#v2.0.0',
-    { auth: null, protocol: 'https:', host: 'github.com', path: 'raineorshine/ncu-test-v2.git', branch: 'v2.0.0' },
-  ],
-])
+import fs from 'node:fs'
+import path from 'node:path'
+import { getFixturePath } from './mockUtils'
 
 type ParseGitHubUrl = (declaration: string) => { branch: string | null; [key: string]: any }
 
-/** */
+const FIXTURE_PATH = getFixturePath('_', 'parse-github-url')
+
+const githubUrlMap = fs.existsSync(FIXTURE_PATH) ? JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf-8')) : {}
+let isDirty = false
+
+/** mock parse-github-url */
 export async function createParseGitHubUrlMock(importOriginal: () => Promise<any>) {
   const actual = (await importOriginal()) as { default: ParseGitHubUrl }
+
+  afterAll(() => {
+    if (Object.keys(githubUrlMap).length) {
+      console.log('Final GitHub URL Map:', isDirty, Object.keys(githubUrlMap).length)
+    }
+    if (isDirty) {
+      const sortedMap = Object.fromEntries(Object.entries(githubUrlMap).sort(([a], [b]) => a.localeCompare(b)))
+      fs.mkdirSync(path.dirname(FIXTURE_PATH), { recursive: true })
+      fs.writeFileSync(FIXTURE_PATH, JSON.stringify(sortedMap, null, 2))
+    }
+  })
 
   return {
     ...actual,
     default: vi.fn(declaration => {
-      // Check our map first
-      if (githubUrlMap.has(declaration)) {
-        return githubUrlMap.get(declaration)
+      if (githubUrlMap[declaration]) {
+        return githubUrlMap[declaration]
       }
 
       const result = actual.default(declaration)
       const { auth, protocol, host, path, branch } = result
 
-      // If not in map, warn and call the real library
-      console.warn(
-        `[MOCK WARNING] 'parse-github-url' called with unknown declaration: "${declaration}". Please update your test fixtures.
-        with:
-        ['${declaration}', ${JSON.stringify({ auth, protocol, host, path, branch })}]`,
-      )
+      // If not in map, warn and return result from the real library
+      const isGitHubUrl = declaration.includes('github.com') || declaration.includes('/')
+      if (isGitHubUrl) {
+        isDirty = true
+        // console.warn(
+        //   `[MOCK WARNING] 'parse-github-url' called with unknown declaration: "${declaration}".
+        //  testPath: ${expect.getState()?.testPath}
+        //  currentTestName: ${expect.getState()?.currentTestName},
+        //  Please update your test fixtures with:
+        // ['${declaration}', ${JSON.stringify({ auth, protocol, host, path, branch })}]`,
+        // )
+        console.warn(`[MOCK WARNING] ${expect.getState()?.testPath}`)
+        githubUrlMap[declaration] = { auth, protocol, host, path, branch }
+      }
 
       return result
     }),

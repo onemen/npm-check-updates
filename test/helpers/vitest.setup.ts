@@ -2,6 +2,7 @@ import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import { TestSandbox } from './TestSandbox'
+import { createParseGitHubUrlMock } from './stubParseGitHubUrl'
 
 const should = initShould()
 
@@ -26,4 +27,9 @@ process.on('unhandledRejection', reason => {
 
 process.on('uncaughtException', error => {
   console.error('[Uncaught Exception]:', error)
+})
+
+// Mock 'parse-github-url' to provide consistent parsing results for GitHub URLs in tests
+vi.mock('parse-github-url', async importOriginal => {
+  return createParseGitHubUrlMock(importOriginal)
 })

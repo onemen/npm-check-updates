@@ -11,11 +11,6 @@ import { runNcuCli } from './helpers/runNcuCli'
 import { type GetGitTagsStub, stubGetGitTags } from './helpers/stubGetGitTags'
 import stubVersions from './helpers/stubVersions'
 
-vi.mock('parse-github-url', async importOriginal => {
-  const { createParseGitHubUrlMock } = await import('./helpers/stubParseGitHubUrl')
-  return createParseGitHubUrlMock(importOriginal)
-})
-
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('bin', async function () {

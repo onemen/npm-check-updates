@@ -25,6 +25,7 @@ const baseConfig = {
 
   // Setup files
   setupFiles: ['./test/helpers/vitest.setup.ts'],
+  // globalSetup: ['./test/helpers/global-setup.ts'],
 
   // Reporter configuration
   reporters: [['default', { summary: false }]],
