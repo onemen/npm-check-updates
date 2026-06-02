@@ -94,7 +94,7 @@ export class TestSandbox {
   }
 
   async createPackageJson(content: Partial<Record<string, any>> = {}, testFolderPath?: string): Promise<void> {
-    if (!this.rootPath) {
+    if (!this.cwdPath) {
       throw new Error('Sandbox not initialized.')
     }
 
@@ -105,7 +105,7 @@ export class TestSandbox {
       ...content,
     }
 
-    const targetFolder = testFolderPath ?? this.cwdPath!
+    const targetFolder = testFolderPath ?? this.cwdPath
     const packageJsonPath = path.join(targetFolder, 'package.json')
 
     await fsAsync.writeFile(packageJsonPath, JSON.stringify(defaultPackageJson, null, 2), 'utf-8')
@@ -152,7 +152,7 @@ export class TestSandbox {
 
     if (this.rootPath) {
       // Give the OS a moment to release handles on the old directory
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise(resolve => setTimeout(resolve, 100))
       try {
         await fsAsync.rm(this.rootPath, { recursive: true, force: true })
         this.rootPath = null

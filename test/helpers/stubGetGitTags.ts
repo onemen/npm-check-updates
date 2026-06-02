@@ -28,7 +28,10 @@ export async function stubGetGitTags(fixtureName: string) {
     fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'))
     initialFixtures = JSON.stringify(fixtures)
   } else if (!process.env.NCU_SAVE_FIXTURES) {
-    throw new Error(`Fixture not found: ${fixturePath}.\nRun with NCU_SAVE_FIXTURES=true`)
+    throw new Error(
+      `Fixture not found: ${fixturePath}\n` +
+        `To generate this fixture, run the test with: NCU_SAVE_FIXTURES=true npm test`,
+    )
   }
 
   const original = gitApi.getGitTags
@@ -42,10 +45,6 @@ export async function stubGetGitTags(fixtureName: string) {
     }
 
     if (entry) return entry
-
-    if (!process.env.NCU_SAVE_FIXTURES) {
-      throw new Error(`Missing fixture for URL: ${url}.\nRun with NCU_SAVE_FIXTURES=true to record.`)
-    }
 
     try {
       const result = await original(url)

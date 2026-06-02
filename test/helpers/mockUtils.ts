@@ -34,7 +34,7 @@ export function applyPersistentMockRestore(
 
     const shouldSave = !!process.env.NCU_SAVE_FIXTURES && context?.task?.result?.state === 'pass'
     const keys = Object.keys(fixtures)
-    if (shouldSave && keys.length > 0) {
+    if (shouldSave && (keys.length > 0 || initialFixtures === '')) {
       // Sort keys alphabetically
       const sortedKeys = keys.sort()
       const sortedFixtures = sortedKeys.reduce(
