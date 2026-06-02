@@ -1,0 +1,254 @@
+{
+  "file:../editor": {
+    "auth": null,
+    "protocol": "file:",
+    "host": "github.com",
+    "path": "editor",
+    "branch": "master"
+  },
+  "file:./tools/npm/@angular_bazel": {
+    "auth": null,
+    "protocol": "file:",
+    "host": "github.com",
+    "path": "tools/npm/@angular_bazel",
+    "branch": "@angular_bazel"
+  },
+  "file:devtools/eslint-rules": {
+    "auth": null,
+    "protocol": "file:",
+    "host": "github.com",
+    "path": "devtools/eslint-rules",
+    "branch": "master"
+  },
+  "git+gitlab.com/projects/libraries/project-4-utils.git": {
+    "auth": null,
+    "protocol": null,
+    "host": "github.com",
+    "path": "git+gitlab.com/projects/libraries/project-4-utils.git",
+    "branch": "libraries"
+  },
+  "git+https://github.com/raineorshine/ncu-test-no-tags#v1": {
+    "auth": null,
+    "protocol": "git+https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-no-tags",
+    "branch": "v1"
+  },
+  "git+https://github.com/raineorshine/ncu-test-simple-tag#v1": {
+    "auth": null,
+    "protocol": "git+https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-simple-tag",
+    "branch": "v1"
+  },
+  "git+https://github.com/raineorshine/ncu-test-v0.1.3a.git#1.0.0": {
+    "auth": null,
+    "protocol": "git+https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v0.1.3a.git",
+    "branch": "1.0.0"
+  },
+  "git+https://github.com/raineorshine/ncu-test-v2#v1.0.0": {
+    "auth": null,
+    "protocol": "git+https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "v1.0.0"
+  },
+  "git+https://raineorshine@github.com/ncu-return-version#v999.9.9": {
+    "auth": "raineorshine",
+    "protocol": "git+https:",
+    "host": "github.com",
+    "path": "ncu-return-version",
+    "branch": "v999.9.9"
+  },
+  "git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283": {
+    "auth": "username:dh9dnas0nndnjnjasd4",
+    "protocol": "git+https:",
+    "host": "bitbucket.org",
+    "path": "somename/common.git",
+    "branch": "v283"
+  },
+  "github:a/b": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "a",
+    "path": "b",
+    "branch": "master"
+  },
+  "github:foo/bar#v1": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "foo",
+    "path": "bar",
+    "branch": "v1"
+  },
+  "github:foo/bar#v1.0": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "foo",
+    "path": "bar",
+    "branch": "v1.0"
+  },
+  "github:foo/bar#v1.0.0": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "foo",
+    "path": "bar",
+    "branch": "v1.0.0"
+  },
+  "github:foo/bar#v2": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "foo",
+    "path": "bar",
+    "branch": "v2"
+  },
+  "github:foo/bar#v2.0": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "foo",
+    "path": "bar",
+    "branch": "v2.0"
+  },
+  "github:foo/bar#v2.0.0": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "foo",
+    "path": "bar",
+    "branch": "v2.0.0"
+  },
+  "github:raineorshine/ncu-test-v2#1.0.0": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "raineorshine",
+    "path": "ncu-test-v2",
+    "branch": "1.0.0"
+  },
+  "github:raineorshine/ncu-test-v2#2.0.0": {
+    "auth": null,
+    "protocol": "github:",
+    "host": "raineorshine",
+    "path": "ncu-test-v2",
+    "branch": "2.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-greatest-not-newest",
+    "branch": "semver:^1.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-return-version#semver:^0.1.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-return-version",
+    "branch": "semver:^0.1.0"
+  },
+  "https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-return-version",
+    "branch": "semver:^1.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-v2": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "master"
+  },
+  "https://github.com/raineorshine/ncu-test-v2.git#v1.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2.git",
+    "branch": "v1.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-v2.git#v2.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2.git",
+    "branch": "v2.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-v2#1.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "1.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-v2#2.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "2.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-v2#semver:^1.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "semver:^1.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "semver:^2.0.0"
+  },
+  "https://github.com/raineorshine/ncu-test-v2#v1.0.0": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "v1.0.0"
+  },
+  "link:../link": {
+    "auth": null,
+    "protocol": "link:",
+    "host": "..",
+    "path": "link",
+    "branch": "master"
+  },
+  "raineorshine/ncu-test-invalid-tag.git#v3.0.0": {
+    "auth": null,
+    "protocol": null,
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-invalid-tag.git",
+    "branch": "v3.0.0"
+  },
+  "raineorshine/ncu-test-v2": {
+    "auth": null,
+    "protocol": null,
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "master"
+  },
+  "raineorshine/ncu-test-v2#1.0.0": {
+    "auth": null,
+    "protocol": null,
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "1.0.0"
+  },
+  "raineorshine/ncu-test-v2#2.0.0": {
+    "auth": null,
+    "protocol": null,
+    "host": "github.com",
+    "path": "raineorshine/ncu-test-v2",
+    "branch": "2.0.0"
+  },
+  "workspace:../workspace": {
+    "auth": null,
+    "protocol": "workspace:",
+    "host": "..",
+    "path": "workspace",
+    "branch": "master"
+  }
+}

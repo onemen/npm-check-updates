@@ -25,7 +25,7 @@ const baseConfig = {
 
   // Setup files
   setupFiles: ['./test/helpers/vitest.setup.ts'],
-  // globalSetup: ['./test/helpers/global-setup.ts'],
+  globalSetup: ['./test/helpers/global-setup.ts'],
 
   // Reporter configuration
   reporters: [['default', { summary: false }]],
@@ -40,18 +40,19 @@ export default defineConfig({
           name: 'Unit tests',
           isolate: false,
           include: ['test/**/*.test.ts'],
-          exclude: ['node_modules', 'build', 'test/test-data', 'test/workspaces.test.ts'],
+          // exclude: ['node_modules', 'build', 'test/test-data', 'test/workspaces.test.ts'],
+          exclude: ['node_modules', 'build', 'test/test-data'],
         }),
       },
-      {
-        // Workspaces tests creates many temporary files and directories,
-        // running them in separate project shorten test runtime
-        test: mergeConfig(baseConfig, {
-          name: 'Unit tests - Workspaces',
-          isolate: false,
-          include: ['test/workspaces.test.ts'],
-        }),
-      },
+      // {
+      //   // Workspaces tests creates many temporary files and directories,
+      //   // running them in separate project shorten test runtime
+      //   test: mergeConfig(baseConfig, {
+      //     name: 'Unit tests - Workspaces',
+      //     isolate: false,
+      //     include: ['test/workspaces.test.ts'],
+      //   }),
+      // },
     ],
   },
 })

@@ -1,52 +1,35 @@
+import console from 'node:console'
 import fs from 'node:fs'
 import path from 'node:path'
-import { getFixturePath } from './mockUtils'
 
 type ParseGitHubUrl = (declaration: string) => { branch: string | null; [key: string]: any }
 
-const FIXTURE_PATH = getFixturePath('_', 'parse-github-url')
+const TEMP_LOG = path.join(__dirname, '../fixtures/temp-github-urls.jsonl')
 
-const githubUrlMap = fs.existsSync(FIXTURE_PATH) ? JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf-8')) : {}
-let isDirty = false
+// Load existing fixtures once for fast lookups
+const FIXTURE_PATH = path.join(__dirname, '../fixtures/github-urls.json')
+const existingFixtures = fs.existsSync(FIXTURE_PATH) ? JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf-8')) : {}
 
 /** mock parse-github-url */
 export async function createParseGitHubUrlMock(importOriginal: () => Promise<any>) {
   const actual = (await importOriginal()) as { default: ParseGitHubUrl }
 
-  afterAll(() => {
-    if (Object.keys(githubUrlMap).length) {
-      console.log('Final GitHub URL Map:', isDirty, Object.keys(githubUrlMap).length)
-    }
-    if (isDirty) {
-      const sortedMap = Object.fromEntries(Object.entries(githubUrlMap).sort(([a], [b]) => a.localeCompare(b)))
-      fs.mkdirSync(path.dirname(FIXTURE_PATH), { recursive: true })
-      fs.writeFileSync(FIXTURE_PATH, JSON.stringify(sortedMap, null, 2))
-    }
-  })
-
   return {
     ...actual,
     default: vi.fn(declaration => {
-      if (githubUrlMap[declaration]) {
-        return githubUrlMap[declaration]
+      if (existingFixtures[declaration]) {
+        return existingFixtures[declaration]
       }
 
       const result = actual.default(declaration)
       const { auth, protocol, host, path, branch } = result
 
-      // If not in map, warn and return result from the real library
       const isGitHubUrl = declaration.includes('github.com') || declaration.includes('/')
       if (isGitHubUrl) {
-        isDirty = true
-        // console.warn(
-        //   `[MOCK WARNING] 'parse-github-url' called with unknown declaration: "${declaration}".
-        //  testPath: ${expect.getState()?.testPath}
-        //  currentTestName: ${expect.getState()?.currentTestName},
-        //  Please update your test fixtures with:
-        // ['${declaration}', ${JSON.stringify({ auth, protocol, host, path, branch })}]`,
-        // )
         console.warn(`[MOCK WARNING] ${expect.getState()?.testPath}`)
-        githubUrlMap[declaration] = { auth, protocol, host, path, branch }
+        const entry = JSON.stringify({ [declaration]: { auth, protocol, host, path, branch } })
+        fs.appendFileSync(TEMP_LOG, entry + '\n')
+        existingFixtures[declaration] = result
       }
 
       return result
