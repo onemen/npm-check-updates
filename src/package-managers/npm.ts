@@ -612,60 +612,23 @@ npmApi.mockFetchUpgradedPackument =
     })
   }
 
-/** Filters a packument to only include requested fields. Used for testing fetchPartialPackument. */
-npmApi.mockFetchPartialPackument =
-  (mockReturnedVersions: MockedVersions): typeof fetchPartialPackument =>
-  (name: string, fields: (keyof Packument)[], tag: string | null, _opts?: any, targetVersion?: Version) => {
-    const partialPackument =
-      typeof mockReturnedVersions === 'function'
-        ? mockReturnedVersions({})?.[name]
-        : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
-          ? mockReturnedVersions
-          : (mockReturnedVersions[name] ?? mockReturnedVersions.default)
-
-    let version: string | undefined = ''
-    if (!(partialPackument as any)?.skipVersionValidation) {
-      version = isPackument(partialPackument) ? partialPackument.version : partialPackument
-      if (!version) {
-        throw new Error(
-          `fetchPartialPackument is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
-        )
-      }
+/** Used for testing fetchPartialPackument. */
+npmApi.mockFetchPartialPackument = (mockReturnedVersions: MockedVersions): typeof fetchPartialPackument => {
+  const mockFetch = npmApi.mockFetchUpgradedPackument(mockReturnedVersions)
+  return async (name: string, fields: (keyof Packument)[], tag: string | null, _opts?: any, version?: Version) => {
+    const packument = await mockFetch(name, fields, '', { distTag: tag || undefined })
+    if (!packument) {
+      return { name, versions: {} }
     }
 
-    const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
-    const packument: Packument = {
-      name,
-      'dist-tags': {
-        [tag || 'latest']: version,
-      },
-      engines: { node: '' },
-      time: {
-        [version]: time,
-      },
-      version,
-      versions: {},
-      ...(isPackument(partialPackument) ? partialPackument : null),
-    }
-
-    const { versions: _, ...packumentWithoutVersions } = packument
-
-    const result = {
-      ...packument,
-      versions: {
-        ...((isPackument(partialPackument) && partialPackument.versions) || {
-          [version]: packumentWithoutVersions,
-        }),
-      },
-    }
-
-    const isExist = targetVersion ? Object.keys(result.versions).find(v => v === targetVersion) : true
+    const isExist = version ? Object.keys(packument?.versions ?? {}).find(v => v === version) : true
     if (!isExist) {
-      throw new Error(`404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/${targetVersion}}`)
+      throw new Error(`404 Not Found - GET https://registry.npmjs.org/${name}/${version}}`)
     }
 
-    return Promise.resolve(result)
+    return packument
   }
+}
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
 // Note that this is memoized on configs and options, but not on package name. This avoids duplicate messages when log level is verbose. findNpmConfig is memoized on config path, so it is not expensive to call multiple times.
