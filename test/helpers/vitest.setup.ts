@@ -12,7 +12,9 @@ config.truncateThreshold = 0
 
 process.env.NCU_TESTS = 'true'
 ;(global as any).should = should
-;(globalThis as any).sandbox = TestSandbox.setup()
+
+/* Initialize the test sandbox and make it globally available for all tests */
+;(globalThis as any).sandbox = TestSandbox.registerLifecycle()
 
 /**
  * Unhandled error handlers for test debugging.

@@ -21,7 +21,7 @@ export class TestSandbox {
    * Sets up a sandbox and hooks into the Vitest lifecycle to manage
    * isolated working directories.
    */
-  static setup(prefix = 'ncu-test-sandbox-'): TestSandbox {
+  private static setup(prefix = 'ncu-test-sandbox-'): TestSandbox {
     const sandbox = new TestSandbox(prefix)
 
     // Initialize paths
@@ -43,19 +43,28 @@ export class TestSandbox {
       TMP: sandbox.rootPath,
     })
 
-    // Setup working directory isolation
-    if (isMainThread) {
-      process.chdir(sandbox.cwdPath)
-    } else {
-      vi.spyOn(process, 'cwd').mockImplementation(() => sandbox.cwdPath!)
-    }
+    return sandbox
+  }
 
-    // Register cleanup in Vitest lifecycle
-    afterAll(async () => {
-      await sandbox.cleanup()
+  static registerLifecycle() {
+    beforeAll(() => {
+      const sandbox = this.setup()
+      globalThis.sandbox = sandbox
+
+      // Setup working directory isolation
+      if (isMainThread) {
+        process.chdir(sandbox.cwdPath!)
+      } else {
+        vi.spyOn(process, 'cwd').mockImplementation(() => sandbox.cwdPath!)
+      }
     })
 
-    return sandbox
+    afterAll(async () => {
+      const sandbox = globalThis.sandbox
+      if (sandbox) {
+        await sandbox.cleanup()
+      }
+    })
   }
 
   /**
