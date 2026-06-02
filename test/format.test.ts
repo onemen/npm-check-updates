@@ -105,6 +105,13 @@ describe('format', () => {
   // do not stubVersions here, because we need to test if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
+    const stub = stubVersions({
+      name: 'ncu-test-v2',
+      version: '2.0.0',
+      time: {
+        '2.0.0': timestamp,
+      },
+    })
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -115,6 +122,7 @@ describe('format', () => {
     })
     const expectedString = timeAgoFormat(timestamp, 'en_US')
     expect(stdout).contains(expectedString)
+    stub.mockRestore()
   })
 
   it('--format repo', async () => {
