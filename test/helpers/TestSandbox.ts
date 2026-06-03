@@ -9,7 +9,6 @@ import { isMainThread } from 'node:worker_threads'
 export class TestSandbox {
   private static readonly SANDBOX_FILE_DIR = path.dirname(fileURLToPath(import.meta.url))
   private rootPath: string | null = null
-  private cachePath: string | null = null
   private cwdPath: string | null = null
   private originalEnv: NodeJS.ProcessEnv
 
@@ -38,9 +37,6 @@ export class TestSandbox {
       npm_config_update_notifier: 'false',
       npm_config_loglevel: 'error',
       YARN_CACHE_FOLDER: sandbox.rootPath,
-      TMPDIR: sandbox.rootPath,
-      TEMP: sandbox.rootPath,
-      TMP: sandbox.rootPath,
     })
 
     return sandbox
@@ -121,11 +117,6 @@ export class TestSandbox {
     return this.rootPath
   }
 
-  getCachePath(): string {
-    if (!this.cachePath) throw new Error('Sandbox not initialized.')
-    return this.cachePath
-  }
-
   async cleanCwd(): Promise<void> {
     if (!this.cwdPath) throw new Error('Sandbox not initialized.')
     const cwd = this.cwdPath
@@ -152,14 +143,23 @@ export class TestSandbox {
 
     if (this.rootPath) {
       // Give the OS a moment to release handles on the old directory
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 50))
       try {
         await fsAsync.rm(this.rootPath, { recursive: true, force: true })
         this.rootPath = null
-        this.cachePath = null
         this.cwdPath = null
       } catch (err) {
-        console.warn(`[Cleanup] Failed to remove sandbox folder: ${err instanceof Error ? err.message : err}`)
+        // wee will clear it in finalCleanup
+      }
+    }
+  }
+
+  // call this function from vitest teardown to remove any leftover npm-check-updates folders
+  static async finalCleanup(): Promise<void> {
+    const files = await fs.promises.readdir(os.tmpdir())
+    for (const file of files) {
+      if (file.startsWith('npm-check-updates-') || file.startsWith('ncu-test-sandbox-')) {
+        await fs.promises.rm(path.join(os.tmpdir(), file), { recursive: true, force: true })
       }
     }
   }
