@@ -209,11 +209,25 @@
     "path": "raineorshine/ncu-test-v2",
     "branch": "v1.0.0"
   },
+  "https://saucelabs.com/downloads/sc-4.5.1-linux.tar.gz": {
+    "auth": null,
+    "protocol": "https:",
+    "host": "saucelabs.com",
+    "path": "downloads/sc-4.5.1-linux.tar.gz",
+    "branch": "master"
+  },
   "link:../link": {
     "auth": null,
     "protocol": "link:",
     "host": "..",
     "path": "link",
+    "branch": "master"
+  },
+  "link:./scripts/eslint-rules/": {
+    "auth": null,
+    "protocol": "link:",
+    "host": ".",
+    "path": "scripts/eslint-rules/",
     "branch": "master"
   },
   "raineorshine/ncu-test-invalid-tag.git#v3.0.0": {

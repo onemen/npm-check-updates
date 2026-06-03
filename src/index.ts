@@ -16,6 +16,7 @@ import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
 import { spawnCommand } from './lib/spawnCommand'
+import { errorState, installGlobalErrorHandlers } from './lib/utils/global-error-handlers'
 import { type Index } from './types/IndexType'
 import { type Options } from './types/Options'
 import { type PackageFile } from './types/PackageFile'
@@ -32,18 +33,7 @@ if (process.env.INJECT_PROMPTS) {
   prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
 }
 
-/** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
-let unhandledRejectionError = false
-
-// Use `node --trace-uncaught ...` to show where the exception was thrown.
-// See: https://nodejs.org/api/process.html#event-unhandledrejection
-process.on('unhandledRejection', (reason: string | Error) => {
-  // do not rethrow, as there may be other errors to print out
-  console.error(reason)
-
-  // ensure the process exits with a non-zero code at the end
-  unhandledRejectionError = true
-})
+installGlobalErrorHandlers()
 
 /**
  * Volta is a tool for managing JavaScript tooling like Node and npm. Volta has
@@ -347,7 +337,7 @@ export async function run(
   const bugsUrl = pkg.bugs.url
   /** ensure that the process exits with an error code if there was an unhandled rejection */
   const exitListener = () => {
-    if (unhandledRejectionError) {
+    if (errorState.unhandledRejectionError) {
       programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
     }
   }
