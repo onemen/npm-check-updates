@@ -1,9 +1,11 @@
 import console from 'node:console'
 import fs from 'node:fs'
-import path from 'node:path'
+import path, { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 type ParseGitHubUrl = (declaration: string) => { branch: string | null; [key: string]: any }
 
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const TEMP_LOG = path.join(__dirname, '../fixtures/temp-github-urls.jsonl')
 
 // Load existing fixtures once for fast lookups
