@@ -174,6 +174,14 @@ describe('doctor', function () {
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
+      // spawn have been called with the right arguments
+      expect(pm.spawn).toHaveBeenCalledWith(
+        'node',
+        expect.arrayContaining([expect.stringContaining('echo.js'), '123 456']),
+        expect.any(Object),
+        expect.any(Object),
+      )
+
       // stderr should be empty
       stderr.should.equal('')
 

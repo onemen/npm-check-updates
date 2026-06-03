@@ -142,6 +142,12 @@ export function mockSpawn() {
 
     // node echo.js "123 456"
     // echo.js -> console.log(process.argv)
+    if (command === 'node' && args?.some(a => a.endsWith('echo.js')) && args?.includes('123 456')) {
+      const simulatedArgv = JSON.stringify(['node', '/path/to/echo.js', '123 456'])
+      console.log(simulatedArgv)
+      return { stdout: simulatedArgv, stderr: '' }
+    }
+
     return originalSpawn(command, args, options, spawnOptions)
   })
 }
