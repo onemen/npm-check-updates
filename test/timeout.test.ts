@@ -1,18 +1,15 @@
 import fs from 'fs/promises'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
 describe('timeout', async () => {
+  let pkgPath: string
   beforeAll(async () => {
-    await sandbox.createPackageJson()
+    pkgPath = await sandbox.createPackageJson({ dependencies: { express: '1' } })
   })
+
   it('throw an exception instead of printing to the console when timeout is exceeded', async () => {
-    const pkgPath = path.join(__dirname, './test-data/ncu/package-large.json')
     return ncu({
       packageData: await fs.readFile(pkgPath, 'utf-8'),
       timeout: 1,
@@ -20,9 +17,14 @@ describe('timeout', async () => {
   })
 
   it('exit with error when timeout is exceeded', async () => {
-    return runNcuCli(['--timeout', '1'], {
-      stdin: '{ "dependencies": { "express": "1" } }',
-    }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
+    const stub = stubVersions({ express: '1' })
+    try {
+      await runNcuCli(['--timeout', '1'], {
+        stdin: '{ "dependencies": { "express": "1" } }',
+      }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
+    } finally {
+      stub.mockRestore()
+    }
   })
 
   it('completes successfully with timeout', async () => {

@@ -89,7 +89,7 @@ export class TestSandbox {
     return this.cwdPath
   }
 
-  async createPackageJson(content: Partial<Record<string, any>> = {}, testFolderPath?: string): Promise<void> {
+  async createPackageJson(content: Partial<Record<string, any>> = {}, testFolderPath?: string): Promise<string> {
     if (!this.cwdPath) {
       throw new Error('Sandbox not initialized.')
     }
@@ -105,6 +105,7 @@ export class TestSandbox {
     const packageJsonPath = path.join(targetFolder, 'package.json')
 
     await fsAsync.writeFile(packageJsonPath, JSON.stringify(defaultPackageJson, null, 2), 'utf-8')
+    return packageJsonPath
   }
 
   getCwdPath(): string {
