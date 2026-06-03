@@ -80,6 +80,18 @@ function mockOutput() {
   let stderr = ''
   let general = ''
 
+  const realLog = console.log
+  const realTime = console.time
+  const realTimeLog = console.timeLog
+  const realTimeEnd = console.timeEnd
+
+  /** console log mock */
+  const mockedConsoleLog = (...a: any[]) => {
+    const text = format(...a) + '\n'
+    if (isGeneralLog(text)) general += text
+    else stdout += text
+  }
+
   const restoreStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
     const text = typeof chunk === 'string' ? chunk : format(chunk)
     if (isGeneralLog(text)) general += text
@@ -95,11 +107,7 @@ function mockOutput() {
   })
 
   const restoreConsole = [
-    vi.spyOn(console, 'log').mockImplementation((...a) => {
-      const text = format(...a) + '\n'
-      if (isGeneralLog(text)) general += text
-      else stdout += text
-    }),
+    vi.spyOn(console, 'log').mockImplementation(mockedConsoleLog),
     vi.spyOn(console, 'info').mockImplementation((...a) => {
       stdout += format(...a) + '\n'
     }),
@@ -112,13 +120,26 @@ function mockOutput() {
 
     // Timers → general
     vi.spyOn(console, 'time').mockImplementation(label => {
+      console.log = realLog
+      realTime(label)
+      console.log = mockedConsoleLog
       general += `[timer:start] ${label ?? 'default'}\n`
     }),
+
     vi.spyOn(console, 'timeLog').mockImplementation((label, ...data) => {
-      general += `[timer:log] ${label ?? 'default'} ${format(...data)}\n`
+      let printed: string[] = []
+      console.log = (...args) => (printed = args)
+      realTimeLog(label ?? 'default', ...data)
+      console.log = mockedConsoleLog
+      general += `[timer:log] ${format(...printed)}\n`
     }),
+
     vi.spyOn(console, 'timeEnd').mockImplementation(label => {
-      general += `[timer:end] ${label ?? 'default'}\n`
+      let printed: string[] = []
+      console.log = (...args) => (printed = args)
+      realTimeEnd(label ?? 'default')
+      console.log = mockedConsoleLog
+      general += `[timer:end] ${format(...printed)}\n`
     }),
 
     // Traces → general
