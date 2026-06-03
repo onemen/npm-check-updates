@@ -10,8 +10,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('peer dependencies', function () {
   beforeAll(async () => {
-    const filePath = path.join(__dirname, 'test-data/peer-post-upgrade/peerDependencies.json')
-    const peerDepsData = JSON.parse(await fs.readFile(filePath, 'utf-8'))
+    const filePath = path.join(__dirname, 'fixtures/getPeerDependenciesFromRegistry.json')
+    const peerDepsData = JSON.parse(await fs.readFile(filePath, 'utf-8').catch(() => '{}'))
     const original = getPeerDependenciesFromRegistryModule.default
 
     // mock getPeerDependenciesFromRegistry
@@ -27,7 +27,8 @@ describe('peer dependencies', function () {
           if (!peerDepsData[pkg]) peerDepsData[pkg] = {}
           peerDepsData[pkg][packageMap[pkg]] = peers
         })
-        await fs.writeFile(filePath, JSON.stringify(peerDepsData, null, 2), 'utf-8')
+        await fs.mkdir(path.dirname(filePath), { recursive: true })
+        await fs.writeFile(filePath, JSON.stringify(peerDepsData, null, 2) + '\n', 'utf-8')
       }
 
       return Object.fromEntries(
@@ -285,6 +286,10 @@ describe('peer dependencies', function () {
     // In a pnpm workspace, packages can reference catalog entries like "catalog:"
     // instead of a semver version. NCU should not crash when encountering these
     // non-semver specs during peer dependency constraint checking.
+    const stub = stubVersions({
+      'ncu-test-peer': { version: '1.0.0', 'dist-tags': { latest: '1.0.0' } },
+      'ncu-test-return-version': { version: '2.0.0', 'dist-tags': { latest: '2.0.0' } },
+    })
     const upgrades = await ncu({
       peer: true,
       packageData: {
@@ -300,5 +305,6 @@ describe('peer dependencies', function () {
     // Should complete without throwing; ncu-test-return-version at 'catalog:' is treated as
     // compatible (non-semver) so peer constraint is not considered violated.
     upgrades!.should.be.an('object')
+    stub.mockRestore()
   })
 })

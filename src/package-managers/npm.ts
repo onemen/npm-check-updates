@@ -566,6 +566,11 @@ const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.en
 npmApi.mockFetchUpgradedPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchUpgradedPackument =>
   (name: string, fields: (keyof Packument)[], currentVersion: Version, options: Options) => {
+    // nothing to mock, see original function
+    if (isExactVersion(currentVersion)) {
+      return Promise.resolve({} as Index<Packument>)
+    }
+
     // a partial Packument
     const partialPackument =
       typeof mockReturnedVersions === 'function'
