@@ -423,21 +423,6 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
  * Returns true if a version declaration is a GitHub URL with a valid semver version.
  */
 export const isGitHubUrl = (declaration: string | null) => {
-  // const ignoreList = ['zzz']
-  // if (!ignoreList.some(test => expect.getState()?.testPath?.endsWith(test))) {
-  //   console.error(
-  //     'NCU_DEBUG:\n' +
-  //       JSON.stringify(
-  //         {
-  //           function: 'readStaticRegistry',
-  //           testPath: expect.getState()?.testPath,
-  //           currentTestName: expect.getState()?.currentTestName,
-  //         },
-  //         null,
-  //         2,
-  //       ),
-  //   )
-  // }
   if (!declaration) return false
   let parsed = null
   try {

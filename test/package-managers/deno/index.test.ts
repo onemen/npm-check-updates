@@ -4,8 +4,13 @@ import path from 'node:path'
 import parseJson from '../../../src/lib/utils/parseJson'
 import removeDir from '../../helpers/removeDir'
 import { runNcuCli } from '../../helpers/runNcuCli'
+import stubVersions from '../../helpers/stubVersions'
 
 describe('deno', async function () {
+  let versionStub: { mockRestore: () => void }
+  beforeAll(() => (versionStub = stubVersions({ 'ncu-test-v2': '2.0.0' })))
+  afterAll(() => versionStub.mockRestore())
+
   it('handle import map', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'deno.json')
