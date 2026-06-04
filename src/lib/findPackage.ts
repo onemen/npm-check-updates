@@ -2,7 +2,7 @@ import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import { text } from 'node:stream/consumers'
 import path from 'path'
-import { debugLogger, print } from '../lib/logging'
+import { print } from '../lib/logging'
 import { type Options } from '../types/Options'
 import chalk from './chalk'
 import programError from './programError'
@@ -72,7 +72,6 @@ async function findPackage(options: Options): Promise<{
     // if no stdin content fall back to searching for package.json from pwd and up to root
     pkgFile = data || !pkgPath ? null : await findUp(pkgPath)
     pkgData = data || getPackageDataFromFile(await pkgFile, pkgPath)
-    debugLogger.log('findPackage', { pkgFile, pkgData })
   } else {
     // find the closest package starting from the current working directory and going up to the root
     pkgFile = pkgPath

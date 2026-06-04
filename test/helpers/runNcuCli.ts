@@ -170,10 +170,10 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       console.warn('⚠️  Error during state restoration:', error)
     }
 
-    // if (out.generalLogs.trim() && !options.silenceRunnerWarning) {
-    //   process.stdout.write(`\n[General Logs]:\n`)
-    //   process.stdout.write(`\x1b[36m${testName}\x1b[0m\n`)
-    //   process.stdout.write(`${out.generalLogs.trim()}\n`)
-    // }
+    if (out.generalLogs.trim() && !options.silenceRunnerWarning) {
+      process.stdout.write(`\n[General Logs]:\n`)
+      process.stdout.write(`\x1b[36m${testName}\x1b[0m\n`)
+      process.stdout.write(`${out.generalLogs.trim()}\n`)
+    }
   }
 }

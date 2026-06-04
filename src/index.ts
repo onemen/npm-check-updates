@@ -10,7 +10,7 @@ import findPackage from './lib/findPackage'
 import getAllPackages from './lib/getAllPackages'
 import getNcuRc from './lib/getNcuRc'
 import initOptions from './lib/initOptions'
-import { debugLogger, print, printJson } from './lib/logging'
+import { print, printJson } from './lib/logging'
 import mergeOptions from './lib/mergeOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
@@ -206,12 +206,6 @@ const install = async (
 
 /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
 async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<string> | PackageFile | void> {
-  // debugLogger.log('runLocal', {
-  //   test: expect.getState().currentTestName,
-  //   // stack: new Error('test').stack,
-  //   options,
-  //   timeout,
-  // })
   const [selectedPackageInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
 
   const packageFilepaths: string[] = selectedPackageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
@@ -324,19 +318,7 @@ export async function run(
   runOptions: RunOptions = {},
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
-  debugLogger.log('runLocal', {
-    // test: expect.getState().currentTestName,
-    // test: 'expect.getState().currentTestName',
-    // // stack: new Error('test').stack,
-    // runOptions,
-    // cli,
-  })
   const options = await initOptions(runOptions, { cli })
-  // debugLogger.log('runLocal', {
-  //   test: expect.getState().currentTestName,
-  //   // stack: new Error('test').stack,
-  //   options,
-  // })
 
   if (process.env.NCU_TESTS) {
     const cwd = runOptions.cwd || process.cwd()

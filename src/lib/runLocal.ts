@@ -18,7 +18,6 @@ import getPackageManager from './getPackageManager'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
 import {
-  debugLogger,
   print,
   printIgnoredUpdatesDueToEnginesNode,
   printIgnoredUpdatesDueToPeerDeps,
@@ -225,13 +224,6 @@ export default async function runLocal(
       options,
     )
   }
-
-  debugLogger.log('runLocal', {
-    // test: expect.getState().currentTestName,
-    // stack: new Error('test').stack,
-    current,
-    options,
-  })
 
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
   const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))

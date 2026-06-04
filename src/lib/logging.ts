@@ -574,12 +574,3 @@ export function printIgnoredUpdatesDueToEnginesNode(
   )
   print(options, table)
 }
-
-/** for test debugging */
-export const debugLogger = {
-  log: (...args: any[]) => {
-    // if (process.env.NCU_TESTS) {
-    //   console.log(`NCU_DEBUG: NOT SPIED`, ...args)
-    // }
-  },
-}

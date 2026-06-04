@@ -4,7 +4,6 @@ import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type Version } from '../types/Version'
 import getPackageManager from './getPackageManager'
-import { debugLogger } from './logging'
 
 type CircularData =
   | {
@@ -62,11 +61,6 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   }
 
   const packageEntries = Object.entries(packageMap)
-  debugLogger.log('getPeerDependenciesFromRegistry', {
-    // test: expect.getState().currentTestName,
-    // stack: new Error('test').stack,
-    packageEntries,
-  })
 
   /**
    * Fetches peer dependencies for a package
