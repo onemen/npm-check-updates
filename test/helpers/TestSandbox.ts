@@ -144,7 +144,7 @@ export class TestSandbox {
 
     if (this.rootPath) {
       // Give the OS a moment to release handles on the old directory
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise(resolve => setTimeout(resolve, 0))
       try {
         await fsAsync.rm(this.rootPath, { recursive: true, force: true })
         this.rootPath = null

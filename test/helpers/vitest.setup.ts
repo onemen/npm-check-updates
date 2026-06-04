@@ -3,6 +3,7 @@ import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-handlers'
 import { TestSandbox } from './TestSandbox'
+import { setupLogMocks } from './mock-output'
 import { createParseGitHubUrlMock } from './stubParseGitHubUrl'
 
 installGlobalErrorHandlers()
@@ -24,3 +25,7 @@ process.env.NCU_TESTS = 'true'
 vi.mock('parse-github-url', async importOriginal => {
   return createParseGitHubUrlMock(importOriginal)
 })
+
+// mock all log to prevent log from printing during tests
+// all logs during cli tests will returned as {stdout, stderr}
+setupLogMocks()

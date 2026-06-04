@@ -78,6 +78,14 @@ const fetchPartialPackument = async (
   opts: npmRegistryFetch.FetchOptions = {},
   version?: Version,
 ): Promise<Partial<Packument>> => {
+  console.log('NCU_DEBUG: fetchPartialPackument', {
+    // stack: new Error('test').stack,
+    name,
+    fields,
+    tag,
+    opts,
+    version,
+  })
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
 

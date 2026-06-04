@@ -11,6 +11,7 @@ import { type VersionSpec } from '../types/VersionSpec'
 import { getChalk } from './chalk'
 import getPackageManager from './getPackageManager'
 import keyValueBy from './keyValueBy'
+import { debugLogger } from './logging'
 import programError from './programError'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util'
 
@@ -24,6 +25,11 @@ import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-uti
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}): Promise<Index<VersionResult>> {
   const chalk = getChalk(options.color)
   const packageList = Object.keys(packageMap)
+  debugLogger.log('queryVersions', {
+    // test: expect.getState().currentTestName,
+    // stack: new Error('test').stack,
+    // packageList: packageList.slice(0, 5),
+  })
   const globalPackageManager = getPackageManager(options, options.packageManager)
 
   let bar: ProgressBar | undefined
@@ -42,6 +48,14 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
+    debugLogger.log('getPackageVersionProtected', {
+      // test: expect.getState().currentTestName,
+      // stack: new Error('test').stack,
+      dep,
+      name,
+      version,
+      packageMapKeys: Object.keys(packageMap).slice(0, 5),
+    })
     const targetOption = options.target || 'latest'
     const targetString = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
     const [target, distTag] = targetString.startsWith('@')
@@ -139,6 +153,11 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     return versionResult
   }
 
+  // debugLogger.log('queryVersions', {
+  //   test: expect.getState().currentTestName,
+  //   // stack: new Error('test').stack,
+  //   packageList: packageList.slice(0, 5),
+  // })
   const versionResultList = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })
 
   // save cacher only after pMap handles cacher.set

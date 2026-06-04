@@ -2,11 +2,10 @@ import os from 'node:os'
 import path, { dirname } from 'node:path'
 import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
-import { format } from 'node:util'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'
-import { vi } from 'vitest'
 import { ncuCli } from '../../src/ncuCli'
+import { ExitSuccessSignal, createMock } from './mock-output'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -47,140 +46,6 @@ function validateCwdConflict(args: string[], options: RunCliOptions) {
       `  args --cwd → ${argValue}\n\n` +
       `Tests must not specify both. Remove --cwd from args or remove options.cwd.`,
   )
-}
-
-/**
- * Custom signaling class to cleanly pass successful early exits (like --help or --version)
- * back through the asynchronous control flow chain.
- */
-class ExitSuccessSignal extends Error {
-  constructor() {
-    super('Process exited successfully')
-    this.name = 'ExitSuccessSignal'
-  }
-}
-
-/** Detect logs that are not part of the output */
-function isGeneralLog(text: string): boolean {
-  return (
-    text.startsWith('NCU_DEBUG:') ||
-    text.includes('MaxListenersExceededWarning') ||
-    text.includes('trace-warnings') ||
-    text.includes('DeprecationWarning') ||
-    text.includes('ExperimentalWarning')
-  )
-}
-
-/**
- * Attaches Vitest spies to cleanly capture all process and console outputs,
- * using the local mutable object references passed from the spawn function.
- */
-function mockOutput() {
-  let stdout = ''
-  let stderr = ''
-  let general = ''
-
-  const realLog = console.log
-  const realTime = console.time
-  const realTimeLog = console.timeLog
-  const realTimeEnd = console.timeEnd
-
-  /** console log mock */
-  const mockedConsoleLog = (...a: any[]) => {
-    const text = format(...a) + '\n'
-    if (isGeneralLog(text)) general += text
-    else stdout += text
-  }
-
-  const restoreStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
-    const text = typeof chunk === 'string' ? chunk : format(chunk)
-    if (isGeneralLog(text)) general += text
-    else stdout += text
-    return true
-  })
-
-  const restoreStderr = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
-    const text = typeof chunk === 'string' ? chunk : format(chunk)
-    if (isGeneralLog(text)) general += text
-    else stderr += text
-    return true
-  })
-
-  const restoreConsole = [
-    vi.spyOn(console, 'log').mockImplementation(mockedConsoleLog),
-    vi.spyOn(console, 'info').mockImplementation((...a) => {
-      stdout += format(...a) + '\n'
-    }),
-    vi.spyOn(console, 'warn').mockImplementation((...a) => {
-      stderr += format(...a) + '\n'
-    }),
-    vi.spyOn(console, 'error').mockImplementation((...a) => {
-      stderr += format(...a) + '\n'
-    }),
-
-    // Timers → general
-    vi.spyOn(console, 'time').mockImplementation(label => {
-      console.log = realLog
-      realTime(label)
-      console.log = mockedConsoleLog
-      general += `[timer:start] ${label ?? 'default'}\n`
-    }),
-
-    vi.spyOn(console, 'timeLog').mockImplementation((label, ...data) => {
-      let printed: string[] = []
-      console.log = (...args) => (printed = args)
-      realTimeLog(label ?? 'default', ...data)
-      console.log = mockedConsoleLog
-      general += `[timer:log] ${format(...printed)}\n`
-    }),
-
-    vi.spyOn(console, 'timeEnd').mockImplementation(label => {
-      let printed: string[] = []
-      console.log = (...args) => (printed = args)
-      realTimeEnd(label ?? 'default')
-      console.log = mockedConsoleLog
-      general += `[timer:end] ${format(...printed)}\n`
-    }),
-
-    // Traces → general
-    vi.spyOn(console, 'trace').mockImplementation((...a) => {
-      general += `[trace] ${format(...a)}\n`
-    }),
-  ]
-
-  // --- 3. Prevent process.exit from killing the worker ---
-  const restoreExit = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null): never => {
-    if (code && code !== 0) {
-      throw new Error(stderr.trim() || `CLI exited with code ${code}`)
-    }
-    throw new ExitSuccessSignal()
-  })
-
-  return {
-    get stdout() {
-      return stdout
-    },
-    get stderr() {
-      return stderr
-    },
-    get generalLogs() {
-      return general
-    },
-
-    get all() {
-      return {
-        stdout,
-        stderr,
-      }
-    },
-
-    mockRestore() {
-      restoreStdout.mockRestore()
-      restoreStderr.mockRestore()
-      restoreConsole.forEach(r => r.mockRestore())
-      restoreExit.mockRestore()
-    },
-  }
 }
 
 /**
@@ -279,27 +144,22 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     Object.defineProperty(process, 'stdin', { value: mockStdin, configurable: true })
   }
 
-  const out = mockOutput()
-
-  let hasError = false
+  const testName = expect.getState().currentTestName || 'unknown'
+  const out = await createMock()
 
   try {
     await ncuCli()
+    // ⏳ src/index.ts run use Promise.race
+    // wait before we return to flush all pending logs
+    await new Promise(resolve => setTimeout(resolve, 25))
     return out.all
   } catch (error: any) {
-    // If it's a genuine error, and not an intentional exit(0), evaluate rejection rules
+    await new Promise(resolve => setTimeout(resolve, 25))
     if (options.rejectOnError !== false && error && !(error instanceof ExitSuccessSignal)) {
-      hasError = true
-      const errorMessage = out.stderr || error?.message || String(error)
-      throw new Error(errorMessage, { cause: error })
+      throw error
     }
     return out.all
   } finally {
-    if (hasError) {
-      // ⏳ Give the async event loop one tick to finish flushing
-      // any pending console logs before we restore the real terminal
-      await new Promise(resolve => setTimeout(resolve, 0))
-    }
     out.mockRestore()
 
     try {
@@ -310,8 +170,10 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       console.warn('⚠️  Error during state restoration:', error)
     }
 
-    if (out.generalLogs && !options.silenceRunnerWarning) {
-      process.stdout.write(`\n[General Logs]:\n${out.generalLogs}\n`)
-    }
+    // if (out.generalLogs.trim() && !options.silenceRunnerWarning) {
+    //   process.stdout.write(`\n[General Logs]:\n`)
+    //   process.stdout.write(`\x1b[36m${testName}\x1b[0m\n`)
+    //   process.stdout.write(`${out.generalLogs.trim()}\n`)
+    // }
   }
 }
