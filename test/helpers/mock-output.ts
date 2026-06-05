@@ -51,11 +51,11 @@ const intercept = (target: keyof typeof original, args: any[], isErr = false) =>
   } else {
     const name = testNameStore.getStore() ?? ''
     if (name) {
-      process.stdout.write(`\x1b[36m${name}\x1b[0m\n`)
-      process.stdout.write(args.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
-      process.stdout.write('\n')
+      original.log(`\x1b[36m${name}\x1b[0m\n`)
+      original.log(args.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
+      original.log('\n')
     } else {
-      process.stdout.write(args.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
+      original.log(args.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
     }
   }
 }
@@ -65,41 +65,161 @@ const intercept = (target: keyof typeof original, args: any[], isErr = false) =>
  * Should be called once in vitest.setup.ts.
  */
 export function setupLogMocks() {
-  console.log = (...a) => intercept('log', a)
-  console.info = (...a) => intercept('info', a)
-  console.warn = (...a) => intercept('warn', a, true)
-  console.error = (...a) => intercept('error', a, true)
-  console.trace = (...a) => intercept('trace', a)
+  // console.log = (...a) => intercept('log', a)
+  // console.info = (...a) => intercept('info', a)
+  // console.warn = (...a) => intercept('warn', a, true)
+  // console.error = (...a) => intercept('error', a, true)
+  // console.trace = (...a) => intercept('trace', a)
 
-  console.time = label => {
-    if (activeBuffers) activeBuffers.general += `[timer:start] ${label ?? 'default'}\n`
-    else original.time(label)
-  }
+  // console.time = label => {
+  //   if (activeBuffers) activeBuffers.general += `[timer:start] ${label ?? 'default'}\n`
+  //   else original.time(label)
+  // }
 
-  console.timeLog = (label, ...data) => {
+  // console.timeLog = (label, ...data) => {
+  //   if (activeBuffers) {
+  //     let printed: any[] = []
+  //     const tempLog = console.log
+  //     console.log = (...args) => (printed = args)
+  //     original.timeLog(label ?? 'default', ...data)
+  //     console.log = tempLog
+  //     activeBuffers.general += `[timer:log] ${format(...printed)}\n`
+  //   } else {
+  //     original.timeLog(label, ...data)
+  //   }
+  // }
+
+  // console.timeEnd = label => {
+  //   if (activeBuffers) {
+  //     let printed: any[] = []
+  //     const tempLog = console.log
+  //     console.log = (...args) => (printed = args)
+  //     original.timeEnd(label ?? 'default')
+  //     console.log = tempLog
+  //     activeBuffers.general += `[timer:end] ${format(...printed)}\n`
+  //   } else {
+  //     original.timeEnd(label)
+  //   }
+  // }
+
+  // activeBuffers = { stdout: '', stderr: '', general: '' } as const as ActiveBuffers
+
+  const realStdout = process.stdout.write
+  const realStderr = process.stderr.write
+
+  const realLog = console.log
+  const realTime = console.time
+  const realTimeLog = console.timeLog
+  const realTimeEnd = console.timeEnd
+
+  /** console log mock */
+  const mockedConsoleLog = (target: keyof typeof original, type: 'stdout' | 'stderr', ...a: any[]) => {
+    const text = format(...a) + '\n'
     if (activeBuffers) {
-      let printed: any[] = []
-      const tempLog = console.log
-      console.log = (...args) => (printed = args)
-      original.timeLog(label ?? 'default', ...data)
-      console.log = tempLog
-      activeBuffers.general += `[timer:log] ${format(...printed)}\n`
+      if (isGeneralLog(text)) activeBuffers.general += text
+      else activeBuffers[type] += text
     } else {
-      original.timeLog(label, ...data)
+      // original[target](text)
+      const name = testNameStore.getStore() ?? ''
+      if (name) {
+        process.stdout.write(`\x1b[36m${name}\x1b[0m\n`)
+        process.stdout.write(a.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
+        process.stdout.write('\n')
+      } else {
+        process.stdout.write(a.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
+      }
     }
   }
 
-  console.timeEnd = label => {
+  const restoreStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
+    const text = typeof chunk === 'string' ? chunk : format(chunk)
     if (activeBuffers) {
-      let printed: any[] = []
-      const tempLog = console.log
-      console.log = (...args) => (printed = args)
-      original.timeEnd(label ?? 'default')
-      console.log = tempLog
-      activeBuffers.general += `[timer:end] ${format(...printed)}\n`
+      if (isGeneralLog(text)) activeBuffers!.general += text
+      else activeBuffers.stdout += text
     } else {
-      original.timeEnd(label)
+      realStdout(text)
     }
+    return true
+  })
+
+  const restoreStderr = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
+    const text = typeof chunk === 'string' ? chunk : format(chunk)
+    if (activeBuffers) {
+      if (isGeneralLog(text)) activeBuffers!.general += text
+      else activeBuffers.stderr += text
+    } else {
+      realStderr(text)
+    }
+    return true
+  })
+
+  const restoreConsole = [
+    vi.spyOn(console, 'log').mockImplementation((...a) => mockedConsoleLog('log', 'stdout', ...a)),
+    vi.spyOn(console, 'info').mockImplementation((...a) => mockedConsoleLog('info', 'stdout', ...a)),
+    vi.spyOn(console, 'warn').mockImplementation((...a) => mockedConsoleLog('warn', 'stderr', ...a)),
+    vi.spyOn(console, 'error').mockImplementation((...a) => mockedConsoleLog('error', 'stderr', ...a)),
+    // vi.spyOn(console, 'info').mockImplementation((...a) => {
+    //   activeBuffers!.stdout += format(...a) + '\n'
+    // }),
+    // vi.spyOn(console, 'warn').mockImplementation((...a) => {
+    //   activeBuffers!.stderr += format(...a) + '\n'
+    // }),
+    // vi.spyOn(console, 'error').mockImplementation((...a) => {
+    //   activeBuffers!.stderr += format(...a) + '\n'
+    // }),
+
+    // Timers → general
+    vi.spyOn(console, 'time').mockImplementation(label => {
+      if (activeBuffers) {
+        console.log = realLog
+        realTime(label)
+        console.log = mockedConsoleLog
+        activeBuffers!.general += `[timer:start] ${label ?? 'default'}\n`
+      } else {
+        realTime(label)
+      }
+    }),
+
+    vi.spyOn(console, 'timeLog').mockImplementation((label, ...data) => {
+      if (activeBuffers) {
+        let printed: string[] = []
+        console.log = (...args) => (printed = args)
+        realTimeLog(label ?? 'default', ...data)
+        console.log = mockedConsoleLog
+        activeBuffers!.general += `[timer:log] ${format(...printed)}\n`
+      } else {
+        realTimeLog(label, ...data)
+      }
+    }),
+
+    vi.spyOn(console, 'timeEnd').mockImplementation(label => {
+      if (activeBuffers) {
+        let printed: string[] = []
+        console.log = (...args) => (printed = args)
+        realTimeEnd(label ?? 'default')
+        console.log = mockedConsoleLog
+        activeBuffers!.general += `[timer:end] ${format(...printed)}\n`
+      } else {
+        realTimeEnd(label)
+      }
+    }),
+
+    // Traces → general
+    vi.spyOn(console, 'trace').mockImplementation((...a) => {
+      if (activeBuffers) {
+        activeBuffers!.general += `[trace] ${format(...a)}\n`
+      } else {
+        original.trace(...a)
+      }
+    }),
+  ]
+
+  return {
+    mockRestore() {
+      restoreStdout.mockRestore()
+      restoreStderr.mockRestore()
+      restoreConsole.forEach(r => r.mockRestore())
+    },
   }
 }
 
@@ -130,13 +250,15 @@ export async function flush() {
 export async function createMock() {
   await flush()
   activeBuffers = { stdout: '', stderr: '', general: '' }
+
+  const mocks = setupLogMocks()
+
   // pendingLogs.length = 0
   let cachedBuffers: ActiveBuffers | null = null
 
   const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null): never => {
     if (code && code !== 0) {
-      const capturedMessage = activeBuffers!.stderr.trim()
-      activeBuffers!.stderr = ''
+      const capturedMessage = activeBuffers?.stderr.trim()
       const message = capturedMessage || `CLI exited with code ${code}`
       const error = new Error(message)
       Error.captureStackTrace(error, exitSpy)
@@ -162,6 +284,7 @@ export async function createMock() {
     mockRestore() {
       cachedBuffers = { ...(activeBuffers as ActiveBuffers) }
       activeBuffers = null
+      mocks.mockRestore()
       exitSpy.mockRestore()
     },
   }

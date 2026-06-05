@@ -160,6 +160,16 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     }
     return out.all
   } finally {
+    /*
+    // TODO:
+
+    when multiple `runNcuCli` run in parallel, we can have an issue with mixed output
+    and when the first runNcuCli finished it turn of mocked output for the 2nd
+    we currently have 1 test like this is doctor.test.ts
+    that run 2 runNcuCli
+    'throw an error if --packageData or --packageFile are supplied'
+
+    */
     out.mockRestore()
 
     try {
@@ -170,7 +180,7 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
       console.warn('⚠️  Error during state restoration:', error)
     }
 
-    if (out.generalLogs.trim() && !options.silenceRunnerWarning) {
+    if (out.generalLogs?.trim() && !options.silenceRunnerWarning) {
       process.stdout.write(`\n[General Logs]:\n`)
       process.stdout.write(`\x1b[36m${testName}\x1b[0m\n`)
       process.stdout.write(`${out.generalLogs.trim()}\n`)
