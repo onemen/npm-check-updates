@@ -103,6 +103,18 @@ export function setupLogMocks() {
   }
 }
 
+/** */
+export function restoreLogMocks() {
+  console.log = original.log
+  console.info = original.info
+  console.warn = original.warn
+  console.error = original.error
+  console.trace = original.trace
+  console.time = original.time
+  console.timeLog = original.timeLog
+  console.timeEnd = original.timeEnd
+}
+
 /**
  * Flushes the event loop to ensure pending stream writes are processed.
  */
