@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
@@ -23,7 +24,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
  */
 const setupDeepTest = async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-  await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
   const pkgData = JSON.stringify({
     dependencies: {
       express: '1',
@@ -38,6 +38,26 @@ const setupDeepTest = async () => {
   await fs.writeFile(path.join(tempDir, 'packages/sub1/package.json'), pkgData, 'utf-8')
   await fs.mkdir(path.join(tempDir, 'packages/sub2'), { recursive: true })
   await fs.writeFile(path.join(tempDir, 'packages/sub2/package.json'), pkgData, 'utf-8')
+
+  return tempDir
+}
+
+/** Creates a temp directory with nested package files to test deep-mode status output formatting. */
+const setupDeepStatusTest = async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+
+  await fs.writeFile(
+    path.join(tempDir, 'package.json'),
+    JSON.stringify({
+      dependencies: {
+        'ncu-test-v2': '99.9.9',
+      },
+    }),
+    'utf-8',
+  )
+
+  await fs.mkdir(path.join(tempDir, 'packages/no-deps'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/no-deps/package.json'), JSON.stringify({}), 'utf-8')
 
   return tempDir
 }
@@ -113,7 +133,6 @@ describe('--deep', function () {
 
   it('--deep --errorLevel 2 should exit with code 0 when there are no upgrades', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgData = JSON.stringify({
       dependencies: {
         'ncu-test-v2': '99.9.9',
@@ -127,6 +146,25 @@ describe('--deep', function () {
       await runNcuCli(['--deep', '--errorLevel', '2'], {
         cwd: tempDir,
       })
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('formats package status output without extra blank lines in deep mode', async () => {
+    const tempDir = await setupDeepStatusTest()
+
+    try {
+      const { stdout } = await runNcuCli(['-u', '--deep'], { cwd: tempDir })
+      const output = stripAnsi(stdout)
+      const rootPackage = path.resolve(tempDir, 'package.json')
+      const nestedPackage = path.resolve(tempDir, 'packages/no-deps/package.json')
+
+      output.should.include(`Upgrading ${rootPackage}\nAll dependencies match the latest package versions :)`)
+      output.should.include(
+        `All dependencies match the latest package versions :)\n\nUpgrading ${nestedPackage}\nNo dependencies.`,
+      )
+      output.should.not.include(`Upgrading ${rootPackage}\n\nAll dependencies match the latest package versions :)`)
     } finally {
       await removeDir(tempDir)
     }
