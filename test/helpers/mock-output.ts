@@ -151,7 +151,7 @@ export function setupLogMocks() {
 /**
  * Flushes the event loop to ensure pending stream writes are processed.
  */
-export async function flush() {
+export function flush(): Promise<void> {
   return new Promise<void>(resolve => {
     setImmediate(resolve)
   })
@@ -160,12 +160,10 @@ export async function flush() {
 /**
  * Activates log capturing for the duration of the test.
  */
-export async function createMock() {
-  await flush()
-  const currentBuffers: ActiveBuffers = { stdout: '', stderr: '', general: '' }
-
+export function createMock() {
   const mocks = setupLogMocks()
 
+  const currentBuffers: ActiveBuffers = { stdout: '', stderr: '', general: '' }
   let cachedBuffers: ActiveBuffers | null = null
 
   /**
@@ -205,7 +203,8 @@ export async function createMock() {
   })
 
   /** Enter the async context with currentBuffers */
-  const runWithBuffers = async (fn: () => Promise<any>) => {
+  const runWithBuffers = async (fn: () => Promise<void>) => {
+    await flush()
     return buffersStore.run(currentBuffers, fn)
   }
 
