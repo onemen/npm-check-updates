@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { format, inspect } from 'node:util'
+import { vi } from 'vitest'
 
 const testNameStore = new AsyncLocalStorage<string>()
 
@@ -9,6 +10,16 @@ const buffersStore = new AsyncLocalStorage<ActiveBuffers>()
 /** Get the current active buffers for this async context */
 function getActiveBuffers(): ActiveBuffers | undefined {
   return buffersStore.getStore()
+}
+
+/**
+ * Get the effective buffer to use.
+ * Checks: active context > cached buffers > current buffers
+ * Note: AsyncLocalStorage automatically cleans up when context exits,
+ * so we don't need to manually clear it.
+ */
+function getEffectiveBuffer(currentBuf: ActiveBuffers, cachedBuf: ActiveBuffers | null): ActiveBuffers {
+  return getActiveBuffers() || cachedBuf || currentBuf
 }
 
 /**
@@ -43,26 +54,6 @@ function isGeneralLog(text: string): boolean {
     text.includes('DeprecationWarning') ||
     text.includes('ExperimentalWarning')
   )
-}
-
-/** Routes output either to active buffers or the native console */
-const intercept = (target: keyof typeof original, args: any[], isErr = false) => {
-  const activeBuffers = getActiveBuffers()
-  if (activeBuffers) {
-    const text = format(...args) + '\n'
-    if (isErr) activeBuffers.stderr += text
-    else if (isGeneralLog(text)) activeBuffers.general += text
-    else activeBuffers.stdout += text
-  } else {
-    const name = testNameStore.getStore() ?? ''
-    if (name) {
-      original.log(`\x1b[36m${name}\x1b[0m\n`)
-      original.log(args.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
-      original.log('\n')
-    } else {
-      original.log(args.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
-    }
-  }
 }
 
 /**
@@ -187,18 +178,6 @@ export function setupLogMocks() {
   }
 }
 
-/** */
-export function restoreLogMocks() {
-  console.log = original.log
-  console.info = original.info
-  console.warn = original.warn
-  console.error = original.error
-  console.trace = original.trace
-  console.time = original.time
-  console.timeLog = original.timeLog
-  console.timeEnd = original.timeEnd
-}
-
 /**
  * Flushes the event loop to ensure pending stream writes are processed.
  */
@@ -209,7 +188,7 @@ export async function flush() {
 }
 
 /**
- * Activates log capturing for the duration of the test.
+ * Activates log capturing for the duration of the cli test.
  */
 export async function createMock() {
   await flush()
@@ -231,7 +210,10 @@ export async function createMock() {
     throw new ExitSuccessSignal()
   })
 
-  /** Enter the async context with currentBuffers */
+  /**
+   * Enter the async context with currentBuffers.
+   * The context will be automatically cleaned up by AsyncLocalStorage when the fn completes.
+   */
   const runWithBuffers = async (fn: () => Promise<any>) => {
     return buffersStore.run(currentBuffers, fn)
   }
@@ -239,19 +221,16 @@ export async function createMock() {
   return {
     runWithBuffers,
     get stdout() {
-      const buf = getActiveBuffers() || cachedBuffers || currentBuffers
-      return buf.stdout
+      return getEffectiveBuffer(currentBuffers, cachedBuffers).stdout
     },
     get stderr() {
-      const buf = getActiveBuffers() || cachedBuffers || currentBuffers
-      return buf.stderr
+      return getEffectiveBuffer(currentBuffers, cachedBuffers).stderr
     },
     get generalLogs() {
-      const buf = getActiveBuffers() || cachedBuffers || currentBuffers
-      return buf.general
+      return getEffectiveBuffer(currentBuffers, cachedBuffers).general
     },
     get all() {
-      const buf = getActiveBuffers() || cachedBuffers || currentBuffers
+      const buf = getEffectiveBuffer(currentBuffers, cachedBuffers)
       return { stdout: buf.stdout, stderr: buf.stderr }
     },
     mockRestore() {
