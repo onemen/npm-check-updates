@@ -15,8 +15,7 @@ function getActiveBuffers(): ActiveBuffers | undefined {
 /**
  * Get the effective buffer to use.
  * Checks: active context > cached buffers > current buffers
- * Note: AsyncLocalStorage automatically cleans up when context exits,
- * so we don't need to manually clear it.
+ * Note: AsyncLocalStorage automatically cleans up when context exits.
  */
 function getEffectiveBuffer(currentBuf: ActiveBuffers, cachedBuf: ActiveBuffers | null): ActiveBuffers {
   return getActiveBuffers() || cachedBuf || currentBuf
@@ -61,13 +60,11 @@ function isGeneralLog(text: string): boolean {
  * Should be called once in vitest.setup.ts.
  */
 export function setupLogMocks() {
-  const realStdout = process.stdout.write
-  const realStderr = process.stderr.write
-
   const realLog = console.log
   const realTime = console.time
   const realTimeLog = console.timeLog
   const realTimeEnd = console.timeEnd
+  const realStdout = process.stdout.write
 
   /** console log mock */
   const mockedConsoleLog = (target: keyof typeof original, type: 'stdout' | 'stderr', ...a: any[]) => {
@@ -77,41 +74,16 @@ export function setupLogMocks() {
       if (isGeneralLog(text)) activeBuffers.general += text
       else activeBuffers[type] += text
     } else {
-      // Use original methods to avoid stream state issues
       const name = testNameStore.getStore() ?? ''
       if (name) {
-        original.log(`\x1b[36m${name}\x1b[0m`)
-        original.log(a.map(arg => inspect(arg, { colors: true, depth: null })).join(' '))
-        original.log('')
-      } else {
-        original.log(a.map(arg => inspect(arg, { colors: true, depth: null })).join(' '))
+        realStdout.call(process.stdout, `\x1b[36m${name}\x1b[0m\n`)
+      }
+      realStdout.call(process.stdout, a.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
+      if (name) {
+        realStdout.call(process.stdout, '\n')
       }
     }
   }
-
-  const restoreStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
-    const text = typeof chunk === 'string' ? chunk : format(chunk)
-    const activeBuffers = getActiveBuffers()
-    if (activeBuffers) {
-      if (isGeneralLog(text)) activeBuffers.general += text
-      else activeBuffers.stdout += text
-    } else {
-      realStdout.call(process.stdout, text)
-    }
-    return true
-  })
-
-  const restoreStderr = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
-    const text = typeof chunk === 'string' ? chunk : format(chunk)
-    const activeBuffers = getActiveBuffers()
-    if (activeBuffers) {
-      if (isGeneralLog(text)) activeBuffers.general += text
-      else activeBuffers.stderr += text
-    } else {
-      realStderr.call(process.stderr, text)
-    }
-    return true
-  })
 
   const restoreConsole = [
     vi.spyOn(console, 'log').mockImplementation((...a) => mockedConsoleLog('log', 'stdout', ...a)),
@@ -171,8 +143,6 @@ export function setupLogMocks() {
 
   return {
     mockRestore() {
-      restoreStdout.mockRestore()
-      restoreStderr.mockRestore()
       restoreConsole.forEach(r => r.mockRestore())
     },
   }
@@ -188,7 +158,7 @@ export async function flush() {
 }
 
 /**
- * Activates log capturing for the duration of the cli test.
+ * Activates log capturing for the duration of the test.
  */
 export async function createMock() {
   await flush()
@@ -198,10 +168,34 @@ export async function createMock() {
 
   let cachedBuffers: ActiveBuffers | null = null
 
+  /**
+   * Mock for process.stdout.write.
+   * Captures all output written to stdout, routing it to the active buffer.
+   */
+  const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
+    const text = typeof chunk === 'string' ? chunk : format(chunk)
+    const activeBuffers = getActiveBuffers() || currentBuffers
+    if (isGeneralLog(text)) activeBuffers.general += text
+    else activeBuffers.stdout += text
+    return true
+  })
+
+  /**
+   * Mock for process.stderr.write.
+   * Captures all output written to stderr, routing it to the active buffer.
+   */
+  const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
+    const text = typeof chunk === 'string' ? chunk : format(chunk)
+    const activeBuffers = getActiveBuffers() || currentBuffers
+    if (isGeneralLog(text)) activeBuffers.general += text
+    else activeBuffers.stderr += text
+    return true
+  })
+
   const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null): never => {
-    const activeBuffers = getActiveBuffers()
+    const activeBuffers = getActiveBuffers() || currentBuffers
     if (code && code !== 0) {
-      const capturedMessage = activeBuffers?.stderr.trim()
+      const capturedMessage = activeBuffers.stderr.trim()
       const message = capturedMessage || `CLI exited with code ${code}`
       const error = new Error(message)
       Error.captureStackTrace(error, exitSpy)
@@ -210,10 +204,7 @@ export async function createMock() {
     throw new ExitSuccessSignal()
   })
 
-  /**
-   * Enter the async context with currentBuffers.
-   * The context will be automatically cleaned up by AsyncLocalStorage when the fn completes.
-   */
+  /** Enter the async context with currentBuffers */
   const runWithBuffers = async (fn: () => Promise<any>) => {
     return buffersStore.run(currentBuffers, fn)
   }
@@ -235,8 +226,10 @@ export async function createMock() {
     },
     mockRestore() {
       cachedBuffers = { ...(getActiveBuffers() || currentBuffers) }
-      mocks.mockRestore()
+      stdoutSpy.mockRestore()
+      stderrSpy.mockRestore()
       exitSpy.mockRestore()
+      mocks.mockRestore()
     },
   }
 }

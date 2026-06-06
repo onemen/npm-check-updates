@@ -26,8 +26,8 @@ vi.mock('parse-github-url', async importOriginal => {
   return createParseGitHubUrlMock(importOriginal)
 })
 
-// mock all log to prevent log from printing during tests
-// all logs during cli tests will returned as {stdout, stderr}
+// mock all console methods to capture debug logs
+// stream spies (stdout/stderr) are added per-test in createMock() to avoid conflicts
 let mock: { mockRestore(): void }
 beforeEach(() => {
   mock = setupLogMocks()
