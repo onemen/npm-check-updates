@@ -1,11 +1,10 @@
-import os from 'node:os'
 import path, { dirname } from 'node:path'
 import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import prompts from 'prompts-ncu'
-import spawn from 'spawn-please'
 import { ncuCli } from '../../src/ncuCli'
-import { ExitSuccessSignal, createMock } from './mock-output'
+import { cliMutex } from './createMutex'
+import { ExitSuccessSignal, captureCliIO } from './mockIO'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -49,62 +48,6 @@ function validateCwdConflict(args: string[], options: RunCliOptions) {
 }
 
 /**
- * runNcuCliSpawn
- *
- * Purpose:
- * Execute the real built CLI (`build/cli.js`) in a separate Node process.
- * This allows tests to run the CLI exactly as a user would, with full
- * argument parsing, real exit codes, and an isolated working directory.
- *
- * Unlike runNcuCli (which runs in‑process), this version:
- * • does NOT load TypeScript or Vite
- * • does NOT affect coverage
- * • does NOT change the parent process cwd
- * • it is slower than runNcuCli
- *
- * Usage:
- * runNcuCliSpawn(['--doctor', '--packageFile', 'package.json'], { cwd: '...' })
- *
- * Note:
- * This function exists primarily as a debug tool to simulate the previous
- * behavior of testing in a child process. Ensure `process.env.TEST_SPAWN_CLI`
- * is set to 'true' before running the tests.
- */
-export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions = {}) {
-  // Create a safe, blank home path in the OS temp directory
-  const sandboxHome = path.join(os.tmpdir(), 'ncu-isolated-spawn-home')
-
-  const { inject, rejectOnError, stdin, ...testOptions } = options
-
-  // Prepare environment variables for the child process
-  const isolatedEnv = {
-    ...process.env,
-    ...testOptions?.env,
-    ...(inject ? { INJECT_PROMPTS: JSON.stringify(inject) } : null),
-    HOME: sandboxHome,
-    USERPROFILE: sandboxHome,
-  }
-
-  // Remove any active shell overrides that bleed through from host machine
-  delete (isolatedEnv as any).npm_config_min_release_age
-  delete (isolatedEnv as any).npm_config_userconfig
-  delete (isolatedEnv as any).npm_config_globalconfig
-
-  const spawnPleaseOptions = {
-    rejectOnError,
-    stdin,
-  }
-
-  const spawnOptions = {
-    ...testOptions,
-    env: isolatedEnv,
-  }
-
-  const bin = path.resolve(__dirname, '../../build/cli.js')
-  return spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
-}
-
-/**
  * Executes the NCU CLI in-process for testing.
  * Simulates a full command-line execution by forwarding arguments directly to the
  * application entry point without mutating the global `process.argv`. Captures all
@@ -115,11 +58,7 @@ export async function runNcuCliSpawn(args: string[] = [], options: RunCliOptions
  * @param options - Configuration overrides for environment, working directory, and mock inputs.
  * @returns An object containing the accumulated `stdout` and `stderr` strings.
  */
-export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
-  if (process.env.TEST_SPAWN_CLI) {
-    return runNcuCliSpawn(args, options)
-  }
-
+async function runNcuCliInternal(args: string[] = [], options: RunCliOptions = {}) {
   if (options.cwd) {
     validateCwdConflict(args, options)
     args.push('--cwd', options.cwd)
@@ -145,33 +84,52 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
   }
 
   const testName = expect.getState().currentTestName || 'unknown'
-  const out = createMock()
+  const io = captureCliIO()
 
   try {
-    await out.runWithBuffers(async () => {
-      await ncuCli()
-    })
-    return out.all
-  } catch (error: any) {
-    if (options.rejectOnError !== false && error && !(error instanceof ExitSuccessSignal)) {
+    await io.captureDuring(() => ncuCli())
+    return io.result()
+  } catch (error) {
+    if (options.rejectOnError !== false && !(error instanceof ExitSuccessSignal)) {
       throw error
     }
-    return out.all
+    return io.result()
   } finally {
-    out.mockRestore()
+    io.restore()
 
     try {
       process.argv = original.argv
       Object.defineProperty(process, 'stdin', { value: original.stdin, configurable: true })
       for (const key in options.env) process.env[key] = original.env[key]
     } catch (error) {
-      console.warn('⚠️  Error during state restoration:', error)
+      console.warn('⚠️ Error during state restoration:', error)
     }
 
-    if (out.generalLogs?.trim() && !options.silenceRunnerWarning) {
+    if (io.general.trim() && !options.silenceRunnerWarning) {
       process.stdout.write(`\n[General Logs]:\n`)
       process.stdout.write(`\x1b[36m${testName}\x1b[0m\n`)
-      process.stdout.write(`${out.generalLogs.trim()}\n`)
+      process.stdout.write(`${io.general.trim()}\n`)
     }
+  }
+}
+
+/**
+ * Serialized wrapper around runNcuCliInternal().
+ *
+ * Why this wrapper exists:
+ * ------------------------
+ * runNcuCliInternal mutates global process state (argv, env, stdin, stdout,
+ * stderr, exit). Running two CLI calls at the same time inside the same process
+ * would corrupt each other.
+ *
+ * The mutex ensures that only ONE CLI invocation runs at a time, even if the
+ * test calls Promise.all([runCli(), runCli()]).
+ */
+export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}) {
+  await cliMutex.acquire()
+  try {
+    return await runNcuCliInternal(args, options)
+  } finally {
+    cliMutex.release()
   }
 }

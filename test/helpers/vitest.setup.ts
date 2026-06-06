@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-handlers'
 import { TestSandbox } from './TestSandbox'
-import { setupLogMocks } from './mock-output'
+import { registerIOCapture } from './mockIO'
 import { createParseGitHubUrlMock } from './stubParseGitHubUrl'
 
 installGlobalErrorHandlers()
@@ -26,13 +26,5 @@ vi.mock('parse-github-url', async importOriginal => {
   return createParseGitHubUrlMock(importOriginal)
 })
 
-// mock all console methods to capture debug logs
-// stream spies (stdout/stderr) are added per-test in createMock() to avoid conflicts
-let mock: { mockRestore(): void }
-beforeEach(() => {
-  mock = setupLogMocks()
-})
-
-afterEach(() => {
-  mock.mockRestore()
-})
+// Registers beforeEach/afterEach to install global IO capture.
+registerIOCapture()

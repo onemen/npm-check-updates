@@ -56,13 +56,14 @@ describe('doctor', function () {
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
       await sandbox.createPackageJson()
-      // don't run multiple runNcuCli at once on the same test (do not use Promise.all)
-      await runNcuCli(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
-        '--packageData and --packageFile are not allowed with --doctor',
-      )
-      await runNcuCli(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
-        '--packageData and --packageFile are not allowed with --doctor',
-      )
+      Promise.all([
+        runNcuCli(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
+          '--packageData and --packageFile are not allowed with --doctor',
+        ),
+        runNcuCli(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
+          '--packageData and --packageFile are not allowed with --doctor',
+        ),
+      ])
     })
 
     testPass({ packageManager: 'npm' })

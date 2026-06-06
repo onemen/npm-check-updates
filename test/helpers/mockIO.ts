@@ -4,6 +4,11 @@ import { vi } from 'vitest'
 
 const testNameStore = new AsyncLocalStorage<string>()
 
+beforeEach(() => {
+  const name = expect.getState().currentTestName || 'unknown'
+  testNameStore.enterWith(name)
+})
+
 type ActiveBuffers = { stdout: string; stderr: string; general: string }
 const buffersStore = new AsyncLocalStorage<ActiveBuffers>()
 
@@ -32,18 +37,6 @@ export class ExitSuccessSignal extends Error {
   }
 }
 
-// Stores the native console methods to allow bypassing when mock is inactive
-const original = {
-  log: console.log,
-  info: console.info,
-  warn: console.warn,
-  error: console.error,
-  time: console.time,
-  timeLog: console.timeLog,
-  timeEnd: console.timeEnd,
-  trace: console.trace,
-}
-
 /** Detect logs that are not part of the output */
 function isGeneralLog(text: string): boolean {
   return (
@@ -59,15 +52,16 @@ function isGeneralLog(text: string): boolean {
  * Replaces global console methods with interceptors.
  * Should be called once in vitest.setup.ts.
  */
-export function setupLogMocks() {
+export function startGlobalIOCapture() {
   const realLog = console.log
   const realTime = console.time
   const realTimeLog = console.timeLog
   const realTimeEnd = console.timeEnd
+  const realTrace = console.trace
   const realStdout = process.stdout.write
 
   /** console log mock */
-  const mockedConsoleLog = (target: keyof typeof original, type: 'stdout' | 'stderr', ...a: any[]) => {
+  const mockedConsoleLog = (type: 'stdout' | 'stderr', ...a: any[]) => {
     const text = format(...a) + '\n'
     const activeBuffers = getActiveBuffers()
     if (activeBuffers) {
@@ -86,10 +80,10 @@ export function setupLogMocks() {
   }
 
   const restoreConsole = [
-    vi.spyOn(console, 'log').mockImplementation((...a) => mockedConsoleLog('log', 'stdout', ...a)),
-    vi.spyOn(console, 'info').mockImplementation((...a) => mockedConsoleLog('info', 'stdout', ...a)),
-    vi.spyOn(console, 'warn').mockImplementation((...a) => mockedConsoleLog('warn', 'stderr', ...a)),
-    vi.spyOn(console, 'error').mockImplementation((...a) => mockedConsoleLog('error', 'stderr', ...a)),
+    vi.spyOn(console, 'log').mockImplementation((...a) => mockedConsoleLog('stdout', ...a)),
+    vi.spyOn(console, 'info').mockImplementation((...a) => mockedConsoleLog('stdout', ...a)),
+    vi.spyOn(console, 'warn').mockImplementation((...a) => mockedConsoleLog('stderr', ...a)),
+    vi.spyOn(console, 'error').mockImplementation((...a) => mockedConsoleLog('stderr', ...a)),
 
     // Timers → general
     vi.spyOn(console, 'time').mockImplementation(label => {
@@ -136,7 +130,7 @@ export function setupLogMocks() {
       if (activeBuffers) {
         activeBuffers.general += `[trace] ${format(...a)}\n`
       } else {
-        original.trace(...a)
+        realTrace(...a)
       }
     }),
   ]
@@ -149,81 +143,90 @@ export function setupLogMocks() {
 }
 
 /**
+ * Registers beforeEach/afterEach to install global IO capture.
+ * Call this once from vitest.setup.ts.
+ */
+export function registerIOCapture() {
+  let mock: { mockRestore(): void }
+
+  beforeEach(() => {
+    mock = startGlobalIOCapture()
+  })
+
+  afterEach(() => {
+    mock.mockRestore()
+  })
+}
+
+/**
  * Activates log capturing for the duration of the test.
  */
-export function createMock() {
-  const mocks = setupLogMocks()
+export function captureCliIO() {
+  const buffers: ActiveBuffers = { stdout: '', stderr: '', general: '' }
+  let finalBuffers: ActiveBuffers | null = null
 
-  const currentBuffers: ActiveBuffers = { stdout: '', stderr: '', general: '' }
-  let cachedBuffers: ActiveBuffers | null = null
+  const logMocks = startGlobalIOCapture()
 
-  /**
-   * Mock for process.stdout.write.
-   * Captures all output written to stdout, routing it to the active buffer.
-   */
-  const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
+  const writeStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
     const text = typeof chunk === 'string' ? chunk : format(chunk)
-    const activeBuffers = getActiveBuffers() || currentBuffers
-    if (isGeneralLog(text)) activeBuffers.general += text
-    else activeBuffers.stdout += text
+    const active = getActiveBuffers() || buffers
+    if (isGeneralLog(text)) active.general += text
+    else active.stdout += text
     return true
   })
 
-  /**
-   * Mock for process.stderr.write.
-   * Captures all output written to stderr, routing it to the active buffer.
-   */
-  const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
+  const writeStderr = vi.spyOn(process.stderr, 'write').mockImplementation(chunk => {
     const text = typeof chunk === 'string' ? chunk : format(chunk)
-    const activeBuffers = getActiveBuffers() || currentBuffers
-    if (isGeneralLog(text)) activeBuffers.general += text
-    else activeBuffers.stderr += text
+    const active = getActiveBuffers() || buffers
+    if (isGeneralLog(text)) active.general += text
+    else active.stderr += text
     return true
   })
 
-  const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null): never => {
-    const activeBuffers = getActiveBuffers() || currentBuffers
+  const exitMock = vi.spyOn(process, 'exit').mockImplementation((code?: number | string | null): never => {
+    const active = getActiveBuffers() || buffers
     if (code && code !== 0) {
-      const capturedMessage = activeBuffers.stderr.trim()
-      const message = capturedMessage || `CLI exited with code ${code}`
-      const error = new Error(message)
-      Error.captureStackTrace(error, exitSpy)
-      throw error
+      const msg = active.stderr.trim() || `CLI exited with code ${code}`
+      const err = new Error(msg)
+      Error.captureStackTrace(err, exitMock)
+      throw err
     }
     throw new ExitSuccessSignal()
   })
 
-  /** Enter the async context with currentBuffers */
-  const runWithBuffers = async (fn: () => Promise<void>) => {
-    return buffersStore.run(currentBuffers, fn)
+  /** activate buffer for this run */
+  async function captureDuring(fn: () => Promise<void>) {
+    return buffersStore.run(buffers, fn)
+  }
+
+  /** return stdout stderr to the test */
+  function result() {
+    const buf = getEffectiveBuffer(buffers, finalBuffers)
+    return { stdout: buf.stdout, stderr: buf.stderr }
+  }
+
+  /** restore all mocks */
+  function restore() {
+    finalBuffers = { ...(getActiveBuffers() || buffers) }
+    writeStdout.mockRestore()
+    writeStderr.mockRestore()
+    exitMock.mockRestore()
+    logMocks.mockRestore()
   }
 
   return {
-    runWithBuffers,
+    captureDuring,
+    result,
     get stdout() {
-      return getEffectiveBuffer(currentBuffers, cachedBuffers).stdout
+      return result().stdout
     },
     get stderr() {
-      return getEffectiveBuffer(currentBuffers, cachedBuffers).stderr
+      return result().stderr
     },
-    get generalLogs() {
-      return getEffectiveBuffer(currentBuffers, cachedBuffers).general
+    get general() {
+      const buf = getEffectiveBuffer(buffers, finalBuffers)
+      return buf.general
     },
-    get all() {
-      const buf = getEffectiveBuffer(currentBuffers, cachedBuffers)
-      return { stdout: buf.stdout, stderr: buf.stderr }
-    },
-    mockRestore() {
-      cachedBuffers = { ...(getActiveBuffers() || currentBuffers) }
-      stdoutSpy.mockRestore()
-      stderrSpy.mockRestore()
-      exitSpy.mockRestore()
-      mocks.mockRestore()
-    },
+    restore,
   }
 }
-
-beforeEach(() => {
-  const name = expect.getState().currentTestName || 'unknown'
-  testNameStore.enterWith(name)
-})
