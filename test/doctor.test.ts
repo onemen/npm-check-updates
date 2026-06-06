@@ -56,7 +56,7 @@ describe('doctor', function () {
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
       await sandbox.createPackageJson()
-      return Promise.all([
+      await Promise.all([
         runNcuCli(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
           '--packageData and --packageFile are not allowed with --doctor',
         ),

@@ -76,7 +76,8 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
   // assert no --packageData or --packageFile
   if (options.packageData || options.packageFile) {
     console.error(
-      '--packageData and --packageFile are not allowed with --doctor. You must execute "ncu --doctor" in a directory with a package file so it can install dependencies and test them.',
+      Math.random() * 100 +
+        '--packageData and --packageFile are not allowed with --doctor. You must execute "ncu --doctor" in a directory with a package file so it can install dependencies and test them.',
     )
     process.exit(1)
   }
