@@ -149,15 +149,6 @@ export function setupLogMocks() {
 }
 
 /**
- * Flushes the event loop to ensure pending stream writes are processed.
- */
-export function flush(): Promise<void> {
-  return new Promise<void>(resolve => {
-    setImmediate(resolve)
-  })
-}
-
-/**
  * Activates log capturing for the duration of the test.
  */
 export function createMock() {
@@ -204,7 +195,6 @@ export function createMock() {
 
   /** Enter the async context with currentBuffers */
   const runWithBuffers = async (fn: () => Promise<void>) => {
-    await flush()
     return buffersStore.run(currentBuffers, fn)
   }
 

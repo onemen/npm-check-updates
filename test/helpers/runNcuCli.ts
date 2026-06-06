@@ -151,12 +151,8 @@ export async function runNcuCli(args: string[] = [], options: RunCliOptions = {}
     await out.runWithBuffers(async () => {
       await ncuCli()
     })
-    // ⏳ src/index.ts run use Promise.race
-    // wait before we return to flush all pending logs
-    await new Promise(resolve => setTimeout(resolve, 25))
     return out.all
   } catch (error: any) {
-    await new Promise(resolve => setTimeout(resolve, 25))
     if (options.rejectOnError !== false && error && !(error instanceof ExitSuccessSignal)) {
       throw error
     }
