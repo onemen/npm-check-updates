@@ -1,13 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { format, inspect } from 'node:util'
 import { vi } from 'vitest'
-
-const testNameStore = new AsyncLocalStorage<string>()
-
-/** get current tst name */
-export function getTestName() {
-  return testNameStore.getStore()
-}
+import { getTestName } from './testNameStore'
 
 type ActiveBuffers = { stdout: string; stderr: string; general: string }
 const buffersStore = new AsyncLocalStorage<ActiveBuffers>()
@@ -68,7 +62,7 @@ export function startGlobalIOCapture() {
       if (isGeneralLog(text)) activeBuffers.general += text
       else activeBuffers[type] += text
     } else {
-      const name = testNameStore.getStore() ?? ''
+      const name = getTestName() ?? ''
       if (name) {
         realStdout.call(process.stdout, `\x1b[36m${name}\x1b[0m\n`)
       }
@@ -151,8 +145,6 @@ export function registerIOCapture() {
 
   beforeEach(() => {
     mock = startGlobalIOCapture()
-    const name = expect.getState().currentTestName || 'unknown'
-    testNameStore.enterWith(name)
   })
 
   afterEach(() => {

@@ -5,6 +5,7 @@ import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-han
 import { TestSandbox } from './TestSandbox'
 import { registerIOCapture } from './mockIO'
 import { createParseGitHubUrlMock } from './stubParseGitHubUrl'
+import { registerTestNameCapture } from './testNameStore'
 
 installGlobalErrorHandlers()
 
@@ -18,13 +19,16 @@ config.truncateThreshold = 0
 process.env.NCU_TESTS = 'true'
 ;(global as any).should = should
 
-/* Initialize the test sandbox and make it globally available for all tests */
-TestSandbox.registerLifecycle()
-
 // Mock 'parse-github-url' to provide consistent parsing results for GitHub URLs in tests
 vi.mock('parse-github-url', async importOriginal => {
   return createParseGitHubUrlMock(importOriginal)
 })
 
+// must run before anything that uses getTestName()
+registerTestNameCapture()
+
 // Registers beforeEach/afterEach to install global IO capture.
 registerIOCapture()
+
+/* Initialize the test sandbox and make it globally available for all tests */
+TestSandbox.registerLifecycle()

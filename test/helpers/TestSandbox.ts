@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isMainThread } from 'node:worker_threads'
-import { getTestName } from './mockIO'
+import { getTestName } from './testNameStore'
 
 interface TestContext {
   cwd?: string
