@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
 import fs from 'node:fs'
 import fsAsync from 'node:fs/promises'
 import os from 'node:os'
@@ -7,17 +6,12 @@ import { fileURLToPath } from 'node:url'
 import { isMainThread } from 'node:worker_threads'
 import { getTestName } from './testNameStore'
 
-interface TestContext {
-  cwd?: string
-}
-
 /** A test sandbox for creating isolated test environments. */
 export class TestSandbox {
-  private static readonly contextStore = new AsyncLocalStorage<TestContext>()
+  private static _cwdMap = new Map<string, string>()
   private static readonly SANDBOX_FILE_DIR = path.dirname(fileURLToPath(import.meta.url))
   private originalEnv: NodeJS.ProcessEnv
   private originalCwd: string
-  private sharedCwd: string | null = null
   private yarnCachePath: string | null = null
   private readonly rootPrefix: string
 
@@ -65,23 +59,22 @@ export class TestSandbox {
       })
     })
 
-    beforeEach(() => {
-      this.contextStore.enterWith({})
-    })
-
     afterEach(async () => {
-      const store = this.contextStore.getStore()
-      if (store?.cwd) {
+      const testName = getTestName()
+      if (testName && TestSandbox._cwdMap.has(testName)) {
+        const cwd = TestSandbox._cwdMap.get(testName)!
+
         if (isMainThread) {
           try {
-            process.chdir(sandbox.originalCwd ?? '../')
-          } catch (err) {}
+            process.chdir(sandbox.originalCwd ?? process.cwd())
+          } catch {}
         }
+
         try {
-          await fsAsync.rm(store.cwd, { recursive: true, force: true })
-        } catch (err) {
-          console.warn('[afterEach Cleanup] Could not delete test CWD:', err)
-        }
+          await fsAsync.rm(cwd, { recursive: true, force: true })
+        } catch {}
+
+        TestSandbox._cwdMap.delete(testName)
       }
     })
 
@@ -93,29 +86,27 @@ export class TestSandbox {
   }
 
   get cwd(): string {
-    const store = TestSandbox.contextStore.getStore()
-    if (!store) {
-      if (!this.sharedCwd) {
-        const testName = getTestName() || 'unknown-test'
-        const safeName = testName.replace(/[^a-zA-Z0-9-_]/g, '_').slice(0, 50)
-        this.sharedCwd = fs
-          .mkdtempSync(path.join(os.tmpdir(), `${this.rootPrefix}shared-${safeName}-`))
-          .replace(/\\/g, '/')
-        if (isMainThread) {
-          process.chdir(this.sharedCwd)
-        }
-      }
-      return this.sharedCwd
+    const testName = getTestName()
+
+    if (!testName) {
+      throw new Error(
+        'TestSandbox.cwd accessed outside of a named test context. ' +
+          'Ensure to run registerTestNameCapture before TestSandbox.registerLifecycle in vitest.setup.ts.',
+      )
     }
 
-    if (!store.cwd) {
-      store.cwd = fs.mkdtempSync(path.join(os.tmpdir(), this.rootPrefix)).replace(/\\/g, '/')
-      if (isMainThread) {
-        process.chdir(store.cwd)
-      }
+    if (TestSandbox._cwdMap.has(testName)) {
+      return TestSandbox._cwdMap.get(testName)!
     }
 
-    return store.cwd
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), this.rootPrefix)).replace(/\\/g, '/')
+    if (isMainThread) {
+      process.chdir(cwd)
+    }
+
+    TestSandbox._cwdMap.set(testName, cwd)
+
+    return cwd
   }
 
   /**
@@ -168,14 +159,6 @@ export class TestSandbox {
       }
     }
 
-    if (this.sharedCwd) {
-      await new Promise(resolve => setTimeout(resolve, 0))
-      try {
-        await fsAsync.rm(this.sharedCwd, { recursive: true, force: true })
-        this.sharedCwd = null
-      } catch (err) {}
-    }
-
     if (this.yarnCachePath) {
       try {
         await fsAsync.rm(this.yarnCachePath, { recursive: true, force: true })
@@ -186,11 +169,11 @@ export class TestSandbox {
 
   // call this function from vitest teardown to remove any leftover npm-check-updates folders
   static async finalCleanup(): Promise<void> {
-    const files = await fs.promises.readdir(os.tmpdir())
-    for (const file of files) {
-      if (file.startsWith('npm-check-updates-') || file.startsWith('ncu-test-sandbox-')) {
-        await fs.promises.rm(path.join(os.tmpdir(), file), { recursive: true, force: true })
-      }
-    }
+    // const files = await fs.promises.readdir(os.tmpdir())
+    // for (const file of files) {
+    //   if (file.startsWith('npm-check-updates-') || file.startsWith('ncu-test-sandbox-')) {
+    //     await fs.promises.rm(path.join(os.tmpdir(), file), { recursive: true, force: true })
+    //   }
+    // }
   }
 }

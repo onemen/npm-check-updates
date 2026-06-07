@@ -34,5 +34,6 @@ export default defineConfig({
     reporters: [['default', { summary: false }]],
     isolate: false,
     pool: 'threads',
+    maxWorkers: '50%',
   },
 })
