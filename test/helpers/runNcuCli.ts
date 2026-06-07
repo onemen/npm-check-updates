@@ -85,16 +85,24 @@ async function runNcuCliInternal(args: string[] = [], options: RunCliOptions = {
 
   const testName = expect.getState().currentTestName || 'unknown'
   const io = captureCliIO()
+  // let hasError = false
 
   try {
     await io.captureDuring(() => ncuCli())
     return io.result()
   } catch (error) {
     if (options.rejectOnError !== false && !(error instanceof ExitSuccessSignal)) {
+      // hasError = true
       throw error
     }
     return io.result()
   } finally {
+    // if (hasError) {
+    //   // ⏳ Give the async event loop one tick to finish flushing
+    //   // any pending console logs before we restore the real terminal
+    //   // specially when ncu exit by timeout and runUpgrades can still log to the console
+    //   await new Promise(resolve => setTimeout(resolve, 10))
+    // }
     io.restore()
 
     try {

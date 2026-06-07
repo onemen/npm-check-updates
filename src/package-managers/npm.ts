@@ -78,15 +78,18 @@ const fetchPartialPackument = async (
   opts: npmRegistryFetch.FetchOptions = {},
   version?: Version,
 ): Promise<Partial<Packument>> => {
-  console.log('NCU_DEBUG: fetchPartialPackument', {
-    // stack: new Error('test').stack,
-    name,
-    fields,
-    tag,
-    opts,
-    version,
-    cwd: process.cwd(),
-  })
+  if (!opts.signal?.aborted) {
+    console.error('NCU_DEBUG: fetchPartialPackument', {
+      stack: new Error('test').stack,
+      name,
+      fields,
+      tag,
+      opts,
+      version,
+      cwd: process.cwd(),
+    })
+  }
+
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
 
@@ -161,6 +164,10 @@ const fetchPartialPackument = async (
       return partialPackument
     }
   } catch (err: any) {
+    if (err.name === 'AbortError' || err.code === 'ABORT_ERR') {
+      throw err
+    }
+
     if (err.code !== 'E404' || opts.fullMetadata) {
       throw err
     }
@@ -704,6 +711,7 @@ const mergeNpmConfigs = memoize(
       ...npmConfigCWD,
       ...(options.registry ? { registry: options.registry, silent: true } : null),
       ...(options.timeout ? { timeout: options.timeout } : null),
+      ...(options.controller?.signal ? { signal: options.controller.signal } : null),
     }
 
     const isMerged = npmConfigWorkspaceProject || npmConfigLocal || npmConfigProject || npmConfigCWD
@@ -777,6 +785,10 @@ async function fetchUpgradedPackument(
       npmConfigMerged,
     )
   } catch (err: any) {
+    if (err.name === 'AbortError' || err.code === 'ABORT_ERR') {
+      throw err
+    }
+
     if (options.retry && ++retried <= options.retry) {
       return fetchUpgradedPackument(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
     }

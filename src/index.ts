@@ -354,12 +354,16 @@ export async function run(
     await cacheClear(options)
   }
 
+  const controller = options.controller ?? new AbortController()
+  options.controller = controller
   let timeout: NodeJS.Timeout | undefined
   let timeoutPromise: Promise<void> = new Promise(() => null)
   if (options.timeout) {
     const timeoutMs = typeof options.timeout === 'string' ? Number.parseInt(options.timeout, 10) : options.timeout
     timeoutPromise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
+        // Abort everything downstream
+        controller.abort()
         // must catch the error and reject explicitly since we are in a setTimeout
         const error = `Exceeded global timeout of ${timeoutMs}ms`
         reject(error)
@@ -391,6 +395,7 @@ export async function run(
     // normal mode
     else {
       // await the return to prevnet process.off in finally to run before this promise resolved
+      console.error('NCU_DEBUG: run', options)
       return await Promise.race([timeoutPromise, runUpgrades(options, timeout)])
     }
   } finally {

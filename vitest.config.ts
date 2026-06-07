@@ -22,6 +22,9 @@ export default defineConfig({
     },
 
     // Performance & setup
+    isolate: false,
+    pool: 'threads',
+    maxWorkers: '50%',
     testTimeout: 60000,
     hookTimeout: 60000,
     teardownTimeout: 30000,
@@ -32,8 +35,5 @@ export default defineConfig({
 
     // Reporter configuration
     reporters: [['default', { summary: false }]],
-    isolate: false,
-    pool: 'threads',
-    maxWorkers: '50%',
   },
 })

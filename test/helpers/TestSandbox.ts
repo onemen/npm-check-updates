@@ -169,11 +169,11 @@ export class TestSandbox {
 
   // call this function from vitest teardown to remove any leftover npm-check-updates folders
   static async finalCleanup(): Promise<void> {
-    // const files = await fs.promises.readdir(os.tmpdir())
-    // for (const file of files) {
-    //   if (file.startsWith('npm-check-updates-') || file.startsWith('ncu-test-sandbox-')) {
-    //     await fs.promises.rm(path.join(os.tmpdir(), file), { recursive: true, force: true })
-    //   }
-    // }
+    const files = await fsAsync.readdir(os.tmpdir())
+    for (const file of files) {
+      if (file.startsWith('npm-check-updates-') || file.startsWith('ncu-test-sandbox-')) {
+        await fsAsync.rm(path.join(os.tmpdir(), file), { recursive: true, force: true })
+      }
+    }
   }
 }
