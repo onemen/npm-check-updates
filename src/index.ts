@@ -1,5 +1,6 @@
 import path from 'path'
 import prompts from 'prompts-ncu'
+import { fileURLToPath } from 'url'
 import pkg from '../package.json'
 import { cliOptionsMap } from './cli-options'
 import { cacheClear } from './lib/cache'
@@ -334,7 +335,8 @@ export async function run(
 
   if (process.env.NCU_TESTS) {
     const cwd = runOptions.cwd || process.cwd()
-    if (!runOptions.cwd && cwd.includes('npm-check-updates')) {
+    const root = path.basename(path.join(fileURLToPath(import.meta.url), '../..'))
+    if (!runOptions.cwd && cwd.includes(root)) {
       console.error(
         'NCU_DEBUG: Current working directory must be a temp directory.' +
           '\ntest file: ' +

@@ -31,7 +31,7 @@ async function getAllPackagesForTest(testPath: string, options: Options): Promis
 }
 
 describe('getAllPackages', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await sandbox.createPackageJson()
   })
 

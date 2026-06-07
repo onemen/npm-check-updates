@@ -19,7 +19,7 @@ process.env.NCU_TESTS = 'true'
 ;(global as any).should = should
 
 /* Initialize the test sandbox and make it globally available for all tests */
-;(globalThis as any).sandbox = TestSandbox.registerLifecycle()
+TestSandbox.registerLifecycle()
 
 // Mock 'parse-github-url' to provide consistent parsing results for GitHub URLs in tests
 vi.mock('parse-github-url', async importOriginal => {

@@ -1,19 +1,30 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import fs from 'node:fs'
 import fsAsync from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isMainThread } from 'node:worker_threads'
+import { getTestName } from './mockIO'
+
+interface TestContext {
+  cwd?: string
+}
 
 /** A test sandbox for creating isolated test environments. */
 export class TestSandbox {
+  private static readonly contextStore = new AsyncLocalStorage<TestContext>()
   private static readonly SANDBOX_FILE_DIR = path.dirname(fileURLToPath(import.meta.url))
-  private rootPath: string | null = null
-  private cwdPath: string | null = null
   private originalEnv: NodeJS.ProcessEnv
+  private originalCwd: string
+  private sharedCwd: string | null = null
+  private yarnCachePath: string | null = null
+  private readonly rootPrefix: string
 
-  private constructor(private readonly rootPrefix: string) {
+  private constructor(prefix: string) {
+    this.rootPrefix = prefix.endsWith('-') ? prefix : `${prefix}-`
     this.originalEnv = { ...process.env }
+    this.originalCwd = process.cwd()
   }
 
   /**
@@ -23,11 +34,10 @@ export class TestSandbox {
   private static setup(prefix = 'ncu-test-sandbox-'): TestSandbox {
     const sandbox = new TestSandbox(prefix)
 
-    // Initialize paths
-    const rootPrefix = sandbox.rootPrefix.endsWith('-') ? sandbox.rootPrefix : `${sandbox.rootPrefix}-`
-    sandbox.rootPath = fs.mkdtempSync(path.join(os.tmpdir(), rootPrefix)).replace(/\\/g, '/')
-    sandbox.cwdPath = path.join(sandbox.rootPath, '.cwd').replace(/\\/g, '/')
-    fs.mkdirSync(sandbox.cwdPath, { recursive: true })
+    const cachePrefix = sandbox.rootPrefix
+    sandbox.yarnCachePath = path
+      .join(os.tmpdir(), `ncu-yarn-cache-${cachePrefix}${Math.random().toString(36).substring(2, 8)}`)
+      .replace(/\\/g, '/')
 
     // Configure environment
     Object.assign(process.env, {
@@ -36,31 +46,76 @@ export class TestSandbox {
       npm_config_fund: 'false',
       npm_config_update_notifier: 'false',
       npm_config_loglevel: 'error',
-      YARN_CACHE_FOLDER: sandbox.rootPath,
+      YARN_CACHE_FOLDER: sandbox.yarnCachePath,
     })
 
     return sandbox
   }
 
   static registerLifecycle() {
+    let sandbox: TestSandbox
+
     beforeAll(() => {
-      const sandbox = this.setup()
+      sandbox = this.setup()
       globalThis.sandbox = sandbox
 
-      // Setup working directory isolation
-      if (isMainThread) {
-        process.chdir(sandbox.cwdPath!)
-      } else {
-        vi.spyOn(process, 'cwd').mockImplementation(() => sandbox.cwdPath!)
+      // Mock process.cwd to return sandbox.cwd
+      vi.spyOn(process, 'cwd').mockImplementation(() => {
+        return sandbox.cwd
+      })
+    })
+
+    beforeEach(() => {
+      this.contextStore.enterWith({})
+    })
+
+    afterEach(async () => {
+      const store = this.contextStore.getStore()
+      if (store?.cwd) {
+        if (isMainThread) {
+          try {
+            process.chdir(sandbox.originalCwd ?? '../')
+          } catch (err) {}
+        }
+        try {
+          await fsAsync.rm(store.cwd, { recursive: true, force: true })
+        } catch (err) {
+          console.warn('[afterEach Cleanup] Could not delete test CWD:', err)
+        }
       }
     })
 
     afterAll(async () => {
-      const sandbox = globalThis.sandbox
       if (sandbox) {
         await sandbox.cleanup()
       }
     })
+  }
+
+  get cwd(): string {
+    const store = TestSandbox.contextStore.getStore()
+    if (!store) {
+      if (!this.sharedCwd) {
+        const testName = getTestName() || 'unknown-test'
+        const safeName = testName.replace(/[^a-zA-Z0-9-_]/g, '_').slice(0, 50)
+        this.sharedCwd = fs
+          .mkdtempSync(path.join(os.tmpdir(), `${this.rootPrefix}shared-${safeName}-`))
+          .replace(/\\/g, '/')
+        if (isMainThread) {
+          process.chdir(this.sharedCwd)
+        }
+      }
+      return this.sharedCwd
+    }
+
+    if (!store.cwd) {
+      store.cwd = fs.mkdtempSync(path.join(os.tmpdir(), this.rootPrefix)).replace(/\\/g, '/')
+      if (isMainThread) {
+        process.chdir(store.cwd)
+      }
+    }
+
+    return store.cwd
   }
 
   /**
@@ -71,14 +126,11 @@ export class TestSandbox {
    * Defaults to '../test-data'.
    */
   async createTestFolder(fixturePath: string, fixtureRoot: string = '../test-data'): Promise<string> {
-    if (!this.cwdPath) {
-      throw new Error('Sandbox not initialized.')
-    }
-
+    const cwd = this.cwd
     const sourceFixturePath = path.resolve(TestSandbox.SANDBOX_FILE_DIR, fixtureRoot, fixturePath)
 
     if (fs.existsSync(sourceFixturePath)) {
-      await fsAsync.cp(sourceFixturePath, this.cwdPath, {
+      await fsAsync.cp(sourceFixturePath, cwd, {
         recursive: true,
         dereference: true,
       })
@@ -86,14 +138,10 @@ export class TestSandbox {
       throw new Error(`Fixture directory not found at: ${sourceFixturePath}`)
     }
 
-    return this.cwdPath
+    return cwd
   }
 
   async createPackageJson(content: Partial<Record<string, any>> = {}, testFolderPath?: string): Promise<string> {
-    if (!this.cwdPath) {
-      throw new Error('Sandbox not initialized.')
-    }
-
     const defaultPackageJson = {
       name: 'test-package',
       version: '1.0.0',
@@ -101,32 +149,11 @@ export class TestSandbox {
       ...content,
     }
 
-    const targetFolder = testFolderPath ?? this.cwdPath
+    const targetFolder = testFolderPath ?? this.cwd
     const packageJsonPath = path.join(targetFolder, 'package.json')
 
     await fsAsync.writeFile(packageJsonPath, JSON.stringify(defaultPackageJson, null, 2), 'utf-8')
     return packageJsonPath
-  }
-
-  getCwdPath(): string {
-    if (!this.cwdPath) throw new Error('Sandbox not initialized.')
-    return this.cwdPath
-  }
-
-  getRootPath(): string {
-    if (!this.rootPath) throw new Error('Sandbox not initialized.')
-    return this.rootPath
-  }
-
-  async cleanCwd(): Promise<void> {
-    if (!this.cwdPath) throw new Error('Sandbox not initialized.')
-    const cwd = this.cwdPath
-    const files = await fsAsync.readdir(cwd)
-
-    for (const file of files) {
-      const fullPath = path.join(cwd, file)
-      await fsAsync.rm(fullPath, { recursive: true, force: true })
-    }
   }
 
   async cleanup(): Promise<void> {
@@ -135,23 +162,25 @@ export class TestSandbox {
 
     if (isMainThread) {
       try {
-        // Move to the original project root or a neutral parent directory
-        process.chdir(this.originalEnv.PWD || '../../')
+        process.chdir(this.originalCwd ?? '../')
       } catch (err) {
         console.warn('[Cleanup] Could not revert process.cwd():', err)
       }
     }
 
-    if (this.rootPath) {
-      // Give the OS a moment to release handles on the old directory
+    if (this.sharedCwd) {
       await new Promise(resolve => setTimeout(resolve, 0))
       try {
-        await fsAsync.rm(this.rootPath, { recursive: true, force: true })
-        this.rootPath = null
-        this.cwdPath = null
-      } catch (err) {
-        // wee will clear it in finalCleanup
-      }
+        await fsAsync.rm(this.sharedCwd, { recursive: true, force: true })
+        this.sharedCwd = null
+      } catch (err) {}
+    }
+
+    if (this.yarnCachePath) {
+      try {
+        await fsAsync.rm(this.yarnCachePath, { recursive: true, force: true })
+      } catch (err) {}
+      this.yarnCachePath = null
     }
   }
 

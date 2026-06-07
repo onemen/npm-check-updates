@@ -4,10 +4,10 @@ import { vi } from 'vitest'
 
 const testNameStore = new AsyncLocalStorage<string>()
 
-beforeEach(() => {
-  const name = expect.getState().currentTestName || 'unknown'
-  testNameStore.enterWith(name)
-})
+/** get current tst name */
+export function getTestName() {
+  return testNameStore.getStore()
+}
 
 type ActiveBuffers = { stdout: string; stderr: string; general: string }
 const buffersStore = new AsyncLocalStorage<ActiveBuffers>()
@@ -151,6 +151,8 @@ export function registerIOCapture() {
 
   beforeEach(() => {
     mock = startGlobalIOCapture()
+    const name = expect.getState().currentTestName || 'unknown'
+    testNameStore.enterWith(name)
   })
 
   afterEach(() => {
