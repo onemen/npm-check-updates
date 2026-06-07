@@ -1,6 +1,5 @@
 import path from 'path'
 import prompts from 'prompts-ncu'
-import { fileURLToPath } from 'url'
 import pkg from '../package.json'
 import { cliOptionsMap } from './cli-options'
 import { cacheClear } from './lib/cache'
@@ -332,20 +331,6 @@ export async function run(
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
   const options = await initOptions(runOptions, { cli })
-
-  if (process.env.NCU_TESTS) {
-    const cwd = runOptions.cwd || process.cwd()
-    const root = path.basename(path.join(fileURLToPath(import.meta.url), '../..'))
-    if (!runOptions.cwd && cwd.includes(root)) {
-      console.error(
-        'NCU_DEBUG: Current working directory must be a temp directory.' +
-          '\ntest file: ' +
-          expect?.getState?.()?.testPath?.replace('C:/code/ncu/npm-check-updates/', '') +
-          '\n' +
-          cwd,
-      )
-    }
-  }
 
   const bugsUrl = pkg.bugs.url
   /** ensure that the process exits with an error code if there was an unhandled rejection */
