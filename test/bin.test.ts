@@ -14,7 +14,6 @@ import stubVersions from './helpers/stubVersions'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('bin', async function () {
-
   it('fetch latest version from registry (not stubbed)', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin'], {
