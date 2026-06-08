@@ -47,6 +47,7 @@ interface NpmApi {
     opts?: npmRegistryFetch.FetchOptions,
     version?: Version,
   ) => Promise<Partial<Packument>>
+  fetchUpgradedPackument: typeof fetchUpgradedPackument
   mockFetchPartialPackument: (mockReturnedVersions: MockedVersions) => typeof fetchPartialPackument
 }
 
@@ -78,17 +79,12 @@ const fetchPartialPackument = async (
   opts: npmRegistryFetch.FetchOptions = {},
   version?: Version,
 ): Promise<Partial<Packument>> => {
-  if (!opts.signal?.aborted) {
-    console.error('NCU_DEBUG: fetchPartialPackument', {
-      stack: new Error('test').stack,
-      name,
-      fields,
-      tag,
-      opts,
-      version,
-      cwd: process.cwd(),
-    })
+  // we already aborted this upgrade by timeoutPromise in run
+  // there is no point to fetch now
+  if (opts.ncuTimeoutSignal?.aborted) {
+    throw new Error(`Exceeded global timeout of ${opts.timeout}ms`)
   }
+  delete opts.ncuTimeoutSignal
 
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
@@ -587,6 +583,16 @@ npmApi.mockFetchUpgradedPackument =
       return Promise.resolve({} as Index<Packument>)
     }
 
+    // if timeoutPromise from run aborted throw the same error
+    const message = `Exceeded global timeout of ${options.timeout}ms (mocked)`
+    if (options.ncuTimeoutSignal?.aborted) {
+      throw new Error(message)
+    }
+
+    options.ncuTimeoutSignal?.addEventListener('abort', () => {
+      throw new Error(message)
+    })
+
     // a partial Packument
     const partialPackument =
       typeof mockReturnedVersions === 'function'
@@ -636,8 +642,12 @@ npmApi.mockFetchUpgradedPackument =
 /** Used for testing fetchPartialPackument. */
 npmApi.mockFetchPartialPackument = (mockReturnedVersions: MockedVersions): typeof fetchPartialPackument => {
   const mockFetch = npmApi.mockFetchUpgradedPackument(mockReturnedVersions)
-  return async (name: string, fields: (keyof Packument)[], tag: string | null, _opts?: any, version?: Version) => {
-    const packument = await mockFetch(name, fields, '', { distTag: tag || undefined })
+  return async (name: string, fields: (keyof Packument)[], tag: string | null, opts?: any, version?: Version) => {
+    const packument = await mockFetch(name, fields, '', {
+      distTag: tag || undefined,
+      ncuTimeoutSignal: opts.ncuTimeoutSignal,
+      timeout: opts.timeout,
+    })
     if (!packument) {
       return { name, versions: {} }
     }
@@ -711,7 +721,7 @@ const mergeNpmConfigs = memoize(
       ...npmConfigCWD,
       ...(options.registry ? { registry: options.registry, silent: true } : null),
       ...(options.timeout ? { timeout: options.timeout } : null),
-      ...(options.controller?.signal ? { signal: options.controller.signal } : null),
+      ...(options.ncuTimeoutSignal ? { ncuTimeoutSignal: options.ncuTimeoutSignal } : null),
     }
 
     const isMerged = npmConfigWorkspaceProject || npmConfigLocal || npmConfigProject || npmConfigCWD
@@ -748,6 +758,10 @@ async function fetchUpgradedPackument(
   if (process.env.STUB_VERSIONS) {
     const mockReturnedVersions = JSON.parse(process.env.STUB_VERSIONS)
     return npmApi.mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
+  }
+
+  if (options.ncuTimeoutSignal?.aborted) {
+    throw new Error(`Exceeded global timeout of ${options.timeout}ms`)
   }
 
   if (isExactVersion(currentVersion)) {
@@ -798,6 +812,9 @@ async function fetchUpgradedPackument(
 
   return result
 }
+
+/** Export fetchPartialPackument for testing purposes. @internal */
+npmApi.fetchUpgradedPackument = fetchUpgradedPackument
 
 /** Memoize fetchUpgradedPackument for --deep and --workspaces performance. */
 // must be exported to stub

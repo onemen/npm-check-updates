@@ -47,10 +47,6 @@ function isGeneralLog(text: string): boolean {
  * Should be called once in vitest.setup.ts.
  */
 export function startGlobalIOCapture() {
-  const realLog = console.log
-  const realTime = console.time
-  const realTimeLog = console.timeLog
-  const realTimeEnd = console.timeEnd
   const realTrace = console.trace
   const realStdout = process.stdout.write
 
@@ -66,7 +62,9 @@ export function startGlobalIOCapture() {
       if (name) {
         realStdout.call(process.stdout, `\x1b[36m${name}\x1b[0m\n`)
       }
-      realStdout.call(process.stdout, a.map(arg => inspect(arg, { colors: true, depth: null })).join(' ') + '\n')
+      const isTimer = typeof a[0] === 'string' && a[0].includes('%s')
+      const message = isTimer ? format(...a) : a.map(arg => inspect(arg, { colors: true, depth: null })).join(' ')
+      realStdout.call(process.stdout, message + '\n')
       if (name) {
         realStdout.call(process.stdout, '\n')
       }
@@ -78,45 +76,6 @@ export function startGlobalIOCapture() {
     vi.spyOn(console, 'info').mockImplementation((...a) => mockedConsoleLog('stdout', ...a)),
     vi.spyOn(console, 'warn').mockImplementation((...a) => mockedConsoleLog('stderr', ...a)),
     vi.spyOn(console, 'error').mockImplementation((...a) => mockedConsoleLog('stderr', ...a)),
-
-    // Timers → general
-    vi.spyOn(console, 'time').mockImplementation(label => {
-      const activeBuffers = getActiveBuffers()
-      if (activeBuffers) {
-        console.log = realLog
-        realTime(label)
-        console.log = mockedConsoleLog
-        activeBuffers.general += `[timer:start] ${label ?? 'default'}\n`
-      } else {
-        realTime(label)
-      }
-    }),
-
-    vi.spyOn(console, 'timeLog').mockImplementation((label, ...data) => {
-      const activeBuffers = getActiveBuffers()
-      if (activeBuffers) {
-        let printed: string[] = []
-        console.log = (...args) => (printed = args)
-        realTimeLog(label ?? 'default', ...data)
-        console.log = mockedConsoleLog
-        activeBuffers.general += `[timer:log] ${format(...printed)}\n`
-      } else {
-        realTimeLog(label, ...data)
-      }
-    }),
-
-    vi.spyOn(console, 'timeEnd').mockImplementation(label => {
-      const activeBuffers = getActiveBuffers()
-      if (activeBuffers) {
-        let printed: string[] = []
-        console.log = (...args) => (printed = args)
-        realTimeEnd(label ?? 'default')
-        console.log = mockedConsoleLog
-        activeBuffers.general += `[timer:end] ${format(...printed)}\n`
-      } else {
-        realTimeEnd(label)
-      }
-    }),
 
     // Traces → general
     vi.spyOn(console, 'trace').mockImplementation((...a) => {
