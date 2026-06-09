@@ -48,7 +48,7 @@ const createMockVersion = ({ name, versions, distTags }: CreateMockParams): Part
 const getNormalizedLogs = (logSpy: Mock<(...args: any[]) => void>): string[] => {
   return logSpy.mock.calls
     .flat()
-    .filter((arg): arg is string => typeof arg === 'string')
+    .filter((arg): arg is string => typeof arg === 'string' && !arg.includes('NCU_DEBUG'))
     .map(
       l =>
         stripVTControlCharacters(l)

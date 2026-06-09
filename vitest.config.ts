@@ -34,6 +34,7 @@ export default defineConfig({
     globalSetup: ['./test/helpers/global-setup.ts'],
 
     // Reporter configuration
+    disableConsoleIntercept: true,
     reporters: [['default', { summary: false }]],
   },
 })

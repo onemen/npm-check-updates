@@ -1,23 +1,33 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 
-const store = new AsyncLocalStorage<string>()
+const store = new AsyncLocalStorage<{ name: string; header: string }>()
 
 /** use by vitest.setup.ts to register this lifecycle */
 export function registerTestNameCapture() {
-  beforeEach(() => {
-    const name = expect.getState().currentTestName || 'unknown'
-    store.enterWith(name)
+  beforeEach(context => {
+    const fileName = context.task.file?.name ?? 'unknown'
+    const testName = context.task.name ?? 'unknown'
+    const header = `${fileName} > ${testName}`
+    store.enterWith({ name: testName, header })
   })
 }
 
+const errorMsg = 'called outside of a test context. Ensure registerTestNameCapture() runs early in vitest.setup.'
+
 /** return test name */
 export function getTestName() {
-  const name = store.getStore()
-  if (!name) {
-    throw new Error(
-      'getTestName() called outside of a test context. ' +
-        'Ensure registerTestNameCapture() runs early in vitest.setup.',
-    )
+  const storeValue = store.getStore()
+  if (!storeValue) {
+    throw new Error(`getTestName ${errorMsg}`)
   }
-  return name
+  return storeValue.name
+}
+
+/** return test header */
+export function getOutputHeader() {
+  const storeValue = store.getStore()
+  if (!storeValue) {
+    throw new Error(`getOutputHeader ${errorMsg}`)
+  }
+  return storeValue.header
 }

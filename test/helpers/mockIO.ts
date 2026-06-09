@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { format, inspect } from 'node:util'
+import { format, formatWithOptions } from 'node:util'
 import { vi } from 'vitest'
-import { getTestName } from './testNameStore'
+import { getOutputHeader } from './testNameStore'
 
 type ActiveBuffers = { stdout: string; stderr: string; general: string }
 const buffersStore = new AsyncLocalStorage<ActiveBuffers>()
@@ -33,49 +33,72 @@ export class ExitSuccessSignal extends Error {
 
 /** Detect logs that are not part of the output */
 function isGeneralLog(text: string): boolean {
-  return (
-    text.startsWith('NCU_DEBUG:') ||
-    text.includes('MaxListenersExceededWarning') ||
-    text.includes('trace-warnings') ||
-    text.includes('DeprecationWarning') ||
-    text.includes('ExperimentalWarning')
-  )
+  const patterns = [
+    // Must be at the start
+    /^NCU_DEBUG:/,
+
+    // Can be anywhere
+    /Warning: (?:Label|No such label) '.*' (?:already exists for console\.time\(\)|for console\.timeEnd\(\))/,
+    /MaxListenersExceededWarning/,
+    /trace-warnings/,
+    /DeprecationWarning/,
+    /ExperimentalWarning/,
+  ]
+
+  return patterns.some(pattern => pattern.test(text))
 }
+
+/** for internal text  */
+export const uiAccent = (text: string) => `\x1b[2m\x1b[37m${text}\x1b[22m\x1b[39m`
 
 /**
  * Replaces global console methods with interceptors.
  * Should be called once in vitest.setup.ts.
  */
 export function startGlobalIOCapture() {
-  const realTrace = console.trace
-  const realStdout = process.stdout.write
+  const original = {
+    log: console.log,
+    info: console.info,
+    warn: console.warn,
+    error: console.error,
+    time: console.time,
+    timeEnd: console.timeEnd,
+    trace: console.trace,
+  }
+
+  type LogMethod = keyof typeof original
 
   /** console log mock */
-  const mockedConsoleLog = (type: 'stdout' | 'stderr', ...a: any[]) => {
-    const text = format(...a) + '\n'
+  const mockedConsoleLog = (method: LogMethod, ...a: any[]) => {
+    const coloredText = formatWithOptions({ colors: true }, ...a) + '\n'
     const activeBuffers = getActiveBuffers()
     if (activeBuffers) {
-      if (isGeneralLog(text)) activeBuffers.general += text
-      else activeBuffers[type] += text
-    } else {
-      const name = getTestName() ?? ''
-      if (name) {
-        realStdout.call(process.stdout, `\x1b[36m${name}\x1b[0m\n`)
+      const targetBuffer = method === 'warn' || method === 'error' ? 'stderr' : 'stdout'
+      const plainText = formatWithOptions({ colors: false }, ...a)
+      if (isGeneralLog(plainText)) {
+        activeBuffers.general += coloredText
+      } else {
+        activeBuffers[targetBuffer] += plainText + '\n'
       }
-      const isTimer = typeof a[0] === 'string' && a[0].includes('%s')
-      const message = isTimer ? format(...a) : a.map(arg => inspect(arg, { colors: true, depth: null })).join(' ')
-      realStdout.call(process.stdout, message + '\n')
-      if (name) {
-        realStdout.call(process.stdout, '\n')
+    } else {
+      const header = getOutputHeader() ?? ''
+      if (header) {
+        original.log(uiAccent(header))
+      }
+      const text = coloredText.replace(/NCU_DEBUG/g, uiAccent('NCU_DEBUG'))
+      if (method === 'warn' || method === 'error') {
+        original.error(text)
+      } else {
+        original.log(text)
       }
     }
   }
 
   const restoreConsole = [
-    vi.spyOn(console, 'log').mockImplementation((...a) => mockedConsoleLog('stdout', ...a)),
-    vi.spyOn(console, 'info').mockImplementation((...a) => mockedConsoleLog('stdout', ...a)),
-    vi.spyOn(console, 'warn').mockImplementation((...a) => mockedConsoleLog('stderr', ...a)),
-    vi.spyOn(console, 'error').mockImplementation((...a) => mockedConsoleLog('stderr', ...a)),
+    vi.spyOn(console, 'log').mockImplementation((...a) => mockedConsoleLog('log', ...a)),
+    vi.spyOn(console, 'info').mockImplementation((...a) => mockedConsoleLog('info', ...a)),
+    vi.spyOn(console, 'warn').mockImplementation((...a) => mockedConsoleLog('warn', ...a)),
+    vi.spyOn(console, 'error').mockImplementation((...a) => mockedConsoleLog('error', ...a)),
 
     // Traces → general
     vi.spyOn(console, 'trace').mockImplementation((...a) => {
@@ -83,14 +106,18 @@ export function startGlobalIOCapture() {
       if (activeBuffers) {
         activeBuffers.general += `[trace] ${format(...a)}\n`
       } else {
-        realTrace(...a)
+        original.error(...a)
       }
     }),
   ]
 
   return {
     mockRestore() {
-      restoreConsole.forEach(r => r.mockRestore())
+      restoreConsole.forEach(r => {
+        if (r && typeof r.mockRestore === 'function') {
+          r.mockRestore()
+        }
+      })
     },
   }
 }
@@ -117,8 +144,6 @@ export function registerIOCapture() {
 export function captureCliIO() {
   const buffers: ActiveBuffers = { stdout: '', stderr: '', general: '' }
   let finalBuffers: ActiveBuffers | null = null
-
-  const logMocks = startGlobalIOCapture()
 
   const writeStdout = vi.spyOn(process.stdout, 'write').mockImplementation(chunk => {
     const text = typeof chunk === 'string' ? chunk : format(chunk)
@@ -164,7 +189,6 @@ export function captureCliIO() {
     writeStdout.mockRestore()
     writeStderr.mockRestore()
     exitMock.mockRestore()
-    logMocks.mockRestore()
   }
 
   return {

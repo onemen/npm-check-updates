@@ -83,7 +83,6 @@ async function runNcuCliInternal(args: string[] = [], options: RunCliOptions = {
     Object.defineProperty(process, 'stdin', { value: mockStdin, configurable: true })
   }
 
-  const testName = expect.getState().currentTestName || 'unknown'
   const io = captureCliIO()
 
   try {
@@ -113,9 +112,7 @@ async function runNcuCliInternal(args: string[] = [], options: RunCliOptions = {
     }
 
     if (io.general.trim() && !options.silenceRunnerWarning) {
-      process.stdout.write(`\n[General Logs]:\n`)
-      process.stdout.write(`\x1b[36m${testName}\x1b[0m\n`)
-      process.stdout.write(`${io.general.trim()}\n`)
+      console.log(io.general.trim())
     }
   }
 }
