@@ -1,4 +1,3 @@
-import console from 'node:console'
 import fs from 'node:fs'
 import path, { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -28,7 +27,8 @@ export async function createParseGitHubUrlMock(importOriginal: () => Promise<any
 
       const isGitHubUrl = declaration.includes('github.com') || declaration.includes('/')
       if (isGitHubUrl) {
-        console.warn(`[MOCK WARNING] ${expect.getState()?.testPath}`)
+        // TODO: check if we need warning when not reseting the fixtures
+        // console.warn(`[MOCK WARNING] ${expect.getState()?.testPath}`)
         const entry = JSON.stringify({ [declaration]: { auth, protocol, host, path, branch } })
         fs.appendFileSync(TEMP_LOG, entry + '\n')
         existingFixtures[declaration] = result

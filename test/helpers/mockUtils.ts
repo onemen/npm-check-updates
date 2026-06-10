@@ -5,7 +5,8 @@ import { fileURLToPath } from 'url'
 import { type MockInstance, type TestContext } from 'vitest'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const PROJECT_ROOT = path.resolve(__dirname, '../../')
+const projectRoot = path.resolve(__dirname, '../../')
+const normalizedRoot = projectRoot.replace(/\\/g, '/')
 
 interface PersistentMockOptions {
   fixturePath: string
@@ -82,7 +83,7 @@ export function getFixturePath(stubName: string, fileName: string): string {
     throw new Error('getFixturePath must be called from within a test')
   }
 
-  let relativePath = path.relative(PROJECT_ROOT, testPath)
+  let relativePath = path.relative(projectRoot, testPath)
   if (relativePath.startsWith('test' + path.sep)) {
     relativePath = relativePath.substring(('test' + path.sep).length)
   }
@@ -93,7 +94,7 @@ export function getFixturePath(stubName: string, fileName: string): string {
     .replace(/_index$/, '')
   const safeFileName = safeTruncate(fileName.replace(/\s+/g, '_').replace(/\.json$/, ''), 50) + '.json'
 
-  return path.join(PROJECT_ROOT, 'test/fixtures', folderName, `${stubName}_${safeFileName}`)
+  return path.join(projectRoot, 'test/fixtures', folderName, `${stubName}_${safeFileName}`)
 }
 
 /** convert test title to valid file name */
@@ -119,4 +120,11 @@ export function sanitize(output: string): string {
       // Remove dynamic timestamps often found in log paths or messages
       .replace(/\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2}_\d{3}Z/g, '<TIMESTAMP>')
   )
+}
+
+/** Tokenizes absolute developer paths to safe forward-slashed placeholders */
+export function serializeTokens(value: string): string {
+  if (!value) return value
+  const normalized = value.replace(/\\+(?!["'])/g, '/')
+  return normalized.replace(RegExp(normalizedRoot, 'g'), '%root%')
 }

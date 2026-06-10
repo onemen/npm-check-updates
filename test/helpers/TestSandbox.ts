@@ -1,3 +1,4 @@
+import cp from 'node:child_process'
 import fs from 'node:fs'
 import fsAsync from 'node:fs/promises'
 import os from 'node:os'
@@ -9,6 +10,7 @@ import { getTestName } from './testNameStore'
 /** A test sandbox for creating isolated test environments. */
 export class TestSandbox {
   private static _cwdMap = new Map<string, string>()
+  private _cwd: string = ''
   private static readonly SANDBOX_FILE_DIR = path.dirname(fileURLToPath(import.meta.url))
   private originalEnv: NodeJS.ProcessEnv
   private originalCwd: string
@@ -46,17 +48,86 @@ export class TestSandbox {
     return sandbox
   }
 
+  initCwd() {
+    const testName = getTestName()
+
+    if (!testName) {
+      throw new Error(
+        'TestSandbox.cwd accessed outside of a named test context. ' +
+          'Ensure to run registerTestNameCapture before TestSandbox.registerLifecycle in vitest.setup.ts.',
+      )
+    }
+
+    if (TestSandbox._cwdMap.has(testName)) {
+      return TestSandbox._cwdMap.get(testName)!
+    }
+
+    this._cwd = fs.mkdtempSync(path.join(os.tmpdir(), this.rootPrefix)).replace(/\\/g, '/')
+    if (isMainThread) {
+      process.chdir(this._cwd)
+    }
+
+    TestSandbox._cwdMap.set(testName, this._cwd)
+
+    return this._cwd
+  }
+
   static registerLifecycle() {
     let sandbox: TestSandbox
+    let isActive = false
+    const originalCwd = process.cwd()
 
     beforeAll(() => {
+      const originalSpawn = cp.spawn
+      vi.spyOn(cp, 'spawn').mockImplementation((cmd, args, options = {}) => {
+        // sandbox not initialized yet
+        if (!sandbox || sandbox.cwd === '') {
+          throw new Error('spawn() called before sandbox.initCwd()')
+        }
+
+        // missing cwd means sandbox escape
+        if (!options.cwd) {
+          throw new Error(
+            `Sandbox violation: child_process.spawn() was called without a "cwd".
+
+This means the tested function triggered a child process without receiving
+sandbox.cwd in its options. As a result, the process ran in the REAL project
+directory instead of the test sandbox.
+
+How to fix:
+  Pass sandbox.cwd to the tested function, for example:
+    getInstalledPackages({ cwd: sandbox.cwd })
+    spawnNpm({ cwd: sandbox.cwd })
+    spawnCommand(cmd, args, { cwd: sandbox.cwd })
+
+If the spawned process expects a package.json (e.g. npm, yarn, pnpm),
+create one inside the sandbox before calling the function:
+    sandbox.createPackageJson({ dependencies: { 'ncu-test-v2': '1.0.0' } })
+
+Command executed:
+  ${cmd} ${args.join(' ')}
+
+If this originates from a 3rd‑party library (e.g. spawn-please), ensure your
+wrapper injects { cwd: sandbox.cwd } automatically.
+`.trim(),
+          )
+        }
+
+        return originalSpawn(cmd, args, options)
+      })
+
       sandbox = this.setup()
       globalThis.sandbox = sandbox
 
       // Mock process.cwd to return sandbox.cwd
       vi.spyOn(process, 'cwd').mockImplementation(() => {
-        return sandbox.cwd
+        return isActive ? sandbox.cwd : originalCwd
       })
+    })
+
+    beforeEach(async () => {
+      isActive = true
+      sandbox.initCwd()
     })
 
     afterEach(async () => {
@@ -86,27 +157,7 @@ export class TestSandbox {
   }
 
   get cwd(): string {
-    const testName = getTestName()
-
-    if (!testName) {
-      throw new Error(
-        'TestSandbox.cwd accessed outside of a named test context. ' +
-          'Ensure to run registerTestNameCapture before TestSandbox.registerLifecycle in vitest.setup.ts.',
-      )
-    }
-
-    if (TestSandbox._cwdMap.has(testName)) {
-      return TestSandbox._cwdMap.get(testName)!
-    }
-
-    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), this.rootPrefix)).replace(/\\/g, '/')
-    if (isMainThread) {
-      process.chdir(cwd)
-    }
-
-    TestSandbox._cwdMap.set(testName, cwd)
-
-    return cwd
+    return this._cwd
   }
 
   /**

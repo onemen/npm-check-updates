@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import * as getPeerDependenciesFromRegistryModule from '../src/lib/getPeerDependenciesFromRegistry'
 import { type Packument } from '../src/types/Packument'
+import { serializeTokens } from './helpers/mockUtils'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -25,6 +26,9 @@ describe('peer dependencies', function () {
         const fetchedPeerDeps = await original(missingPackageMap, options)
         Object.entries(fetchedPeerDeps).forEach(([pkg, peers]) => {
           if (!peerDepsData[pkg]) peerDepsData[pkg] = {}
+          if (peers?.error && 'summary' in (peers.error as any)) {
+            peers.error = serializeTokens(JSON.stringify(peers.error))
+          }
           peerDepsData[pkg][packageMap[pkg]] = peers
         })
         await fs.mkdir(path.dirname(filePath), { recursive: true })
