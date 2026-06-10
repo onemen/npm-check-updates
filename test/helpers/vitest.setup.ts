@@ -2,6 +2,7 @@ import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-handlers'
+import { FileCacheManager } from './FileCacheManager'
 import { TestSandbox } from './TestSandbox'
 import { registerIOCapture } from './mockIO'
 import { createParseGitHubUrlMock } from './stubParseGitHubUrl'
@@ -32,3 +33,5 @@ registerIOCapture()
 
 /* Initialize the test sandbox and make it globally available for all tests */
 TestSandbox.registerLifecycle()
+
+FileCacheManager.bootstrap()

@@ -22,7 +22,12 @@ export type SpawnCommandStub = MockInstance<typeof mod.spawnCommand>
  * * @param fixtureName - The name used for the fixture file (saved in `../fixtures/<name>.json`).
  * Spaces are automatically converted to underscores.
  */
-export async function stubSpawnCommand(fixtureName: string) {
+export async function stubSpawnCommand(fixtureName: string, testNew?: boolean) {
+  if (!testNew) {
+    return {
+      mockRestore: () => {},
+    } as MockInstance<typeof mod.spawnCommand>
+  }
   const fixturePath = getFixturePath('spawnCommand', fixtureName)
 
   let fixtures: Record<string, any> = {}
