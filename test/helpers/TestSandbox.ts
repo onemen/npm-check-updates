@@ -9,9 +9,10 @@ import { getTestName } from './testNameStore'
 
 /** A test sandbox for creating isolated test environments. */
 export class TestSandbox {
+  private static readonly SANDBOX_FILE_DIR = path.dirname(fileURLToPath(import.meta.url))
+  private static readonly SANDBOX_SPAWN_ERROR = Symbol('SANDBOX_SPAWN_ERROR')
   private static _cwdMap = new Map<string, string>()
   private _cwd: string = ''
-  private static readonly SANDBOX_FILE_DIR = path.dirname(fileURLToPath(import.meta.url))
   private originalEnv: NodeJS.ProcessEnv
   private originalCwd: string
   private yarnCachePath: string | null = null
@@ -87,29 +88,33 @@ export class TestSandbox {
 
         // missing cwd means sandbox escape
         if (!options.cwd) {
-          throw new Error(
-            `Sandbox violation: child_process.spawn() was called without a "cwd".
-
-This means the tested function triggered a child process without receiving
-sandbox.cwd in its options. As a result, the process ran in the REAL project
-directory instead of the test sandbox.
-
-How to fix:
-  Pass sandbox.cwd to the tested function, for example:
-    getInstalledPackages({ cwd: sandbox.cwd })
-    spawnNpm({ cwd: sandbox.cwd })
-    spawnCommand(cmd, args, { cwd: sandbox.cwd })
-
-If the spawned process expects a package.json (e.g. npm, yarn, pnpm),
-create one inside the sandbox before calling the function:
-    sandbox.createPackageJson({ dependencies: { 'ncu-test-v2': '1.0.0' } })
-
-Command executed:
-  ${cmd} ${args.join(' ')}
-
-If this originates from a 3rd‑party library (e.g. spawn-please), ensure your
-wrapper injects { cwd: sandbox.cwd } automatically.
-`.trim(),
+          throw Object.assign(
+            new Error(
+              [
+                `Sandbox violation: child_process.spawn() was called without a "cwd".`,
+                ``,
+                `This means the tested function triggered a child process without receiving`,
+                `sandbox.cwd in its options. As a result, the process ran in the REAL project`,
+                `directory instead of the test sandbox.`,
+                ``,
+                `How to fix:`,
+                `  Pass sandbox.cwd to the tested function, for example:`,
+                `    getInstalledPackages({ cwd: sandbox.cwd })`,
+                `    spawnNpm({ cwd: sandbox.cwd })`,
+                `    spawnCommand(cmd, args, { cwd: sandbox.cwd })`,
+                ``,
+                `If the spawned process expects a package.json (e.g. npm, yarn, pnpm),`,
+                `create one inside the sandbox before calling the function:`,
+                `    sandbox.createPackageJson({ name: "test", version: "1.0.0" })`,
+                ``,
+                `Command executed:`,
+                `  ${cmd} ${args?.join(' ')}`,
+                ``,
+                `If this originates from a 3rd‑party library (e.g. spawn-please), ensure your`,
+                `wrapper injects { cwd: sandbox.cwd } automatically.`,
+              ].join('\n'),
+            ),
+            { code: TestSandbox.SANDBOX_SPAWN_ERROR },
           )
         }
 
@@ -154,6 +159,10 @@ wrapper injects { cwd: sandbox.cwd } automatically.
         await sandbox.cleanup()
       }
     })
+  }
+
+  get SANDBOX_SPAWN_ERROR() {
+    return TestSandbox.SANDBOX_SPAWN_ERROR
   }
 
   get cwd(): string {

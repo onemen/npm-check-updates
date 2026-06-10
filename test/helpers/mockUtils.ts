@@ -124,7 +124,13 @@ export function sanitize(output: string): string {
 
 /** Tokenizes absolute developer paths to safe forward-slashed placeholders */
 export function serializeTokens(value: string): string {
+  /** make safe value for regex  */
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
   if (!value) return value
   const normalized = value.replace(/\\+(?!["'])/g, '/')
-  return normalized.replace(RegExp(normalizedRoot, 'g'), '%root%')
+  const rootA = escapeRegex(normalizedRoot)
+  const rootB = escapeRegex(sandbox.cwd)
+  const rootRegex = new RegExp(`${rootA}|${rootB}`, 'g')
+  return normalized.replace(rootRegex, '%root%')
 }

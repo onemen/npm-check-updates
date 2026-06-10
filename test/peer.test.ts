@@ -88,6 +88,7 @@ describe('peer dependencies', function () {
       },
     })
     const upgrades = await ncu({
+      cwd: sandbox.cwd,
       peer: true,
       packageData: {
         dependencies: {
@@ -120,6 +121,7 @@ describe('peer dependencies', function () {
       },
     })
     const upgrades = await ncu({
+      cwd: sandbox.cwd,
       peer: true,
       packageData: {
         dependencies: {
@@ -148,6 +150,7 @@ describe('peer dependencies', function () {
       '@vitest/ui': { ...vitest },
     })
     const upgrades = await ncu({
+      cwd: sandbox.cwd,
       peer: true,
       packageData: {
         dependencies: {
@@ -163,6 +166,7 @@ describe('peer dependencies', function () {
   // https://github.com/raineorshine/npm-check-updates/issues/1437
   it('git urls are ignored', async () => {
     const upgrades = await ncu({
+      cwd: sandbox.cwd,
       peer: true,
       packageData: {
         dependencies: {
@@ -295,6 +299,7 @@ describe('peer dependencies', function () {
       'ncu-test-return-version': { version: '2.0.0', 'dist-tags': { latest: '2.0.0' } },
     })
     const upgrades = await ncu({
+      cwd: sandbox.cwd,
       peer: true,
       packageData: {
         dependencies: {

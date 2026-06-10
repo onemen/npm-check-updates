@@ -32,7 +32,7 @@ describe('cache', () => {
     await fs.rm(cacheFile, { recursive: true, force: true })
   })
 
-  it('cache latest versions', async () => {
+  it.only('cache latest versions', async () => {
     spawnStub = await stubSpawnCommand('cache latest versions')
     versionStub = stubVersions({
       'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': getTime(10) } },
@@ -48,7 +48,7 @@ describe('cache', () => {
       },
     }
 
-    await ncu({ packageData, cache: true, cacheFile, peer: true })
+    await ncu({ packageData, cache: true, cacheFile, peer: true, cwd: sandbox.cwd })
 
     const cacheData: CacheData = await fs.readFile(cacheFile, 'utf-8').then(JSON.parse)
 

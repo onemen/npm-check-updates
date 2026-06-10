@@ -8,7 +8,8 @@ describe('getInstalledPackages', () => {
     spawnStub?.mockRestore(context)
   })
   it('execute npm ls', async () => {
+    sandbox.createPackageJson({ dependencies: { 'ncu-test-v2': '1.0.0' } })
     spawnStub = await stubSpawnCommand('getInstalledPackages')
-    await getInstalledPackages()
+    await getInstalledPackages({ cwd: sandbox.cwd })
   })
 })

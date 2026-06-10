@@ -43,7 +43,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
           'ncu-test-return-version': '1.1.x',
         },
       },
-      {},
+      { cwd: sandbox.cwd },
     )
     data.should.deep.equal({
       'ncu-test-return-version': {
@@ -146,6 +146,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
       {
+        cwd: sandbox.cwd,
         target: packageName => {
           return packageName === 'eslint-plugin-unused-imports' ? 'greatest' : 'minor'
         },

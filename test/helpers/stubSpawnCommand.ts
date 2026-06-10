@@ -80,11 +80,13 @@ export async function stubSpawnCommand(fixtureName: string) {
           fixtures[key] = { stdout, stderr }
           return result
         } catch (err: any) {
-          fixtures[key] = {
-            _isError: true,
-            message: serializeTokens(sanitize(err.message || err.toString())),
-            stderr: serializeTokens(sanitize(err.stderr || '')),
-            exitCode: err.exitCode ?? 1,
+          if (err.code !== sandbox.SANDBOX_SPAWN_ERROR) {
+            fixtures[key] = {
+              _isError: true,
+              message: serializeTokens(sanitize(err.message || err.toString())),
+              stderr: serializeTokens(sanitize(err.stderr || '')),
+              exitCode: err.exitCode ?? 1,
+            }
           }
           throw err
         }
