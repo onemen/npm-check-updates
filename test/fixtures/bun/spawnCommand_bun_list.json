@@ -1,6 +1,6 @@
 {
   "8d02cca0f88306f01df1d0ec8faac2a34442b7e67c4cb769676171d1170e5e6b": {
-    "stdout": "%root%/test/bun node_modules (1)\n└── ncu-test-v2@1.0.0\n",
+    "stdout": "%root%/test/bun node_modules (1)\n ncu-test-v2@1.0.0\n",
     "stderr": ""
   }
 }

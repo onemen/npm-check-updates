@@ -119,6 +119,8 @@ export function sanitize(output: string): string {
       .replace(/\(node:\d+\)/g, '(node:<PID>)')
       // Remove dynamic timestamps often found in log paths or messages
       .replace(/\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2}_\d{3}Z/g, '<TIMESTAMP>')
+      // Remove every single box‑drawing character
+      .replace(/[\u2500-\u257F]/g, '')
   )
 }
 
@@ -133,4 +135,15 @@ export function serializeTokens(value: string): string {
   const rootB = escapeRegex(sandbox.cwd)
   const rootRegex = new RegExp(`${rootA}|${rootB}`, 'g')
   return normalized.replace(rootRegex, '%root%')
+}
+
+/**
+ * Applies both sanitization and tokenization:
+ * Replaces dynamic system data (log paths, PIDs, timestamps)
+ * Normalizes and tokenizes absolute developer paths to %root%
+ */
+export function sanitizeAndSerialize(value: string): string {
+  if (!value) return value
+  const sanitized = sanitize(value)
+  return serializeTokens(sanitized)
 }

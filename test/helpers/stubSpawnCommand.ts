@@ -5,7 +5,7 @@ import path from 'path'
 import { type MockInstance } from 'vitest'
 import * as mod from '../../src/lib/spawnCommand'
 import { type SpawnPleaseOptions } from '../../src/types/SpawnPleaseOptions'
-import { applyPersistentMockRestore, getFixturePath, sanitize, serializeTokens } from './mockUtils'
+import { applyPersistentMockRestore, getFixturePath, sanitizeAndSerialize } from './mockUtils'
 
 export type SpawnCommandStub = MockInstance<typeof mod.spawnCommand>
 
@@ -75,16 +75,16 @@ export async function stubSpawnCommand(fixtureName: string) {
         try {
           const result = await original(command, args, spawnPleaseOptions, spawnOptions)
           let { stdout, stderr } = result
-          if (stderr) stderr = serializeTokens(sanitize(stderr))
-          if (stdout) stdout = serializeTokens(sanitize(stdout))
+          if (stderr) stderr = sanitizeAndSerialize(stderr)
+          if (stdout) stdout = sanitizeAndSerialize(stdout)
           fixtures[key] = { stdout, stderr }
           return result
         } catch (err: any) {
           if (err.code !== sandbox.SANDBOX_SPAWN_ERROR) {
             fixtures[key] = {
               _isError: true,
-              message: serializeTokens(sanitize(err.message || err.toString())),
-              stderr: serializeTokens(sanitize(err.stderr || '')),
+              message: sanitizeAndSerialize(err.message || err.toString()),
+              stderr: sanitizeAndSerialize(err.stderr || ''),
               exitCode: err.exitCode ?? 1,
             }
           }
