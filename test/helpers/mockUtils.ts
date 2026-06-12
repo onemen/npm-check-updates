@@ -134,7 +134,7 @@ export function serializeTokens(value: string): string {
   const rootA = escapeRegex(normalizedRoot)
   const rootB = escapeRegex(sandbox.cwd)
   const rootRegex = new RegExp(`${rootA}|${rootB}`, 'g')
-  return normalized.replace(rootRegex, '%root%')
+  return normalized.replace(rootRegex, '<ROOT>')
 }
 
 /**

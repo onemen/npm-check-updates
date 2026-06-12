@@ -42,13 +42,13 @@ export class FileCacheManager {
       manager.safeDirName = relativePath.replace(/[\\/.]/g, '_').replace(/_test_ts$/, '')
 
       for (const stub of stubs) {
-        console.log({ stub })
+        // console.log({ stub })
         manager.initializeStubCache(stub.name)
-        console.log('call setupMock')
+        //  console.log('call setupMock')
         try {
           stub.setupMock(manager)
         } catch (error) {
-          console.log('setupMock Error', error)
+          //  console.log('setupMock Error', error)
         }
       }
     })
@@ -70,9 +70,11 @@ export class FileCacheManager {
    * Resolves paths using the instance's file-scoped safeDirName property
    */
   private initializeStubCache(stubName: string) {
-    const fixturePath = path.join('test', 'test-data', 'cache', this.safeDirName, `${stubName}.json`)
+    const fixturePath = path.join('test', 'test-data', 'fixtures_cache', this.safeDirName, `${stubName}.json`)
     let initialContent = ''
     let data: Record<string, Record<string, any>> = {}
+
+    // console.log({ fixturePath })
 
     if (fs.existsSync(fixturePath)) {
       initialContent = fs.readFileSync(fixturePath, 'utf8')
@@ -90,7 +92,9 @@ export class FileCacheManager {
   /**
    * Retrieves or sets keys using getTestName() smoothly at runtime
    */
-  public getOrSet(stubName: string, inputKey: string, fallbackExecution: () => any): any {
+  public async getOrSet(stubName: string, inputKey: string, fallbackExecution: () => any): Promise<any> {
+    // console.log({ stubName, inputKey })
+
     const cache = this.mockCaches.get(stubName)
     if (!cache) return fallbackExecution()
 
@@ -102,7 +106,9 @@ export class FileCacheManager {
     const testSpace = cache.data[testName] || {}
 
     if (process.env.REGENERATE_TEST_CACHE === 'true') {
-      const freshResult = fallbackExecution()
+      const freshResult = await fallbackExecution()
+      //  console.log({ freshResult })
+
       testSpace[inputKey] = freshResult
       cache.data[testName] = testSpace
       return freshResult
@@ -112,7 +118,7 @@ export class FileCacheManager {
       return testSpace[inputKey]
     }
 
-    const freshResult = fallbackExecution()
+    const freshResult = await fallbackExecution()
     testSpace[inputKey] = freshResult
     cache.data[testName] = testSpace
     return freshResult
@@ -123,10 +129,10 @@ export class FileCacheManager {
    */
   private flushAndAuditAll(allTestsPassed: boolean) {
     const isCI = !!process.env.CI
-    const shouldSave = !!process.env.NCU_SAVE_FIXTURES && allTestsPassed
+    const shouldSave = (!!process.env.REGENERATE_TEST_CACHE || !!process.env.NCU_SAVE_FIXTURES) && allTestsPassed
     const shouldPurge = process.env.UPDATE_TEST_CACHE === 'true'
 
-    console.log('flushAndAuditAll', this.mockCaches.entries())
+    //  console.log('flushAndAuditAll', this.mockCaches.entries())
 
     for (const [stubName, cache] of this.mockCaches.entries()) {
       const unusedEntries: { testName: string; inputKey: string }[] = []

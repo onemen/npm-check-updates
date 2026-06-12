@@ -1,0 +1,26 @@
+{
+  "prompt for each upgraded dependency": {
+    "install": {
+      "stdout": "stubSpawnCommand for npm install finished successfully.",
+      "stderr": ""
+    }
+  },
+  "with --format group": {
+    "install": {
+      "stdout": "stubSpawnCommand for npm install finished successfully.",
+      "stderr": ""
+    }
+  },
+  "with --format group and custom group function": {
+    "install": {
+      "stdout": "stubSpawnCommand for npm install finished successfully.",
+      "stderr": ""
+    }
+  },
+  "with --format repo": {
+    "install": {
+      "stdout": "stubSpawnCommand for npm install finished successfully.",
+      "stderr": ""
+    }
+  }
+}
