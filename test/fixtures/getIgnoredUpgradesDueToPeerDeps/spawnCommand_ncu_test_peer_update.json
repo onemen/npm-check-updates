@@ -1,5 +1,6 @@
 {
-  "a0be242bede6edebbafa3936793fb4bd9258fd07cc2bdc2d6259a2e8ca7bfca2": {
+  "49232262": {
+    "args": "command: npm, args: --json :: view :: ncu-test-return-version@2.0.0 :: peerDependencies)}",
     "stdout": "",
     "stderr": ""
   }

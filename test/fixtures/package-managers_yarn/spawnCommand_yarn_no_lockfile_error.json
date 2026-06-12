@@ -1,6 +1,7 @@
 {
-  "d7a260551c4111db4be7f524ba0d4477e01c245a56e22b899f11473db1e4b114": {
+  "b228a05d": {
     "_isError": true,
+    "args": "command: yarn, args: --depth=0 :: --json :: --no-progress :: list)}",
     "message": "{\"type\":\"error\",\"data\":\"No lockfile in this directory. Run `yarn install` to generate one.\"}\n",
     "stderr": "",
     "exitCode": 1

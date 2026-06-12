@@ -1,10 +1,12 @@
 {
-  "23e28b81c35f98f50a531fff6ce5b6f2c538e0def09a5994332b4cc1427d6263": {
-    "stdout": "",
+  "83b6ced5": {
+    "args": "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies)}",
+    "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n",
     "stderr": ""
   },
-  "ae3d95c5f2fbee138741706c04559fe89e333cdb484c1c4aa31fc2e98856a04f": {
-    "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n",
+  "d5da2c18": {
+    "args": "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies)}",
+    "stdout": "",
     "stderr": ""
   }
 }

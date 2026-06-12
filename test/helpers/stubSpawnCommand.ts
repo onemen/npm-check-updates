@@ -61,7 +61,8 @@ export async function stubSpawnCommand(fixtureName: string) {
           return { stdout, stderr: '' }
         }
 
-        const key = createHash('sha256').update(JSON.stringify({ command, args })).digest('hex')
+        const key = createHash('md5').update(JSON.stringify({ command, args })).digest('hex').slice(0, 8)
+        const safeArgs = `command: ${command}, args: ${args.join(' :: ')})}`
 
         const entry = fixtures[key]
         if (entry?._isError) {
@@ -77,12 +78,13 @@ export async function stubSpawnCommand(fixtureName: string) {
           let { stdout, stderr } = result
           if (stderr) stderr = sanitizeAndSerialize(stderr)
           if (stdout) stdout = sanitizeAndSerialize(stdout)
-          fixtures[key] = { stdout, stderr }
+          fixtures[key] = { args: safeArgs, stdout, stderr }
           return result
         } catch (err: any) {
           if (err.code !== sandbox.SANDBOX_SPAWN_ERROR) {
             fixtures[key] = {
               _isError: true,
+              args: safeArgs,
               message: sanitizeAndSerialize(err.message || err.toString()),
               stderr: sanitizeAndSerialize(err.stderr || ''),
               exitCode: err.exitCode ?? 1,
