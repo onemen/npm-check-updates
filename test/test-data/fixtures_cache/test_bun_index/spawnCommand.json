@@ -1,0 +1,11 @@
+{
+  "list": {
+    "c4b60190": {
+      "args": "command: bun, args: pm :: ls",
+      "result": {
+        "stdout": "<ROOT>/test/bun node_modules (1)\n ncu-test-v2@1.0.0\n",
+        "stderr": ""
+      }
+    }
+  }
+}

@@ -92,15 +92,19 @@ export class FileCacheManager {
   /**
    * Retrieves or sets keys using getTestName() smoothly at runtime
    */
-  public async getOrSet(stubName: string, inputKey: string, fallbackExecution: () => any): Promise<any> {
-    // console.log({ stubName, inputKey })
+  public async getOrSet(
+    stubName: string,
+    { key, safeArgs: args }: { key: string; safeArgs: string },
+    fallbackExecution: () => any,
+  ): Promise<any> {
+    // console.log({ stubName, inputKey: key, args })
 
     const cache = this.mockCaches.get(stubName)
     if (!cache) return fallbackExecution()
 
     // Evaluates perfectly because getOrSet is executed inside your mock at test-runtime
     const testName = getTestName()
-    const invocationPath = `${testName}::${inputKey}`
+    const invocationPath = `${testName}::${key}`
 
     cache.invokedPaths.add(invocationPath)
     const testSpace = cache.data[testName] || {}
@@ -109,17 +113,17 @@ export class FileCacheManager {
       const freshResult = await fallbackExecution()
       //  console.log({ freshResult })
 
-      testSpace[inputKey] = freshResult
+      testSpace[key] = { args, result: freshResult }
       cache.data[testName] = testSpace
       return freshResult
     }
 
-    if (inputKey in testSpace) {
-      return testSpace[inputKey]
+    if (key in testSpace) {
+      return testSpace[key].result
     }
 
     const freshResult = await fallbackExecution()
-    testSpace[inputKey] = freshResult
+    testSpace[key] = { args, result: freshResult }
     cache.data[testName] = testSpace
     return freshResult
   }

@@ -12,6 +12,11 @@ export const stubSpawnCommand: StubRegistration = {
 
     vi.spyOn(mod, 'spawnCommand').mockImplementation(
       async (command: string, args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
+        // TODO:
+        // need to return safeArgs not as part of result
+        // or delete it in FileCacheManager.ts before returning the mock result
+        const safeArgs = args.length > 0 ? `command: ${command}, args: ${args.join(' :: ')}` : `command: ${command}`
+
         const isPackageManagerInstall =
           ['npm', 'pnpm', 'yarn', 'bun'].includes(command) && args.length === 1 && args[0] === 'install'
 
@@ -25,21 +30,19 @@ export const stubSpawnCommand: StubRegistration = {
           }
           const stdout = `stubSpawnCommand for ${command} install finished successfully.`
           // Delegate to cache using a fixed key 'install'
-          return cache.getOrSet('spawnCommand', 'install', () => ({ stdout, stderr: '' }))
+          return cache.getOrSet('spawnCommand', { key: 'install', safeArgs }, () => ({ stdout, stderr: '' }))
         }
 
         // --- Cacheable Command Execution Flow ---
-        const key = createHash('sha256').update(JSON.stringify({ command, args })).digest('hex')
-        // const key = `command: ${command} args: ${args.join(',')})}`
+        const key = createHash('md5').update(JSON.stringify({ command, args })).digest('hex').slice(0, 8)
 
         // Pass the fallback execution block to cache.getOrSet
-        const entry = await cache.getOrSet('spawnCommand', key, async () => {
+        const entry = await cache.getOrSet('spawnCommand', { key, safeArgs }, async () => {
           // This block ONLY executes on cache miss or when REGENERATE_TEST_CACHE=true
           try {
             const result = await original(command, args, spawnPleaseOptions, spawnOptions)
             if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
             if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
-            result.key = `command: ${command}, args: ${args.join(',')})}`
             return result
           } catch (err: any) {
             return {
