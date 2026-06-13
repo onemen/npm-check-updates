@@ -18,7 +18,12 @@ export type GetGitTagsStub = MockInstance<typeof gitApi.getGitTags>
  * * @param fixtureName - The name used for the fixture file (saved in `../fixtures/git/<name>.json`).
  * Spaces are automatically converted to underscores.
  */
-export async function stubGetGitTags(fixtureName: string) {
+export async function stubGetGitTags(fixtureName: string, testNew?: boolean) {
+  if (!testNew) {
+    return {
+      mockRestore: () => {},
+    } as GetGitTagsStub
+  }
   const fixturePath = getFixturePath('getGitTags', fixtureName)
 
   let fixtures: Record<string, any> = {}

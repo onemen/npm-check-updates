@@ -1,29 +1,20 @@
 {
   "install packages and do not print install hint with --install always": {
     "install": {
-      "args": "command: npm, args: install",
-      "result": {
-        "stderr": "",
-        "stdout": "stubSpawnCommand for npm install finished successfully."
-      }
+      "stderr": "",
+      "stdout": "stubSpawnCommand for npm install finished successfully."
     }
   },
   "install when responding yes to prompt without --install": {
     "install": {
-      "args": "command: npm, args: install",
-      "result": {
-        "stderr": "",
-        "stdout": "stubSpawnCommand for npm install finished successfully."
-      }
+      "stderr": "",
+      "stdout": "stubSpawnCommand for npm install finished successfully."
     }
   },
   "install with --install always": {
     "install": {
-      "args": "command: npm, args: install",
-      "result": {
-        "stderr": "",
-        "stdout": "stubSpawnCommand for npm install finished successfully."
-      }
+      "stderr": "",
+      "stdout": "stubSpawnCommand for npm install finished successfully."
     }
   }
 }

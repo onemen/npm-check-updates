@@ -21,9 +21,9 @@ process.env.NCU_TESTS = 'true'
 ;(global as any).should = should
 
 // Mock 'parse-github-url' to provide consistent parsing results for GitHub URLs in tests
-vi.mock('parse-github-url', async importOriginal => {
-  return createParseGitHubUrlMock(importOriginal)
-})
+// vi.mock('parse-github-url', async importOriginal => {
+//   return createParseGitHubUrlMock(importOriginal)
+// })
 
 // must run before anything that uses getTestName()
 registerTestNameCapture()

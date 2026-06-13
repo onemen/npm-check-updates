@@ -1,38 +1,26 @@
 {
   "prompt for each upgraded dependency": {
     "install": {
-      "args": "command: npm, args: install",
-      "result": {
-        "stderr": "",
-        "stdout": "stubSpawnCommand for npm install finished successfully."
-      }
+      "stderr": "",
+      "stdout": "stubSpawnCommand for npm install finished successfully."
     }
   },
   "with --format group": {
     "install": {
-      "args": "command: npm, args: install",
-      "result": {
-        "stderr": "",
-        "stdout": "stubSpawnCommand for npm install finished successfully."
-      }
+      "stderr": "",
+      "stdout": "stubSpawnCommand for npm install finished successfully."
     }
   },
   "with --format group and custom group function": {
     "install": {
-      "args": "command: npm, args: install",
-      "result": {
-        "stderr": "",
-        "stdout": "stubSpawnCommand for npm install finished successfully."
-      }
+      "stderr": "",
+      "stdout": "stubSpawnCommand for npm install finished successfully."
     }
   },
   "with --format repo": {
     "install": {
-      "args": "command: npm, args: install",
-      "result": {
-        "stderr": "",
-        "stdout": "stubSpawnCommand for npm install finished successfully."
-      }
+      "stderr": "",
+      "stdout": "stubSpawnCommand for npm install finished successfully."
     }
   }
 }

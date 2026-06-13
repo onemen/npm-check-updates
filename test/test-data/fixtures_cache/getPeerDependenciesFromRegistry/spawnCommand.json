@@ -1,36 +1,24 @@
 {
   "multiple packages": {
-    "83b6ced5": {
-      "args": "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies",
-      "result": {
-        "stderr": "",
-        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
-      }
+    "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies": {
+      "stderr": "",
+      "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
     },
-    "d5da2c18": {
-      "args": "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies",
-      "result": {
-        "stderr": "",
-        "stdout": ""
-      }
+    "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies": {
+      "stderr": "",
+      "stdout": ""
     }
   },
   "single package": {
-    "61e8795e": {
-      "args": "command: npm, args: --json :: view :: ncu-test-peer@1.0 :: peerDependencies",
-      "result": {
-        "stderr": "",
-        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
-      }
+    "command: npm, args: --json :: view :: ncu-test-peer@1.0 :: peerDependencies": {
+      "stderr": "",
+      "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
     }
   },
   "single package empty": {
-    "b2898c9e": {
-      "args": "command: npm, args: --json :: view :: ncu-test-return-version@1.0 :: peerDependencies",
-      "result": {
-        "stderr": "",
-        "stdout": ""
-      }
+    "command: npm, args: --json :: view :: ncu-test-return-version@1.0 :: peerDependencies": {
+      "stderr": "",
+      "stdout": ""
     }
   }
 }

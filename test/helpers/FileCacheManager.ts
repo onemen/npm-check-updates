@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
 import { sortObjectDeep } from './mockUtils'
+import { stubGetGitTags } from './stubs/stubGetGitTags'
 import { stubSpawnCommand } from './stubs/stubSpawnCommand'
 import { getTestName } from './testNameStore'
 
@@ -80,14 +81,8 @@ export class FileCacheManager {
     })
   }
 
-  /**
-   * Retrieves or sets keys using getTestName() smoothly at runtime
-   */
-  public async getOrSet(
-    stubName: string,
-    { key, safeArgs: args }: { key: string; safeArgs: string },
-    fallbackExecution: () => any,
-  ): Promise<any> {
+  /** Retrieves or sets keys using getTestName() smoothly at runtime */
+  public async getOrSet(stubName: string, key: string, fallbackExecution: () => any): Promise<any> {
     const cache = this.mockCaches.get(stubName)
 
     if (!cache) {
@@ -109,11 +104,11 @@ export class FileCacheManager {
 
     const isRegenerate = process.env.REGENERATE_TEST_CACHE === 'true'
     if (!isRegenerate && key in testSpace) {
-      return testSpace[key].result
+      return testSpace[key]
     }
 
     const result = await fallbackExecution()
-    testSpace[key] = { args, result }
+    testSpace[key] = result
     return result
   }
 
@@ -185,6 +180,6 @@ export class FileCacheManager {
   }
 
   public static bootstrap() {
-    this.registerLifecycle([stubSpawnCommand])
+    this.registerLifecycle([stubSpawnCommand, stubGetGitTags])
   }
 }

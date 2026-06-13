@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import * as mod from '../../../src/lib/spawnCommand'
@@ -12,7 +11,12 @@ export const stubSpawnCommand: StubRegistration = {
 
     vi.spyOn(mod, 'spawnCommand').mockImplementation(
       async (command: string, args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
-        const safeArgs = args.length > 0 ? `command: ${command}, args: ${args.join(' :: ')}` : `command: ${command}`
+        /** */
+        const quoteIfNeeded = (s: string) => (s.includes(' ') ? JSON.stringify(s) : s)
+        const key =
+          args.length > 0
+            ? `command: ${command}, args: ${args.map(quoteIfNeeded).join(' :: ')}`
+            : `command: ${command}, args: <none>`
 
         const isPackageManagerInstall =
           ['npm', 'pnpm', 'yarn', 'bun'].includes(command) && args.length === 1 && args[0] === 'install'
@@ -27,15 +31,10 @@ export const stubSpawnCommand: StubRegistration = {
           }
           const stdout = `stubSpawnCommand for ${command} install finished successfully.`
           // Delegate to cache using a fixed key 'install'
-          return cache.getOrSet('spawnCommand', { key: 'install', safeArgs }, () => ({ stdout, stderr: '' }))
+          return cache.getOrSet('spawnCommand', 'install', () => ({ stdout, stderr: '' }))
         }
 
-        // --- Cacheable Command Execution Flow ---
-        const key = createHash('md5').update(JSON.stringify({ command, args })).digest('hex').slice(0, 8)
-
-        // Pass the fallback execution block to cache.getOrSet
-        const entry = await cache.getOrSet('spawnCommand', { key, safeArgs }, async () => {
-          // This block ONLY executes on cache miss or when REGENERATE_TEST_CACHE=true
+        const entry = await cache.getOrSet('spawnCommand', key, async () => {
           try {
             const result = await original(command, args, spawnPleaseOptions, spawnOptions)
             if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
