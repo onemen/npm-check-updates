@@ -13,7 +13,6 @@ export interface StubRegistration {
  */
 export class FileCacheManager {
   private safeDirName: string = 'unknown'
-  private currentSuiteFailed = false
   private mockCaches = new Map<
     string,
     {
@@ -29,8 +28,6 @@ export class FileCacheManager {
 
     // eslint-disable-next-line no-empty-pattern
     beforeAll(({}, suite: any) => {
-      manager.currentSuiteFailed = false
-
       // Vitest provides the suite context as the 2nd argument here
       const rawFilePath = suite?.filepath ?? 'unknown'
 
@@ -48,14 +45,17 @@ export class FileCacheManager {
     })
 
     // This stays clean and lightweight
-    afterEach(context => {
+    afterEach(async context => {
       if (context.task.result?.state === 'fail') {
-        manager.currentSuiteFailed = true
+        const failedTestName = getTestName()
+        for (const cache of manager.mockCaches.values()) {
+          delete cache.data[failedTestName]
+        }
       }
     })
 
-    afterAll(() => {
-      manager.flushAndAuditAll(!manager.currentSuiteFailed)
+    afterAll(async () => {
+      await manager.flushAndAuditAll()
       vi.restoreAllMocks()
     })
   }
@@ -121,14 +121,13 @@ export class FileCacheManager {
   /**
    * Final validation and disk sync loop
    */
-  private flushAndAuditAll(allTestsPassed: boolean) {
+  private async flushAndAuditAll() {
     const isCI = !!process.env.CI
-    const shouldSave = (!!process.env.REGENERATE_TEST_CACHE || !!process.env.NCU_SAVE_FIXTURES) && allTestsPassed
+    const shouldSave = !!process.env.REGENERATE_TEST_CACHE || !!process.env.NCU_SAVE_FIXTURES
     const shouldPurge = process.env.UPDATE_TEST_CACHE === 'true'
 
     for (const [stubName, cache] of this.mockCaches.entries()) {
       const unusedEntries: { testName: string; inputKey: string }[] = []
-
       for (const testName of Object.keys(cache.data)) {
         for (const inputKey of Object.keys(cache.data[testName])) {
           if (!cache.invokedPaths.has(`${testName}::${inputKey}`)) {
@@ -139,6 +138,7 @@ export class FileCacheManager {
 
       if (shouldPurge && !isCI && unusedEntries.length > 0) {
         for (const { testName, inputKey } of unusedEntries) {
+          // Delete from the original cache.data, which will affect the final saved content
           delete cache.data[testName][inputKey]
           if (Object.keys(cache.data[testName]).length === 0) {
             delete cache.data[testName]
@@ -169,10 +169,18 @@ export class FileCacheManager {
             {} as Record<string, any>,
           )
 
+        // Ensure trailing newline
         const newContent = JSON.stringify(sortedCache, null, 2) + '\n'
-        if (newContent !== cache.initialContent && Object.keys(sortedCache).length > 0) {
-          fs.mkdirSync(path.dirname(cache.fixturePath), { recursive: true })
-          fs.writeFileSync(cache.fixturePath, newContent)
+        if (Object.keys(sortedCache).length > 0) {
+          if (newContent !== cache.initialContent) {
+            await fs.promises.mkdir(path.dirname(cache.fixturePath), { recursive: true })
+            await fs.promises.writeFile(cache.fixturePath, newContent)
+          }
+        } else {
+          // delete empty file if exist
+          try {
+            await fs.promises.unlink(cache.fixturePath)
+          } catch (err) {}
         }
       }
     }
