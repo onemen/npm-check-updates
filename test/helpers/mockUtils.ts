@@ -147,3 +147,38 @@ export function sanitizeAndSerialize(value: string): string {
   const sanitized = sanitize(value)
   return serializeTokens(sanitized)
 }
+
+/**
+ * Recursively sorts all object keys to produce a fully deterministic structure.
+ *
+ * This is used when generating test fixtures to ensure that the serialized output
+ * is stable across runs, regardless of how JavaScript chooses to order object keys.
+ *
+ * Behavior:
+ * - Objects: keys are sorted alphabetically, and values are processed recursively.
+ * - Arrays: preserved as-is, but each element is processed recursively.
+ * - Primitives (string, number, boolean, null, undefined): returned unchanged.
+ *
+ * The result is a deeply normalized object whose JSON.stringify() output is
+ * guaranteed to be consistent, making fixture comparisons reliable and preventing
+ * unnecessary file rewrites caused by key-order differences.
+ */
+export function sortObjectDeep(value: any): any {
+  if (Array.isArray(value)) {
+    return value.map(sortObjectDeep)
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.keys(value)
+      .sort()
+      .reduce(
+        (acc, key) => {
+          acc[key] = sortObjectDeep(value[key])
+          return acc
+        },
+        {} as Record<string, any>,
+      )
+  }
+
+  return value
+}

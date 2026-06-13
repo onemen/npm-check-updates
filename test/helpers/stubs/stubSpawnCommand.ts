@@ -12,9 +12,6 @@ export const stubSpawnCommand: StubRegistration = {
 
     vi.spyOn(mod, 'spawnCommand').mockImplementation(
       async (command: string, args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
-        // TODO:
-        // need to return safeArgs not as part of result
-        // or delete it in FileCacheManager.ts before returning the mock result
         const safeArgs = args.length > 0 ? `command: ${command}, args: ${args.join(' :: ')}` : `command: ${command}`
 
         const isPackageManagerInstall =
