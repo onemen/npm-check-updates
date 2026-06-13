@@ -3,8 +3,8 @@
     "install": {
       "args": "command: npm, args: install",
       "result": {
-        "stdout": "stubSpawnCommand for npm install finished successfully.",
-        "stderr": ""
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
       }
     }
   },
@@ -12,8 +12,8 @@
     "install": {
       "args": "command: npm, args: install",
       "result": {
-        "stdout": "stubSpawnCommand for npm install finished successfully.",
-        "stderr": ""
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
       }
     }
   },
@@ -21,8 +21,8 @@
     "install": {
       "args": "command: npm, args: install",
       "result": {
-        "stdout": "stubSpawnCommand for npm install finished successfully.",
-        "stderr": ""
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
       }
     }
   },
@@ -30,8 +30,8 @@
     "install": {
       "args": "command: npm, args: install",
       "result": {
-        "stdout": "stubSpawnCommand for npm install finished successfully.",
-        "stderr": ""
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
       }
     }
   }

@@ -3,36 +3,36 @@
     "0281184e": {
       "args": "command: npm, args: --json :: view :: ncu-test-v2@1.0.0 :: peerDependencies",
       "result": {
-        "stdout": "",
-        "stderr": ""
+        "stderr": "",
+        "stdout": ""
       }
     },
     "2025351b": {
       "args": "command: npm, args: --json :: view :: ncu-test-v2@2.0.0 :: peerDependencies",
       "result": {
-        "stdout": "",
-        "stderr": ""
+        "stderr": "",
+        "stdout": ""
       }
     },
     "64d12248": {
       "args": "command: npm, args: --json :: view :: ncu-test-tag@1.1.0 :: peerDependencies",
       "result": {
-        "stdout": "",
-        "stderr": ""
+        "stderr": "",
+        "stdout": ""
       }
     },
     "c7d51a4e": {
       "args": "command: npm, args: --json :: view :: ncu-test-tag@1.0.0 :: peerDependencies",
       "result": {
-        "stdout": "",
-        "stderr": ""
+        "stderr": "",
+        "stdout": ""
       }
     },
     "d077487c": {
       "args": "command: npm, args: --json :: view :: ncu-test-alpha@1.0.0 :: peerDependencies",
       "result": {
-        "stdout": "",
-        "stderr": ""
+        "stderr": "",
+        "stdout": ""
       }
     }
   }

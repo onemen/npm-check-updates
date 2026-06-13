@@ -39,7 +39,11 @@ export class FileCacheManager {
       }
 
       const relativePath = path.relative(process.cwd(), rawFilePath)
-      manager.safeDirName = relativePath.replace(/[\\/.]/g, '_').replace(/_test_ts$/, '')
+      manager.safeDirName = relativePath
+        .replace(/[\\/.]/g, '_')
+        .replace(/^test_/, '')
+        .replace(/_test_ts$/, '')
+        .replace(/_index$/, '')
 
       for (const stub of stubs) {
         manager.initializeStubCache(stub.name)

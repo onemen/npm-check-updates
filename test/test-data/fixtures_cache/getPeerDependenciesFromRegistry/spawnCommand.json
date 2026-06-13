@@ -3,15 +3,15 @@
     "83b6ced5": {
       "args": "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies",
       "result": {
-        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n",
-        "stderr": ""
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
       }
     },
     "d5da2c18": {
       "args": "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies",
       "result": {
-        "stdout": "",
-        "stderr": ""
+        "stderr": "",
+        "stdout": ""
       }
     }
   },
@@ -19,8 +19,8 @@
     "61e8795e": {
       "args": "command: npm, args: --json :: view :: ncu-test-peer@1.0 :: peerDependencies",
       "result": {
-        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n",
-        "stderr": ""
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
       }
     }
   },
@@ -28,8 +28,8 @@
     "b2898c9e": {
       "args": "command: npm, args: --json :: view :: ncu-test-return-version@1.0 :: peerDependencies",
       "result": {
-        "stdout": "",
-        "stderr": ""
+        "stderr": "",
+        "stdout": ""
       }
     }
   }
