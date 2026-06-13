@@ -11,9 +11,7 @@ export interface StubRegistration {
   setupMock: (cache: FileCacheManager) => void
 }
 
-/**
- *
- */
+/** */
 export class FileCacheManager {
   private cacheFilePath: string = ''
   private initialContent: string = ''
@@ -35,14 +33,10 @@ export class FileCacheManager {
         console.warn('⚠️ [Cache] Unable to resolve test file path from beforeAll context.')
       }
 
-      const relativePath = path.relative(process.cwd(), rawFilePath)
-      const safeName = relativePath
-        .replace(/[\\/.]/g, '_')
-        .replace(/^test_/, '')
-        .replace(/_test_ts$/, '')
-        .replace(/_index$/, '')
-
-      manager.cacheFilePath = path.join('test', 'test-data', 'fixtures_cache', `${safeName}.json`)
+      const testRoot = path.resolve('test')
+      const relativePath = path.relative(testRoot, rawFilePath)
+      const jsonRelative = relativePath.replace(/\.ts$/, '.json')
+      manager.cacheFilePath = path.join(testRoot, 'test-data', 'fixtures_cache', jsonRelative)
 
       if (fs.existsSync(manager.cacheFilePath)) {
         manager.initialContent = fs.readFileSync(manager.cacheFilePath, 'utf8')

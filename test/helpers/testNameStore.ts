@@ -8,8 +8,6 @@ export function registerTestNameCapture() {
     const fileName = context.task.file?.name ?? 'unknown'
     const testName = context.task.name ?? 'unknown'
     const fullTestName = context.task.fullTestName ?? 'unknown'
-    // console.error('NCU_DEBUG:', { 'context.task': context.task })
-
     const header = `${fileName} > ${testName}`
     store.enterWith({ name: testName, fullName: fullTestName, header })
   })
