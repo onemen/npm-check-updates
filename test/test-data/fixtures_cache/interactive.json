@@ -1,0 +1,34 @@
+{
+  "--interactive > prompt for each upgraded dependency": {
+    "spawnCommand": {
+      "install": {
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
+      }
+    }
+  },
+  "--interactive > with --format group": {
+    "spawnCommand": {
+      "install": {
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
+      }
+    }
+  },
+  "--interactive > with --format group and custom group function": {
+    "spawnCommand": {
+      "install": {
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
+      }
+    }
+  },
+  "--interactive > with --format repo": {
+    "spawnCommand": {
+      "install": {
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
+      }
+    }
+  }
+}

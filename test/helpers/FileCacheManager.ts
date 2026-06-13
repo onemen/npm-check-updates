@@ -4,7 +4,7 @@ import { type RunnerTask, type RunnerTestFile } from 'vitest'
 import { sortObjectDeep } from './mockUtils'
 import { stubGetGitTags } from './stubs/stubGetGitTags'
 import { stubSpawnCommand } from './stubs/stubSpawnCommand'
-import { getTestName } from './testNameStore'
+import { getFullTestName } from './testNameStore'
 
 export interface StubRegistration {
   name: string
@@ -15,16 +15,12 @@ export interface StubRegistration {
  *
  */
 export class FileCacheManager {
-  private safeDirName: string = 'unknown'
-  private mockCaches = new Map<
-    string,
-    {
-      fixturePath: string
-      initialContent: string
-      data: Record<string, Record<string, any>>
-      invokedPaths: Set<string>
-    }
-  >()
+  private cacheFilePath: string = ''
+  private initialContent: string = ''
+  /** Structure: testName -> stubName -> inputKey -> value */
+  private data: Record<string, Record<string, Record<string, any>>> = {}
+  /** Tracks which entries were actually used: "testName::stubName::key" */
+  private invokedPaths = new Set<string>()
 
   public static registerLifecycle(stubs: StubRegistration[]) {
     const manager = new FileCacheManager()
@@ -40,14 +36,24 @@ export class FileCacheManager {
       }
 
       const relativePath = path.relative(process.cwd(), rawFilePath)
-      manager.safeDirName = relativePath
+      const safeName = relativePath
         .replace(/[\\/.]/g, '_')
         .replace(/^test_/, '')
         .replace(/_test_ts$/, '')
         .replace(/_index$/, '')
 
+      manager.cacheFilePath = path.join('test', 'test-data', 'fixtures_cache', `${safeName}.json`)
+
+      if (fs.existsSync(manager.cacheFilePath)) {
+        manager.initialContent = fs.readFileSync(manager.cacheFilePath, 'utf8')
+        try {
+          manager.data = JSON.parse(manager.initialContent)
+        } catch (err) {
+          manager.data = {}
+        }
+      }
+
       for (const stub of stubs) {
-        manager.initializeStubCache(stub.name)
         stub.setupMock(manager)
       }
     })
@@ -60,47 +66,21 @@ export class FileCacheManager {
     })
   }
 
-  /**
-   * Resolves paths using the instance's file-scoped safeDirName property
-   */
-  private initializeStubCache(stubName: string) {
-    const fixturePath = path.join('test', 'test-data', 'fixtures_cache', this.safeDirName, `${stubName}.json`)
-    let initialContent = ''
-    let data: Record<string, Record<string, any>> = {}
-
-    if (fs.existsSync(fixturePath)) {
-      initialContent = fs.readFileSync(fixturePath, 'utf8')
-      data = JSON.parse(initialContent)
-    }
-
-    this.mockCaches.set(stubName, {
-      fixturePath,
-      initialContent,
-      data,
-      invokedPaths: new Set(),
-    })
-  }
-
   /** Retrieves or sets keys using getTestName() smoothly at runtime */
   public async getOrSet(stubName: string, key: string, fallbackExecution: () => any): Promise<any> {
-    const cache = this.mockCaches.get(stubName)
+    const testName = getFullTestName()
+    // console.error('NCU_DEBUG:', { testName })
 
-    if (!cache) {
-      console.warn(
-        `⚠️ [Cache] getOrSet called for unregistered stub: "${stubName}". Running fallback execution without caching.`,
-      )
-      return fallbackExecution()
+    const invocationPath = `${testName}::${stubName}::${key}`
+    this.invokedPaths.add(invocationPath)
+
+    if (!this.data[testName]) {
+      this.data[testName] = {}
     }
-
-    // Evaluates perfectly because getOrSet is executed inside your mock at test-runtime
-    const testName = getTestName()
-    const invocationPath = `${testName}::${key}`
-    cache.invokedPaths.add(invocationPath)
-
-    if (!cache.data[testName]) {
-      cache.data[testName] = {}
+    if (!this.data[testName][stubName]) {
+      this.data[testName][stubName] = {}
     }
-    const testSpace = cache.data[testName]
+    const testSpace = this.data[testName][stubName]
 
     const isRegenerate = process.env.REGENERATE_TEST_CACHE === 'true'
     if (!isRegenerate && key in testSpace) {
@@ -115,46 +95,55 @@ export class FileCacheManager {
   /** Final validation and disk sync loop */
   private async flushAndAuditAll(file: RunnerTestFile) {
     if (process.env.CI) return
+    if (!this.cacheFilePath) return
 
     const validTests = this.getValidTestNames(file.tasks)
 
-    for (const cache of this.mockCaches.values()) {
-      // Prune orphaned test entries and unused keys.
-      // If a test name is no longer found in the file, we remove its entire space.
-      // If a test ran successfully, we remove any keys that weren't actually invoked.
-      // Tests that didn't run (skipped/filtered) are left intact to prevent data loss.
-      for (const testName of Object.keys(cache.data)) {
-        const testInfo = validTests.get(testName)
-        if (!testInfo) {
-          delete cache.data[testName]
-        } else if (testInfo.ran) {
-          const testSpace = cache.data[testName]
-          for (const inputKey of Object.keys(testSpace)) {
-            if (!cache.invokedPaths.has(`${testName}::${inputKey}`)) {
-              delete testSpace[inputKey]
+    // Prune orphaned test entries and unused keys.
+    for (const testName of Object.keys(this.data)) {
+      const testInfo = validTests.get(testName)
+      const testData = this.data[testName]
+
+      if (!testInfo) {
+        delete this.data[testName]
+        continue
+      }
+
+      if (testInfo.ran) {
+        for (const stubName of Object.keys(testData)) {
+          const stubSpace = testData[stubName]
+          for (const inputKey of Object.keys(stubSpace)) {
+            if (!this.invokedPaths.has(`${testName}::${stubName}::${inputKey}`)) {
+              delete stubSpace[inputKey]
             }
           }
-          if (Object.keys(testSpace).length === 0) {
-            delete cache.data[testName]
+          if (Object.keys(stubSpace).length === 0) {
+            delete testData[stubName]
           }
         }
       }
 
-      if (Object.keys(cache.data).length === 0) {
+      if (Object.keys(testData).length === 0) {
+        delete this.data[testName]
+      }
+    }
+
+    if (Object.keys(this.data).length === 0) {
+      if (fs.existsSync(this.cacheFilePath)) {
         try {
-          await fs.promises.unlink(cache.fixturePath)
+          await fs.promises.unlink(this.cacheFilePath)
         } catch (err) {}
-        continue
       }
+      return
+    }
 
-      const sortedCache = sortObjectDeep(cache.data)
+    const sortedCache = sortObjectDeep(this.data)
 
-      // Ensure trailing newline
-      const newContent = JSON.stringify(sortedCache, null, 2) + '\n'
-      if (newContent !== cache.initialContent) {
-        await fs.promises.mkdir(path.dirname(cache.fixturePath), { recursive: true })
-        await fs.promises.writeFile(cache.fixturePath, newContent)
-      }
+    // Ensure trailing newline
+    const newContent = JSON.stringify(sortedCache, null, 2) + '\n'
+    if (newContent !== this.initialContent) {
+      await fs.promises.mkdir(path.dirname(this.cacheFilePath), { recursive: true })
+      await fs.promises.writeFile(this.cacheFilePath, newContent)
     }
   }
 
@@ -168,7 +157,7 @@ export class FileCacheManager {
           // Only consider the test name valid if it didn't fail.
           if (task.result?.state !== 'fail') {
             const ran = task.result?.state === 'pass'
-            validTests.set(task.name, { ran })
+            validTests.set(task.fullTestName, { ran })
           }
         } else if (task.tasks) {
           traverse(task.tasks)

@@ -1,14 +1,17 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 
-const store = new AsyncLocalStorage<{ name: string; header: string }>()
+const store = new AsyncLocalStorage<{ name: string; fullName: string; header: string }>()
 
 /** use by vitest.setup.ts to register this lifecycle */
 export function registerTestNameCapture() {
   beforeEach(context => {
     const fileName = context.task.file?.name ?? 'unknown'
     const testName = context.task.name ?? 'unknown'
+    const fullTestName = context.task.fullTestName ?? 'unknown'
+    // console.error('NCU_DEBUG:', { 'context.task': context.task })
+
     const header = `${fileName} > ${testName}`
-    store.enterWith({ name: testName, header })
+    store.enterWith({ name: testName, fullName: fullTestName, header })
   })
 }
 
@@ -21,6 +24,15 @@ export function getTestName() {
     throw new Error(`getTestName ${errorMsg}`)
   }
   return storeValue.name
+}
+
+/** return test full name */
+export function getFullTestName() {
+  const storeValue = store.getStore()
+  if (!storeValue) {
+    throw new Error(`getFullTestName ${errorMsg}`)
+  }
+  return storeValue.fullName
 }
 
 /** return test header */

@@ -1,0 +1,26 @@
+{
+  "install > interactive > install when responding yes to prompt without --install": {
+    "spawnCommand": {
+      "install": {
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
+      }
+    }
+  },
+  "install > interactive > install with --install always": {
+    "spawnCommand": {
+      "install": {
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
+      }
+    }
+  },
+  "install > non-interactive > install packages and do not print install hint with --install always": {
+    "spawnCommand": {
+      "install": {
+        "stderr": "",
+        "stdout": "stubSpawnCommand for npm install finished successfully."
+      }
+    }
+  }
+}
