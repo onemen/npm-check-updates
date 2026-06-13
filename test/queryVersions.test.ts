@@ -1,7 +1,5 @@
 import queryVersions from '../src/lib/queryVersions'
 import { type MockedVersions } from '../src/types/MockedVersions'
-import { getFixtureName } from './helpers/mockUtils'
-import { type GetGitTagsStub, stubGetGitTags } from './helpers/stubGetGitTags'
 import stubVersions from './helpers/stubVersions'
 
 describe('queryVersions', function () {
@@ -91,17 +89,6 @@ describe('queryVersions', function () {
   })
 
   describe('github urls', () => {
-    let gitTagsStub: GetGitTagsStub
-
-    beforeEach(async context => {
-      const fixtureName = getFixtureName(context)
-      gitTagsStub = await stubGetGitTags(fixtureName)
-    })
-
-    afterEach(context => {
-      gitTagsStub?.mockRestore(context)
-    })
-
     it('github urls should upgrade the embedded version tag', async () => {
       const upgrades = await queryVersions(
         {

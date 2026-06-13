@@ -1,7 +1,0 @@
-{
-  "b2898c9e": {
-    "args": "command: npm, args: --json :: view :: ncu-test-return-version@1.0 :: peerDependencies)}",
-    "stdout": "",
-    "stderr": ""
-  }
-}

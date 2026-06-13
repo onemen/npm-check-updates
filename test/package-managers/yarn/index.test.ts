@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc, yarnApi } from '../../../src/package-managers/yarn'
 import { type MockedVersions } from '../../../src/types/MockedVersions'
-import { type SpawnCommandStub, stubSpawnCommand } from '../../helpers/stubSpawnCommand'
 import stubVersions from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -32,10 +31,8 @@ const cleanEnv = {
 
 describe('yarn', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: SpawnCommandStub
-  afterEach(context => {
+  afterEach(() => {
     versionStub?.mockRestore()
-    spawnStub?.mockRestore(context)
   })
 
   it('latest', async () => {
@@ -69,7 +66,6 @@ describe('yarn', function () {
   })
 
   it('"No lockfile" error should be thrown on list command when there is no lockfile', async () => {
-    spawnStub = await stubSpawnCommand('yarn No lockfile error')
     const testDir = path.join(__dirname, 'nolockfile')
     const lockFileErrorMessage = 'No lockfile in this directory. Run `yarn install` to generate one.'
     await yarn.list({ cwd: testDir }, localYarnSpawnOptions).should.eventually.be.rejectedWith(lockFileErrorMessage)
@@ -77,7 +73,6 @@ describe('yarn', function () {
 
   it('getPeerDependencies v1', async () => {
     process.env.YARN_CONFIG_PREFER_OFFLINE = 'true'
-    spawnStub = await stubSpawnCommand('yarn getPeerDependencies v1')
     const testDir = path.join(__dirname, 'default')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
@@ -89,7 +84,6 @@ describe('yarn', function () {
 
   it('getPeerDependencies v4', async () => {
     process.env.YARN_ENABLE_OFFLINE_MODE = '1'
-    spawnStub = await stubSpawnCommand('yarn getPeerDependencies v4')
     const testDir = path.join(__dirname, 'v4')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})

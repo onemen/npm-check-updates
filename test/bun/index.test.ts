@@ -3,7 +3,6 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
 import { mockPackageManagerRun, mockSpawn, testFail, testPass } from '../helpers/doctorHelpers'
-import { type SpawnCommandStub, stubSpawnCommand } from '../helpers/stubSpawnCommand'
 import stubVersions from '../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -17,7 +16,6 @@ const mockNpmVersions = {
 
 describe('bun', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: SpawnCommandStub
 
   // Use a synchronous check to fail the suite immediately if bun is missing
   beforeAll(function () {
@@ -42,16 +40,11 @@ describe('bun', function () {
     mockSpawn()
   })
 
-  afterEach(async context => {
-    spawnStub?.mockRestore(context)
-  })
-
   afterAll(async () => {
     versionStub.mockRestore()
   })
 
   it('list', async () => {
-    spawnStub = await stubSpawnCommand('bun list')
     const result = await bun.list({ cwd: __dirname })
     result.should.have.property('ncu-test-v2')
   })

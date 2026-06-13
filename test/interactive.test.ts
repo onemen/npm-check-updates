@@ -3,12 +3,10 @@ import os from 'os'
 import path from 'path'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
-import { type SpawnCommandStub, stubSpawnCommand } from './helpers/stubSpawnCommand'
 import stubVersions from './helpers/stubVersions'
 
 describe('--interactive', () => {
   let stub: { mockRestore: () => void }
-  let spawnStub: SpawnCommandStub
   beforeAll(() => {
     stub = stubVersions(
       {
@@ -22,16 +20,11 @@ describe('--interactive', () => {
     )
   })
 
-  afterEach(async context => {
-    spawnStub?.mockRestore(context)
-  })
-
   afterAll(() => {
     stub.mockRestore()
   })
 
   it('prompt for each upgraded dependency', async () => {
-    spawnStub = await stubSpawnCommand('prompt for each upgraded dependency')
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -66,7 +59,6 @@ describe('--interactive', () => {
   })
 
   it('with --format group', async () => {
-    spawnStub = await stubSpawnCommand('with --format group')
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -98,7 +90,6 @@ describe('--interactive', () => {
   })
 
   it('with --format group and custom group function', async () => {
-    spawnStub = await stubSpawnCommand('with --format group and custom group function')
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -136,7 +127,6 @@ describe('--interactive', () => {
   })
 
   it('with --format repo', async () => {
-    spawnStub = await stubSpawnCommand('with --format repo')
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(

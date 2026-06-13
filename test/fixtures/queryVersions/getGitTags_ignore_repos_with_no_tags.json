@@ -1,6 +1,0 @@
-{
-  "https://github.com/raineorshine/ncu-test-no-tags": {
-    "_isError": true,
-    "message": "Cannot read properties of undefined (reading 'replace')"
-  }
-}

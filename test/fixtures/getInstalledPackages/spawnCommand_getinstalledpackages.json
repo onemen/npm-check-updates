@@ -1,7 +1,0 @@
-{
-  "0f63e4ce": {
-    "args": "command: npm, args: --json :: ls :: --depth=0)}",
-    "stdout": "{\n  \"version\": \"1.0.0\",\n  \"name\": \"test-package\",\n  \"problems\": [\n    \"missing: ncu-test-v2@1.0.0, required by test-package@1.0.0\"\n  ],\n  \"dependencies\": {\n    \"ncu-test-v2\": {\n      \"required\": \"1.0.0\",\n      \"missing\": true,\n      \"problems\": [\n        \"missing: ncu-test-v2@1.0.0, required by test-package@1.0.0\"\n      ]\n    }\n  },\n  \"error\": {\n    \"code\": \"ELSPROBLEMS\",\n    \"summary\": \"missing: ncu-test-v2@1.0.0, required by test-package@1.0.0\",\n    \"detail\": \"\"\n  }\n}\n",
-    "stderr": "npm error code ELSPROBLEMS\nnpm error missing: ncu-test-v2@1.0.0, required by test-package@1.0.0\nnpm error A complete log of this run can be found in: <NPM_LOG_PATH>\n"
-  }
-}

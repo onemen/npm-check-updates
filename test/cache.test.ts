@@ -5,7 +5,6 @@ import path from 'path'
 import ncu from '../src/'
 import { CACHE_DELIMITER } from '../src/lib/cache'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
-import { type SpawnCommandStub, stubSpawnCommand } from './helpers/stubSpawnCommand'
 import stubVersions from './helpers/stubVersions'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -18,7 +17,6 @@ const getTime = (daysAgo: number) => new Date(NOW - daysAgo * DAY).toISOString()
 
 describe('cache', () => {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: SpawnCommandStub
   let cacheFile: string
 
   beforeEach(async () => {
@@ -26,14 +24,12 @@ describe('cache', () => {
     cacheFile = path.join(os.tmpdir(), randomName)
   })
 
-  afterEach(async context => {
+  afterEach(async () => {
     versionStub?.mockRestore()
-    spawnStub?.mockRestore(context)
     await fs.rm(cacheFile, { recursive: true, force: true })
   })
 
   it('cache latest versions', async () => {
-    spawnStub = await stubSpawnCommand('cache latest versions')
     versionStub = stubVersions({
       'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': getTime(10) } },
       'ncu-test-tag': { version: '1.1.0', time: { '1.1.0': getTime(20) } },

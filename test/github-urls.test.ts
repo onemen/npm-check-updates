@@ -1,20 +1,6 @@
-import { type TestContext } from 'vitest'
 import ncu from '../src'
-import { type GetGitTagsStub, stubGetGitTags } from './helpers/stubGetGitTags'
 
 describe('github urls', () => {
-  let gitTagsStub: GetGitTagsStub
-
-  beforeAll(async () => {
-    gitTagsStub = await stubGetGitTags('github-urls')
-  })
-
-  afterAll(() => {
-    gitTagsStub?.mockRestore({
-      task: { result: { state: 'pass' } },
-    } as TestContext)
-  })
-
   it('upgrade github https urls', async () => {
     const upgrades = await ncu({
       packageData: {

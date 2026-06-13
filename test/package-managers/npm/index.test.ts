@@ -2,21 +2,17 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as npm from '../../../src/package-managers/npm'
 import { type MockedVersions } from '../../../src/types/MockedVersions'
-import { type SpawnCommandStub, stubSpawnCommand } from '../../helpers/stubSpawnCommand'
 import stubVersions, { stubFetchPartialPackument } from '../../helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('npm', function () {
   let versionStub: { mockRestore: () => void }
-  let spawnStub: SpawnCommandStub
-  afterEach(context => {
+  afterEach(() => {
     versionStub?.mockRestore()
-    spawnStub?.mockRestore(context)
   })
 
   it('list', async () => {
-    spawnStub = await stubSpawnCommand('npm list')
     const versionObject = await npm.list({ cwd: __dirname })
     versionObject.should.have.property('express')
   })
@@ -64,7 +60,6 @@ describe('npm', function () {
   })
 
   it('getPeerDependencies', async () => {
-    spawnStub = await stubSpawnCommand('npm getPeerDependencies')
     const spawnOptions = { cwd: __dirname }
     await npm.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
     await npm.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions).should.eventually.deep.equal({

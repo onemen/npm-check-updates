@@ -8,7 +8,6 @@ import { type Index } from '../src/types/IndexType'
 import { type Version } from '../src/types/Version'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
-import { type GetGitTagsStub, stubGetGitTags } from './helpers/stubGetGitTags'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -284,14 +283,7 @@ describe('bin', async function () {
   })
 
   describe('embedded versions', () => {
-    let gitTagsStub: GetGitTagsStub
-
-    afterEach(context => {
-      gitTagsStub?.mockRestore(context)
-    })
-
     it('strip url from GitHub url in "to" output', async () => {
-      gitTagsStub = await stubGetGitTags('embedded versions')
       const dependencies = {
         'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
       }

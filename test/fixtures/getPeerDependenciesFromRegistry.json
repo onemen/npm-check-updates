@@ -45,7 +45,7 @@
   },
   "@libraries/project-4-utils": {
     "git+gitlab.com/projects/libraries/project-4-utils.git": {
-      "error": "{\"code\":\"ENOENT\",\"summary\":\"Could not read package.json: Error: ENOENT: no such file or directory, open '%root%/git+gitlab.com/projects/libraries/project-4-utils.git/package.json'\",\"detail\":\"This is related to npm not being able to find a file.\"}"
+      "error": "{\"code\":\"ENOENT\",\"summary\":\"Could not read package.json: Error: ENOENT: no such file or directory, open '<ROOT>/git+gitlab.com/projects/libraries/project-4-utils.git/package.json'\",\"detail\":\"This is related to npm not being able to find a file.\"}"
     }
   },
   "eslint": {

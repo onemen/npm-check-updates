@@ -1,7 +1,0 @@
-{
-  "0f63e4ce": {
-    "args": "command: npm, args: --json :: ls :: --depth=0)}",
-    "stdout": "{\n  \"name\": \"ncu-test-npm\",\n  \"problems\": [\n    \"missing: express@^1.0.0, required by ncu-test-npm@\"\n  ],\n  \"dependencies\": {\n    \"express\": {\n      \"required\": \"^1.0.0\",\n      \"missing\": true,\n      \"problems\": [\n        \"missing: express@^1.0.0, required by ncu-test-npm@\"\n      ]\n    }\n  },\n  \"error\": {\n    \"code\": \"ELSPROBLEMS\",\n    \"summary\": \"missing: express@^1.0.0, required by ncu-test-npm@\",\n    \"detail\": \"\"\n  }\n}\n",
-    "stderr": "npm error code ELSPROBLEMS\nnpm error missing: express@^1.0.0, required by ncu-test-npm@\nnpm error A complete log of this run can be found in: <NPM_LOG_PATH>\n"
-  }
-}
