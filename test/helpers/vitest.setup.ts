@@ -5,7 +5,6 @@ import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-han
 import { FileCacheManager } from './FileCacheManager'
 import { TestSandbox } from './TestSandbox'
 import { registerIOCapture } from './mockIO'
-import { createParseGitHubUrlMock } from './stubParseGitHubUrl'
 import { registerTestNameCapture } from './testNameStore'
 
 installGlobalErrorHandlers()
@@ -19,11 +18,6 @@ config.truncateThreshold = 0
 
 process.env.NCU_TESTS = 'true'
 ;(global as any).should = should
-
-// Mock 'parse-github-url' to provide consistent parsing results for GitHub URLs in tests
-// vi.mock('parse-github-url', async importOriginal => {
-//   return createParseGitHubUrlMock(importOriginal)
-// })
 
 // must run before anything that uses getTestName()
 registerTestNameCapture()
