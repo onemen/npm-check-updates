@@ -6,6 +6,13 @@
         "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n",
         "stderr": ""
       }
+    },
+    "d5da2c18": {
+      "args": "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies",
+      "result": {
+        "stdout": "",
+        "stderr": ""
+      }
     }
   },
   "single package": {

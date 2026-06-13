@@ -42,14 +42,8 @@ export class FileCacheManager {
       manager.safeDirName = relativePath.replace(/[\\/.]/g, '_').replace(/_test_ts$/, '')
 
       for (const stub of stubs) {
-        // console.log({ stub })
         manager.initializeStubCache(stub.name)
-        //  console.log('call setupMock')
-        try {
-          stub.setupMock(manager)
-        } catch (error) {
-          //  console.log('setupMock Error', error)
-        }
+        stub.setupMock(manager)
       }
     })
 
@@ -74,8 +68,6 @@ export class FileCacheManager {
     let initialContent = ''
     let data: Record<string, Record<string, any>> = {}
 
-    // console.log({ fixturePath })
-
     if (fs.existsSync(fixturePath)) {
       initialContent = fs.readFileSync(fixturePath, 'utf8')
       data = JSON.parse(initialContent)
@@ -97,35 +89,33 @@ export class FileCacheManager {
     { key, safeArgs: args }: { key: string; safeArgs: string },
     fallbackExecution: () => any,
   ): Promise<any> {
-    // console.log({ stubName, inputKey: key, args })
-
     const cache = this.mockCaches.get(stubName)
-    if (!cache) return fallbackExecution()
+
+    if (!cache) {
+      console.warn(
+        `⚠️ [Cache] getOrSet called for unregistered stub: "${stubName}". Running fallback execution without caching.`,
+      )
+      return fallbackExecution()
+    }
 
     // Evaluates perfectly because getOrSet is executed inside your mock at test-runtime
     const testName = getTestName()
     const invocationPath = `${testName}::${key}`
-
     cache.invokedPaths.add(invocationPath)
-    const testSpace = cache.data[testName] || {}
 
-    if (process.env.REGENERATE_TEST_CACHE === 'true') {
-      const freshResult = await fallbackExecution()
-      //  console.log({ freshResult })
-
-      testSpace[key] = { args, result: freshResult }
-      cache.data[testName] = testSpace
-      return freshResult
+    if (!cache.data[testName]) {
+      cache.data[testName] = {}
     }
+    const testSpace = cache.data[testName]
 
-    if (key in testSpace) {
+    const isRegenerate = process.env.REGENERATE_TEST_CACHE === 'true'
+    if (!isRegenerate && key in testSpace) {
       return testSpace[key].result
     }
 
-    const freshResult = await fallbackExecution()
-    testSpace[key] = { args, result: freshResult }
-    cache.data[testName] = testSpace
-    return freshResult
+    const result = await fallbackExecution()
+    testSpace[key] = { args, result }
+    return result
   }
 
   /**
@@ -135,8 +125,6 @@ export class FileCacheManager {
     const isCI = !!process.env.CI
     const shouldSave = (!!process.env.REGENERATE_TEST_CACHE || !!process.env.NCU_SAVE_FIXTURES) && allTestsPassed
     const shouldPurge = process.env.UPDATE_TEST_CACHE === 'true'
-
-    //  console.log('flushAndAuditAll', this.mockCaches.entries())
 
     for (const [stubName, cache] of this.mockCaches.entries()) {
       const unusedEntries: { testName: string; inputKey: string }[] = []
