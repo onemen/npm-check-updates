@@ -1,50 +1,12 @@
-import fs from 'node:fs/promises'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
-import * as getPeerDependenciesFromRegistryModule from '../src/lib/getPeerDependenciesFromRegistry'
 import { type Packument } from '../src/types/Packument'
-import { sanitizeAndSerialize } from './helpers/mockUtils'
 import stubVersions from './helpers/stubVersions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('peer dependencies', function () {
-  beforeAll(async () => {
-    const filePath = path.join(__dirname, 'fixtures/getPeerDependenciesFromRegistry.json')
-    const peerDepsData = JSON.parse(await fs.readFile(filePath, 'utf-8').catch(() => '{}'))
-    const original = getPeerDependenciesFromRegistryModule.default
-
-    // mock getPeerDependenciesFromRegistry
-    vi.spyOn(getPeerDependenciesFromRegistryModule, 'default').mockImplementation(async (packageMap, options) => {
-      // automatically update mock data if test where changed
-      const missingPackageMap = Object.fromEntries(
-        Object.entries(packageMap).filter(([pkg, version]) => !peerDepsData[pkg]?.[version]),
-      )
-
-      if (Object.keys(missingPackageMap).length > 0) {
-        const fetchedPeerDeps = await original(missingPackageMap, options)
-        Object.entries(fetchedPeerDeps).forEach(([pkg, peers]) => {
-          if (!peerDepsData[pkg]) peerDepsData[pkg] = {}
-          if (peers?.error && 'summary' in (peers.error as any)) {
-            peers.error = sanitizeAndSerialize(JSON.stringify(peers.error))
-          }
-          peerDepsData[pkg][packageMap[pkg]] = peers
-        })
-        await fs.mkdir(path.dirname(filePath), { recursive: true })
-        await fs.writeFile(filePath, JSON.stringify(peerDepsData, null, 2) + '\n', 'utf-8')
-      }
-
-      return Object.fromEntries(
-        Object.entries(packageMap).map(([pkg, version]) => [pkg, peerDepsData[pkg]?.[version] || {}]),
-      )
-    })
-  })
-
-  afterAll(() => {
-    vi.restoreAllMocks()
-  })
-
   it('peer dependencies are ignored by default', async () => {
     const stub = stubVersions({
       'ncu-test-peer': {
