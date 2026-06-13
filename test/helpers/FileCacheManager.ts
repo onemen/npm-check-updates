@@ -1,9 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
-import { sortObjectDeep } from './mockUtils'
 import { stubGetGitTags } from './stubs/stubGetGitTags'
 import { stubSpawnCommand } from './stubs/stubSpawnCommand'
+import { sortObjectDeep } from './stubs/utils'
 import { getFullTestName } from './testNameStore'
 
 export interface StubRegistration {

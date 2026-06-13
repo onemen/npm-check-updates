@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import * as mod from '../../../src/lib/spawnCommand'
 import type { StubRegistration } from '../FileCacheManager'
-import { sanitizeAndSerialize } from '../mockUtils'
+import { sanitizeAndSerialize } from './utils'
 
 export const stubSpawnCommand: StubRegistration = {
   name: 'spawnCommand',
