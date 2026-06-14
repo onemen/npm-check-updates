@@ -29,9 +29,8 @@ export const stubSpawnCommand: StubRegistration = {
             await fs.promises.writeFile(lockfilePath, '', 'utf8')
             await fs.promises.mkdir(path.join(cwd, 'node_modules'), { recursive: true })
           }
-          const stdout = `stubSpawnCommand for ${command} install finished successfully.`
-          // Delegate to cache using a fixed key 'install'
-          return cache.getOrSet('spawnCommand', 'install', () => ({ stdout, stderr: '' }))
+          const stdout = `stubSpawnCommand for '${command} install' finished successfully.`
+          return cache.getOrSet('spawnCommand', key, () => ({ stdout, stderr: '' }))
         }
 
         const entry = await cache.getOrSet('spawnCommand', key, async () => {
