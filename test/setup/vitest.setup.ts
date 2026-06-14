@@ -2,10 +2,10 @@ import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-handlers'
-import { FileCacheManager } from './FileCacheManager'
-import { TestSandbox } from './TestSandbox'
-import { registerIOCapture } from './mockIO'
-import { registerTestNameCapture } from './testNameStore'
+import { FileCacheManager } from '../helpers/FileCacheManager'
+import { TestSandbox } from '../helpers/TestSandbox'
+import { registerIOCapture } from '../helpers/mockIO'
+import { registerTestNameCapture } from '../helpers/testNameStore'
 
 installGlobalErrorHandlers()
 

@@ -1,4 +1,4 @@
-import { TestSandbox } from './TestSandbox'
+import { TestSandbox } from '../helpers/TestSandbox'
 
 /** global setup  */
 export function setup() {
