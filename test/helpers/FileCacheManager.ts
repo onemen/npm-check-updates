@@ -63,7 +63,6 @@ export class FileCacheManager {
   /** Retrieves or sets keys using getTestName() smoothly at runtime */
   public async getOrSet(stubName: string, key: string, fallbackExecution: () => any): Promise<any> {
     const testName = getFullTestName()
-    // console.error('NCU_DEBUG:', { testName })
 
     const invocationPath = `${testName}::${stubName}::${key}`
     this.invokedPaths.add(invocationPath)
