@@ -36,7 +36,7 @@ export class FileCacheManager {
       const testRoot = path.resolve('test')
       const relativePath = path.relative(testRoot, rawFilePath)
       const jsonRelative = relativePath.replace(/\.ts$/, '.json')
-      manager.cacheFilePath = path.join(testRoot, 'test-data', 'fixtures_cache', jsonRelative)
+      manager.cacheFilePath = path.join(testRoot, 'fixtures-cache', jsonRelative)
 
       if (fs.existsSync(manager.cacheFilePath)) {
         manager.initialContent = fs.readFileSync(manager.cacheFilePath, 'utf8')

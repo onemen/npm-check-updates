@@ -1,6 +1,6 @@
 {
   "include": ["src/**/*", "test/**/*", "vite.config.ts"],
-  "exclude": ["test/deep", "test/doctor", "node_modules", "coverage"],
+  "exclude": ["test/deep", "test/doctor", "test/fixtures-cache", "node_modules", "coverage"],
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],

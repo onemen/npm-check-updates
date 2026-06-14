@@ -209,7 +209,7 @@
       },
       "https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git": {
         "_isError": true,
-        "message": "Command failed: git ls-remote --tags https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git\nfatal: unable to access 'https://bitbucket.org/somename/common.git/': The requested URL returned error: 503\n"
+        "message": "Command failed: git ls-remote --tags https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git\nremote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n"
       }
     }
   }
