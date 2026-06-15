@@ -79,3 +79,39 @@ export function sortObjectDeep(value: any): any {
 
   return value
 }
+
+// Unique error code for sandbox cwd violations
+export const SANDBOX_CWD_ERROR = Symbol('SANDBOX_CWD_ERROR')
+
+/**
+ * Ensures that a spawned child process receives a proper cwd.
+ * This is required because Vitest workers cannot change the real OS cwd,
+ * and process.cwd() is mocked only inside the worker, not in child processes.
+ */
+export function ensureChildProcessCwd(cmd: string, args?: string[], options?: any) {
+  if (options?.cwd) {
+    return
+  }
+
+  throw Object.assign(
+    new Error(
+      [
+        `Sandbox violation: a child process was started without a "cwd".`,
+        ``,
+        `Vitest runs tests inside worker threads, and workers cannot change the real`,
+        `OS working directory. We mock process.cwd() to point to the sandbox, but this`,
+        `mock affects only the test worker — not child processes.`,
+        ``,
+        `A child process without an explicit { cwd } will run in the REAL project`,
+        `directory instead of the sandbox.`,
+        ``,
+        `Fix: ensure the tested function passes { cwd: sandbox.cwd } (or inject it in`,
+        `your wrapper before calling spawn/execFile).`,
+        ``,
+        `Command executed:`,
+        `  ${cmd} ${args?.join(' ') || ''}`,
+      ].join('\n'),
+    ),
+    { code: SANDBOX_CWD_ERROR },
+  )
+}

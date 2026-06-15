@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import * as mod from '../../../src/lib/spawnCommand'
 import type { StubRegistration } from '../FileCacheManager'
-import { sanitizeAndSerialize } from './utils'
+import { ensureChildProcessCwd, sanitizeAndSerialize } from './utils'
 
 export const stubSpawnCommand: StubRegistration = {
   name: 'spawnCommand',
@@ -11,6 +11,8 @@ export const stubSpawnCommand: StubRegistration = {
 
     vi.spyOn(mod, 'spawnCommand').mockImplementation(
       async (command: string, args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
+        ensureChildProcessCwd(command, args, spawnOptions)
+
         /** */
         const quoteIfNeeded = (s: string) => (s.includes(' ') ? JSON.stringify(s) : s)
         const key =

@@ -1,5 +1,5 @@
 import { type MockInstance, type TestContext } from 'vitest'
-import { type TestSandbox } from './TestSandbox'
+import { type TestSandbox } from '../helpers/TestSandbox'
 
 declare module 'vitest' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
