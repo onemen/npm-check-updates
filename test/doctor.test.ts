@@ -5,10 +5,11 @@ import path from 'path'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import { pm } from '../src/lib/doctor'
-import { createNcuRegExp, mockPackageManagerRun, mockSpawn, testFail, testPass } from './helpers/doctorHelpers'
+import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
+import { mockPackageManagerRun, mockSpawn } from './helpers/stubs/stubDoctor'
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
@@ -19,11 +20,12 @@ const mockNpmVersions = {
 
 describe('doctor', function () {
   let stub: { mockRestore: () => void }
+  let pmSpawn: ReturnType<typeof mockSpawn>
 
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
     mockPackageManagerRun()
-    mockSpawn()
+    pmSpawn = mockSpawn()
   })
 
   afterAll(async () => {
@@ -112,6 +114,11 @@ describe('doctor', function () {
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
+      // spawn have been called with the right arguments
+      const [cmd, args = []] = pmSpawn.mock.calls.at(-1)!
+      cmd.should.equal(npmCmd)
+      args.join(' ').should.equal('run myinstall')
+
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
       if (stderr !== '') {
@@ -142,6 +149,11 @@ describe('doctor', function () {
       })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+
+      // spawn have been called with the right arguments
+      const [cmd, args = []] = pmSpawn.mock.calls.at(-1)!
+      cmd.should.equal(npmCmd)
+      args.join(' ').should.equal('run mytest')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -175,18 +187,16 @@ describe('doctor', function () {
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // spawn have been called with the right arguments
-      expect(pm.spawn).toHaveBeenCalledWith(
-        'node',
-        expect.arrayContaining([expect.stringContaining('echo.js'), '123 456']),
-        expect.any(Object),
-        expect.any(Object),
-      )
+      const [cmd, args = []] = pmSpawn.mock.calls.at(-1)!
+      cmd.should.equal('node')
+      args[0].should.endWith('echo.js')
+      args[1].should.equal('123 456')
 
       // stderr should be empty
       stderr.should.equal('')
 
       // stdout should include expected output
-      stripAnsi(stdout).should.contain("'123 456'")
+      stripAnsi(stdout).should.contain('simulated echo.js output: 123 456')
 
       // package file should include upgrades
       pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')

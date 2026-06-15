@@ -46,6 +46,14 @@ export function sanitizeAndSerialize(value: string): string {
 }
 
 /**
+ * Normalizes a command by stripping OS-specific executable extensions (.cmd, .exe, .bat)
+ * and replace absolute developer paths in arguments to safe forward-slashed placeholders
+ */
+export function normalizeCommand(command: string, args: string[]) {
+  return { command: command.replace(/\.(cmd|exe|bat)$/i, ''), args: args.map(serializeTokens) }
+}
+
+/**
  * Recursively sorts all object keys to produce a fully deterministic structure.
  *
  * This is used when generating test fixtures to ensure that the serialized output

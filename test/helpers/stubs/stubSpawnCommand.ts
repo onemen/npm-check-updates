@@ -2,7 +2,39 @@ import fs from 'node:fs'
 import path from 'node:path'
 import * as mod from '../../../src/lib/spawnCommand'
 import type { StubRegistration } from '../FileCacheManager'
-import { ensureChildProcessCwd, sanitizeAndSerialize } from './utils'
+import { ensureChildProcessCwd, normalizeCommand, sanitizeAndSerialize } from './utils'
+
+const lockfiles: Record<string, string> = {
+  npm: 'package-lock.json',
+  yarn: 'yarn.lock',
+  pnpm: 'pnpm-lock.yaml',
+  bun: 'bun.lock',
+}
+
+/** mock install command for tests  */
+async function mockInstall(command: string, args: string[], spawnOptions?: any) {
+  const validLockFile = lockfiles[command]
+  const isInstall = validLockFile && args.length === 1 && args[0] === 'install'
+
+  if (isInstall) {
+    const cwd = spawnOptions?.cwd?.toString()
+    if (cwd) {
+      // Create the empty lockfile and empty node_module
+      await fs.promises.mkdir(path.join(cwd, 'node_modules'), { recursive: true })
+
+      const lockfilePath = path.join(cwd, validLockFile)
+      try {
+        await fs.promises.access(lockfilePath)
+        // File exists — do nothing
+      } catch {
+        await fs.promises.writeFile(lockfilePath, '', 'utf8')
+      }
+    }
+    return true
+  }
+
+  return null
+}
 
 export const stubSpawnCommand: StubRegistration = {
   name: 'spawnCommand',
@@ -10,8 +42,10 @@ export const stubSpawnCommand: StubRegistration = {
     const original = mod.spawnCommand
 
     vi.spyOn(mod, 'spawnCommand').mockImplementation(
-      async (command: string, args: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
-        ensureChildProcessCwd(command, args, spawnOptions)
+      async (rawCommand: string, rawArgs: string[], spawnPleaseOptions?: any, spawnOptions?: any) => {
+        ensureChildProcessCwd(rawCommand, rawArgs, spawnOptions)
+
+        const { command, args } = normalizeCommand(rawCommand, rawArgs)
 
         /** */
         const quoteIfNeeded = (s: string) => (s.includes(' ') ? JSON.stringify(s) : s)
@@ -20,24 +54,15 @@ export const stubSpawnCommand: StubRegistration = {
             ? `command: ${command}, args: ${args.map(quoteIfNeeded).join(' :: ')}`
             : `command: ${command}, args: <none>`
 
-        const isPackageManagerInstall =
-          ['npm', 'pnpm', 'yarn', 'bun'].includes(command) && args.length === 1 && args[0] === 'install'
-
-        if (isPackageManagerInstall) {
-          const cwd = spawnOptions?.cwd?.toString()
-          if (cwd) {
-            // Create the empty lockfile and empty node_module
-            const lockfilePath = path.join(cwd, 'package-lock.json')
-            await fs.promises.writeFile(lockfilePath, '', 'utf8')
-            await fs.promises.mkdir(path.join(cwd, 'node_modules'), { recursive: true })
-          }
+        const isMockInstall = await mockInstall(command, args, spawnOptions)
+        if (isMockInstall) {
           const stdout = `stubSpawnCommand for '${command} install' finished successfully.`
-          return cache.getOrSet('spawnCommand', key, () => ({ stdout, stderr: '' }))
+          return { stdout, stderr: '' }
         }
 
         const entry = await cache.getOrSet('spawnCommand', key, async () => {
           try {
-            const result = await original(command, args, spawnPleaseOptions, spawnOptions)
+            const result = await original(rawCommand, rawArgs, spawnPleaseOptions, spawnOptions)
             if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
             if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
             return result

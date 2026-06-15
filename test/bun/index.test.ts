@@ -2,8 +2,9 @@ import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
-import { mockPackageManagerRun, mockSpawn, testFail, testPass } from '../helpers/doctorHelpers'
+import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
+import { mockPackageManagerRun, mockSpawn } from '../helpers/stubs/stubDoctor'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
