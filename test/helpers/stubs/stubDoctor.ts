@@ -25,8 +25,10 @@ async function getPackageJson(targetCwd: string) {
   }
 }
 
+const installedVersionsMap = new Map<string, string>()
+
 /**
- * Mocks the internal package manager execution (`pm.run`) during Doctor Mode tests.
+ * Mocks the internal package manager execution sawnCommand triggered during Doctor Mode tests.
  *
  * Instead of spawning heavy native child processes for every dependency installation
  * and script lifecycle trigger, this interceptor manages package versioning and
@@ -37,86 +39,90 @@ async function getPackageJson(targetCwd: string) {
  * (which are exceptionally slow on Windows), this mock cuts down the suite execution
  * time by roughly 40 seconds.
  *
- * @returns A Vitest SpyInstance wrapper around the `pm.run` implementation.
+ * this function it triggered by stubSpawnCommand.action
  */
-export function mockPackageManagerRun() {
-  const installedVersionsMap = new Map<string, string>()
-  const originalRun = pm.run
-  return vi.spyOn(pm, 'run').mockImplementation(async (args, options, print, extraOptions) => {
-    const targetCwd = options.cwd
-    if (!targetCwd) {
-      throw new Error(`Mock execution failed: 'options.cwd' is required for command '${args.join(' ')}'`)
-    }
+export async function doctorActions(command: string, args: string[], spawnOptions: any, _raw: any, _original: any) {
+  const targetCwd = spawnOptions.cwd
+  if (!targetCwd) {
+    throw new Error(`Mock execution failed: 'options.cwd' is required for command '${args.join(' ')}'`)
+  }
 
-    const pkgJson = await getPackageJson(targetCwd)
-    const command = args[0]
+  const pkgJson = await getPackageJson(targetCwd)
+  const isInstall = args.includes('install') || args.includes('add')
 
-    // Install/Add does nothing but pretend to succeed
-    if (command === 'install' || command === 'add') {
-      let detectedVersion = ''
+  console.error('NCU_DEBUG:', command, args, isInstall)
 
-      // Override with explicit CLI argument if present (e.g., package@2.0.0)
-      args.forEach(arg => {
-        if (!arg.startsWith('-') && arg.includes('@')) {
-          const lastAtIndex = arg.lastIndexOf('@')
-          if (lastAtIndex > 0 && arg.slice(0, lastAtIndex) === TARGET_PACKAGE) {
-            detectedVersion = stripRange(arg.slice(lastAtIndex + 1))
-          }
-        }
-      })
+  if (isInstall) {
+    let detectedVersion = ''
 
-      if (!detectedVersion) {
-        if (pkgJson) {
-          const allDeps = {
-            ...pkgJson.dependencies,
-            ...pkgJson.devDependencies,
-            ...pkgJson.optionalDependencies,
-            ...pkgJson.peerDependencies,
-          }
-          if (allDeps[TARGET_PACKAGE]) {
-            detectedVersion = stripRange(allDeps[TARGET_PACKAGE])
-          }
+    // Override with explicit CLI argument if present (e.g., package@2.0.0)
+    args.forEach(arg => {
+      if (!arg.startsWith('-') && arg.includes('@')) {
+        const lastAtIndex = arg.lastIndexOf('@')
+        if (lastAtIndex > 0 && arg.slice(0, lastAtIndex) === TARGET_PACKAGE) {
+          detectedVersion = stripRange(arg.slice(lastAtIndex + 1))
         }
       }
+    })
 
-      // Only save to our memory state if we actually tracked a version change for our target
-      if (detectedVersion) {
-        installedVersionsMap.set(targetCwd, detectedVersion)
+    if (!detectedVersion) {
+      if (pkgJson) {
+        const allDeps = {
+          ...pkgJson.dependencies,
+          ...pkgJson.devDependencies,
+          ...pkgJson.optionalDependencies,
+          ...pkgJson.peerDependencies,
+        }
+        if (allDeps[TARGET_PACKAGE]) {
+          detectedVersion = stripRange(allDeps[TARGET_PACKAGE])
+        }
       }
-
-      // Create the empty lockfile
-      const lockFileName = packageManagerLockfiles[(options.packageManager || 'npm') as PackageManager]
-      const lockfilePath = path.join(targetCwd, lockFileName)
-      await fs.writeFile(lockfilePath, '', 'utf8')
-
-      const pmType = options.packageManager || 'npm'
-      if (!args.includes('--no-save') && (pmType === 'npm' || pmType === 'pnpm') && pkgJson?.scripts?.prepare) {
-        return pm.run(['run', 'prepare'], options, print, extraOptions)
-      }
-
-      return 'mocked success output'
     }
 
-    // Intercept the test and prepare execution scripts called by doctor
-    if (command === 'run' && ['test', 'prepare'].includes(args[1])) {
-      if (args[1] === 'test' && pkgJson?.scripts?.test !== 'node test.js') {
-        return 'Skipping unhandled test runner script\n'
-      }
-
-      const version = installedVersionsMap.get(targetCwd) || '1.0.0'
-
-      // pass on < 2
-      // No need to print to the terminal when the test is successful.
-      // break on v2.x
-      if (version.startsWith('2')) {
-        throw new Error('Breaks with v2.x :(')
-      }
-
-      return `mocked success output from ${args[1]} script`
+    // Only save to our memory state if we actually tracked a version change for our target
+    if (detectedVersion) {
+      installedVersionsMap.set(targetCwd, detectedVersion)
     }
 
-    return originalRun(args, options, print, extraOptions)
-  })
+    // Create the empty lockfile
+    const lockFileName = packageManagerLockfiles[command as PackageManager]
+    const lockfilePath = path.join(targetCwd, lockFileName)
+    await fs.writeFile(lockfilePath, '', 'utf8')
+
+    // currently doctor run prepare script manually when installed used with --no-save
+    // this code will mock all other cases
+    // currently there not test run install without --no-save
+    if (!args.includes('--no-save') && (command === 'npm' || command === 'pnpm') && pkgJson?.scripts?.prepare) {
+      return pm.run(['run', 'prepare'], {}, true, { spawnOptions, spawnPleaseOptions: _raw[3] })
+    }
+
+    return 'mocked success output'
+  }
+
+  // Intercept test and prepare execution scripts called by doctor
+  const script = args.join(' ')
+  const isTest = script.endsWith('run test')
+  const isPrepare = script.endsWith('run prepare')
+  if (isTest || isPrepare) {
+    if (isTest && pkgJson?.scripts?.test !== 'node test.js') {
+      return 'Skipping unhandled test runner script\n'
+    }
+
+    const version = installedVersionsMap.get(targetCwd) || '1.0.0'
+
+    // pass on < 2
+    // No need to print to the terminal when the test is successful.
+    // break on v2.x
+    if (version.startsWith('2')) {
+      throw new Error('Breaks with v2.x :(')
+    }
+
+    return `mocked success output from ${isTest ? 'test' : 'prepare'} script`
+  }
+
+  console.error('NCU_DEBUG: call original', { command, args, isInstall, script, isTest, isPrepare })
+
+  return _original(..._raw)
 }
 
 /** mock spawn for doctorTest and doctorInstall options  */
@@ -125,6 +131,8 @@ export function mockSpawn() {
   return vi.spyOn(pm, 'spawn').mockImplementation(async (rawCommand, rawArgs, options, spawnOptions) => {
     const { command, args } = normalizeCommand(rawCommand, rawArgs ?? [])
     const inputStr = JSON.stringify({ command, args })
+
+    // console.error('NCU_DEBUG:', inputStr)
 
     switch (inputStr) {
       case '{"command":"npm","args":["run","myinstall"]}':

@@ -50,7 +50,15 @@ export function sanitizeAndSerialize(value: string): string {
  * and replace absolute developer paths in arguments to safe forward-slashed placeholders
  */
 export function normalizeCommand(command: string, args: string[]) {
-  return { command: command.replace(/\.(cmd|exe|bat)$/i, ''), args: args.map(serializeTokens) }
+  const normalized = { command: command.replace(/\.(cmd|exe|bat)$/i, ''), args: args.map(serializeTokens), key: '' }
+  /** make readable cache key */
+  const quoteIfNeeded = (s: string) => (s.includes(' ') ? JSON.stringify(s) : s)
+  normalized.key =
+    args.length > 0
+      ? `command: ${normalized.command}, args: ${normalized.args.map(quoteIfNeeded).join(' :: ')}`
+      : `command: ${normalized.command}, args: <none>`
+
+  return normalized
 }
 
 /**

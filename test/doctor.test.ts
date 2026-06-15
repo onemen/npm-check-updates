@@ -9,7 +9,8 @@ import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-import { mockPackageManagerRun, mockSpawn } from './helpers/stubs/stubDoctor'
+import { doctorActions, mockSpawn } from './helpers/stubs/stubDoctor'
+import { stubSpawnCommand } from './helpers/stubs/stubSpawnCommand'
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
@@ -18,14 +19,22 @@ const mockNpmVersions = {
   'ncu-test-v2': '2.0.0',
 }
 
+const doctorStub = stubSpawnCommand()
+
 describe('doctor', function () {
   let stub: { mockRestore: () => void }
   let pmSpawn: ReturnType<typeof mockSpawn>
 
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
-    mockPackageManagerRun()
+    // mockPackageManagerRun()
     pmSpawn = mockSpawn()
+    // @ts-expect-error - TODO
+    doctorStub.actions = doctorActions
+    // @ts-expect-error - TODO
+    doctorStub.cache = () => {}
+    // @ts-expect-error - TODO
+    doctorStub.setupMock()
   })
 
   afterAll(async () => {

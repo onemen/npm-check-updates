@@ -6,10 +6,12 @@ import { stubSpawnCommand } from './stubs/stubSpawnCommand'
 import { sortObjectDeep } from './stubs/utils'
 import { getFullTestName } from './testNameStore'
 
-export interface StubRegistration {
-  name: string
-  setupMock: (cache: FileCacheManager) => void
-}
+// export declare function StubRegistration(): {
+//   name: string
+//   actions: (...args: any) => Promise<any>
+//   cache: (...args: any) => Promise<any>
+//   setupMock: (cache: FileCacheManager) => void
+// }
 
 /** */
 export class FileCacheManager {
@@ -20,7 +22,8 @@ export class FileCacheManager {
   /** Tracks which entries were actually used: "testName::stubName::key" */
   private invokedPaths = new Set<string>()
 
-  public static registerLifecycle(stubs: StubRegistration[]) {
+  // public static registerLifecycle(stubs: StubRegistration[]) {
+  public static registerLifecycle(stubs: any[]) {
     const manager = new FileCacheManager()
 
     // eslint-disable-next-line no-empty-pattern
@@ -48,7 +51,7 @@ export class FileCacheManager {
       }
 
       for (const stub of stubs) {
-        stub.setupMock(manager)
+        stub().setupMock(manager)
       }
     })
 
