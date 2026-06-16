@@ -4,7 +4,7 @@ import { type RunnerTask, type RunnerTestFile } from 'vitest'
 import { stubGetGitTags } from './stubs/stubGetGitTags'
 import { registerStub } from './stubs/stubRegistry'
 import { stubSpawnCommand } from './stubs/stubSpawnCommand'
-import { sanitizeAndSerialize, sortObjectDeep } from './stubs/utils'
+import { sortObjectDeep } from './stubs/utils'
 import { getFullTestName } from './testNameStore'
 
 /** */
@@ -59,7 +59,7 @@ export class FileCacheManager {
   }
 
   /** Retrieves or sets keys using getTestName() smoothly at runtime */
-  public async getOrSet<T>(stubName: string, key: string, fallbackExecution: () => Promise<T>): Promise<T> {
+  public async getOrSet(stubName: string, key: string, fallbackExecution: () => any): Promise<any> {
     const testName = getFullTestName()
 
     const invocationPath = `${testName}::${stubName}::${key}`
@@ -75,31 +75,12 @@ export class FileCacheManager {
 
     const isRegenerate = process.env.REGENERATE_TEST_CACHE === 'true'
     if (!isRegenerate && key in testSpace) {
-      const entry = testSpace[key]
-      if (entry && entry._isError) {
-        const err = Object.assign(new Error(entry.message), {
-          stderr: entry.stderr,
-          exitCode: entry.exitCode,
-        })
-        throw err
-      }
-      return entry as T
+      return testSpace[key]
     }
 
-    try {
-      const result = await fallbackExecution()
-      testSpace[key] = result
-      return result
-    } catch (err: any) {
-      const serialized = {
-        _isError: true,
-        message: sanitizeAndSerialize(err.message || err.toString()),
-        stderr: sanitizeAndSerialize(err.stderr || ''),
-        exitCode: err.exitCode ?? 1,
-      }
-      testSpace[key] = serialized
-      throw err
-    }
+    const result = await fallbackExecution()
+    testSpace[key] = result
+    return result
   }
 
   /** Final validation and disk sync loop */

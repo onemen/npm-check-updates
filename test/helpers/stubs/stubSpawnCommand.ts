@@ -1,8 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type spawnPleaseDefault from 'spawn-please'
-import type { BaseSpawnCtx, SpawnCtx } from '../../types/stubsTypes'
-import { type FileCacheManager } from '../FileCacheManager'
+import * as mod from '../../../src/lib/spawnCommand'
+import { type DefaultCtx } from '../../types/stubsTypes'
 import { createStub } from './genericStubFactory'
 import {
   type PackageManager,
@@ -12,11 +11,31 @@ import {
   sanitizeAndSerialize,
 } from './utils'
 
+export type BaseSpawnCtx = DefaultCtx<typeof mod.spawnCommand>
+
+export type SpawnCtx = BaseSpawnCtx & {
+  command: string
+  args: string[]
+  key: string
+}
+
 /** SpawnCommand context builder */
 export const buildSpawnContext = ({ raw, original, cache }: BaseSpawnCtx): SpawnCtx => {
+  const [rawCommand, rawArgs, , spawnOptions] = raw
+
   // throw if we are missing cwd in spawnOptions
-  ensureChildProcessCwd(...raw)
-  return { raw, original, cache, ...normalizeCommand(...raw) }
+  ensureChildProcessCwd(rawCommand, rawArgs, spawnOptions)
+
+  const { command, args, key } = normalizeCommand(rawCommand, rawArgs)
+
+  return {
+    raw,
+    original,
+    command,
+    args,
+    key,
+    cache,
+  }
 }
 
 /** mock install command for tests  */
@@ -49,30 +68,36 @@ const generalActions = async (ctx: SpawnCtx) => {
 /** cache handler */
 const generalCache = async (ctx: SpawnCtx) => {
   const { cache, key, original, raw } = ctx
-  return await cache?.getOrSet('spawnCommand', key, async () => {
-    const result = await original(...raw)
-    if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
-    if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
-    return result
+  const entry = await cache?.getOrSet('spawnCommand', key, async () => {
+    try {
+      const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
+      const result = await original(rawCommand, rawArgs, spawnPleaseOptions, spawnOptions)
+      if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
+      if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
+      return result
+    } catch (err: any) {
+      return {
+        _isError: true,
+        message: sanitizeAndSerialize(err.message || err.toString()),
+        stderr: sanitizeAndSerialize(err.stderr || ''),
+        exitCode: err.exitCode ?? 1,
+      }
+    }
   })
+
+  // --- Replay Response Handling ---
+  if (entry?._isError) {
+    const err = Object.assign(new Error(entry.message), {
+      stderr: entry.stderr,
+      exitCode: entry.exitCode,
+    })
+    throw err
+  }
+
+  return entry
 }
 
-vi.mock('spawn-please', async importOriginal => {
-  const actual = await importOriginal<Record<string, any>>()
-  return { ...actual }
-})
-
-const spawnModuleNamespace: Record<string, any> = await import('spawn-please')
-const actualModule = await vi.importActual<Record<string, any>>('spawn-please')
-const originalSpawn = actualModule.default as typeof spawnPleaseDefault
-
-export const stubSpawnCommand = createStub<typeof spawnPleaseDefault, FileCacheManager, SpawnCtx>(
-  originalSpawn,
-  spawnModuleNamespace,
-  'default',
-  buildSpawnContext,
-  'spawnCommand',
-)
+export const stubSpawnCommand = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
 
 stubSpawnCommand.use(generalActions)
 stubSpawnCommand.use(generalCache)
