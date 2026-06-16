@@ -1,7 +1,10 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pm } from '../../../src/lib/doctor'
+import * as mod from '../../../src/lib/spawnCommand'
 import { stripRange } from '../../../src/lib/version-util'
+import { createStub } from './genericStubFactory'
+import { type SpawnCtx, buildSpawnContext } from './newStubSpawnCommand'
 import { normalizeCommand } from './utils'
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
@@ -41,8 +44,14 @@ const installedVersionsMap = new Map<string, string>()
  *
  * this function it triggered by stubSpawnCommand.action
  */
-export async function doctorActions(command: string, args: string[], spawnOptions: any, _raw: any, _original: any) {
-  const targetCwd = spawnOptions.cwd
+// export async function doctorActions(command: string, args: string[], spawnOptions: any, _raw: any, _original: any) {
+// console.error('NCU_DEBUG:', 'setupMock', ctx)
+
+export const newDoctorActions = async (ctx: SpawnCtx) => {
+  const { command, args, original, raw } = ctx
+  const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
+
+  const targetCwd = spawnOptions?.cwd?.toString()
   if (!targetCwd) {
     throw new Error(`Mock execution failed: 'options.cwd' is required for command '${args.join(' ')}'`)
   }
@@ -50,7 +59,7 @@ export async function doctorActions(command: string, args: string[], spawnOption
   const pkgJson = await getPackageJson(targetCwd)
   const isInstall = args.includes('install') || args.includes('add')
 
-  console.error('NCU_DEBUG:', command, args, isInstall)
+  // console.error('NCU_DEBUG:', command, args, isInstall)
 
   if (isInstall) {
     let detectedVersion = ''
@@ -92,15 +101,17 @@ export async function doctorActions(command: string, args: string[], spawnOption
     // currently doctor run prepare script manually when installed used with --no-save
     // this code will mock all other cases
     if (!args.includes('--no-save') && (command === 'npm' || command === 'pnpm') && pkgJson?.scripts?.prepare) {
-      console.error('NCU_DEBUG: before run prepare', command, args, pkgJson)
-      // console.error('NCU_DEBUG: before run prepare', { spawnPleaseOptions: _raw[2], spawnOptions })
-
-      const result = await pm.run(['run', 'prepare'], {}, true, { spawnPleaseOptions: _raw[2], spawnOptions })
-      console.error('NCU_DEBUG: prepare result', { result })
-      return result
+      // console.error('NCU_DEBUG: before run prepare', command, args, pkgJson)
+      // console.error('NCU_DEBUG: before run prepare', { spawnPleaseOptions, spawnOptions })
+      // throw new Error('ZZZZZZZZZZZZZZZZZZZZZZ')
+      // const result = await pm.run(['run', 'prepare'], {}, true, { spawnOptions, spawnPleaseOptions })
+      // console.error('NCU_DEBUG: prepare result', { result })
+      // return result
+      const stdout = await pm.run(['run', 'prepare'], {}, false, { spawnOptions, spawnPleaseOptions })
+      return { stdout, stderr: '' }
     }
 
-    return 'mocked success output'
+    return { stdout: 'mocked success output', stderr: '' }
   }
 
   // Intercept test and prepare execution scripts called by doctor
@@ -109,7 +120,7 @@ export async function doctorActions(command: string, args: string[], spawnOption
   const isPrepare = script.endsWith('run prepare')
   if (isTest || isPrepare) {
     if (isTest && pkgJson?.scripts?.test !== 'node test.js') {
-      return 'Skipping unhandled test runner script\n'
+      return { stdout: 'Skipping unhandled test runner script\n', stderr: '' }
     }
 
     const version = installedVersionsMap.get(targetCwd) || '1.0.0'
@@ -121,12 +132,13 @@ export async function doctorActions(command: string, args: string[], spawnOption
       throw new Error('Breaks with v2.x :(')
     }
 
-    return `mocked success output from ${isTest ? 'test' : 'prepare'} script`
+    return { stdout: `mocked success output from ${isTest ? 'test' : 'prepare'} script`, stderr: '' }
   }
 
-  console.error('NCU_DEBUG: call original', { command, args, isInstall, script, isTest, isPrepare })
+  // console.error('NCU_DEBUG: call original', { command, args, isInstall, script, isTest, isPrepare })
 
-  return _original(..._raw)
+  // return _original(..._raw)
+  return original(rawCommand, rawArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /** mock spawn for doctorTest and doctorInstall options  */
@@ -154,4 +166,11 @@ export function mockSpawn() {
 
     return originalSpawn(command, args, options, spawnOptions)
   })
+}
+
+/** stub spawnCommand for doctor tests  */
+export function bootstrapDoctorStub() {
+  const doctorStub = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
+  doctorStub.use(newDoctorActions)
+  doctorStub.setupMock()
 }

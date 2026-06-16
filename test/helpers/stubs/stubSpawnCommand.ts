@@ -50,6 +50,12 @@ async function mockInstall(command: string, args: string[], spawnOptions?: Spawn
   return null
 }
 
+/*
+
+TODO:try to stub spawn-please directly
+update type according to copilot example - save it to types folder
+
+ */
 /** stub factory for spawnCommand */
 export function stubSpawnCommand() {
   const original = mod.spawnCommand

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
-import { mockPackageManagerRun, mockSpawn } from '../helpers/stubs/stubDoctor'
+import { bootstrapDoctorStub, mockSpawn } from '../helpers/stubs/newStubDoctor'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -37,8 +37,6 @@ describe('bun', function () {
     }
 
     versionStub = stubVersions(mockNpmVersions, { spawn: true })
-    mockPackageManagerRun()
-    mockSpawn()
   })
 
   afterAll(async () => {
@@ -56,6 +54,11 @@ describe('bun', function () {
   })
 
   describe('doctor', function () {
+    beforeAll(async () => {
+      bootstrapDoctorStub()
+      mockSpawn()
+    })
+
     // Note: Vitest has testTimeout in config; per-suite timeout not needed here
 
     testPass({ packageManager: 'bun' })
