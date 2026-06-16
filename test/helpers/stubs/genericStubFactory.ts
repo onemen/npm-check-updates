@@ -14,6 +14,16 @@ export type StubHandler<Ctx, F extends (...args: any) => any> = (
   ctx: Ctx,
 ) => Awaited<ReturnType<F>> | undefined | Promise<Awaited<ReturnType<F>> | undefined>
 
+/** make sure we get the original function */
+function ensureNotMock(fn: any, key: string | number | symbol) {
+  if (vi.isMockFunction(fn)) {
+    throw new Error(
+      `createStub: The function "${key.toString()}" is already mocked. ` +
+        `Call createStub BEFORE other mocks or only once.`,
+    )
+  }
+}
+
 /** Generic stub factory */
 export function createStub<F extends (...args: any) => any, Cache = FileCacheManager, Ctx = DefaultCtx<F, Cache>>(
   original: F,
@@ -21,6 +31,9 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
   spyKey: string | number,
   buildContext?: ContextBuilder<F, Cache, Ctx>,
 ) {
+  ensureNotMock(original, spyKey)
+  const realOriginal = original
+
   type Args = Parameters<F>
   type Ret = Awaited<ReturnType<F>>
 
@@ -35,31 +48,18 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
       /** spy implementation */
       const impl = async (raw: Args): Promise<Ret> => {
         const ctx: Ctx = buildContext
-          ? buildContext({ raw, original, cache })
-          : ({ raw, original, cache } as DefaultCtx<F, Cache> as Ctx)
-
-        // console.error('NCU_DEBUG:', 'setupMock', ctx)
+          ? buildContext({ raw, original: realOriginal, cache })
+          : ({ raw, original: realOriginal, cache } as DefaultCtx<F, Cache> as Ctx)
 
         for (const handler of this.handlers) {
-          // try {
-          //   const result = await handler(ctx)
-          //   console.error('NCU_DEBUG: result', { raw: ctx.raw, result })
-
-          //   if (result !== undefined) return result
-          // } catch (error) {
-          //   console.error('NCU_DEBUG: error', error)
-          //   throw error
-          // }
           const result = await handler(ctx)
           if (result !== undefined) return result
         }
 
-        console.log('NCU_DEBUG:', 'run original')
-
-        return await original(...raw)
+        return await realOriginal(...raw)
       }
 
-      vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: any[]) => impl(raw as Args)) as any)
+      vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: Args) => impl(raw)) as F)
     },
   }
 }

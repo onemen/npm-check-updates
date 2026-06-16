@@ -2,8 +2,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import * as mod from '../../../src/lib/spawnCommand'
 import { type DefaultCtx, createStub } from './genericStubFactory'
-import { type PackageManager, packageManagerLockfiles } from './newStubDoctor'
-import { ensureChildProcessCwd, normalizeCommand, sanitizeAndSerialize } from './utils'
+import {
+  type PackageManager,
+  ensureChildProcessCwd,
+  normalizeCommand,
+  packageManagerLockfiles,
+  sanitizeAndSerialize,
+} from './utils'
 
 export type BaseSpawnCtx = DefaultCtx<typeof mod.spawnCommand>
 

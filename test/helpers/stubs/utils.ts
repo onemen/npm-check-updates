@@ -5,6 +5,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(__dirname, '../../')
 const normalizedRoot = projectRoot.replace(/\\/g, '/')
 
+export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
+
+export const packageManagerLockfiles: Record<PackageManager, string> = {
+  npm: 'package-lock.json',
+  yarn: 'yarn.lock',
+  pnpm: 'pnpm-lock.yaml',
+  bun: 'bun.lock',
+}
+
 /** replacing dynamic system data with static placeholders */
 function sanitize(output: string): string {
   if (!output) return output

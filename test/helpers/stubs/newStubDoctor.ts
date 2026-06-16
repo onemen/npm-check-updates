@@ -5,18 +5,9 @@ import * as mod from '../../../src/lib/spawnCommand'
 import { stripRange } from '../../../src/lib/version-util'
 import { createStub } from './genericStubFactory'
 import { type SpawnCtx, buildSpawnContext } from './newStubSpawnCommand'
-import { normalizeCommand } from './utils'
+import { type PackageManager, normalizeCommand, packageManagerLockfiles } from './utils'
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
-
-export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
-
-export const packageManagerLockfiles: Record<PackageManager, string> = {
-  npm: 'package-lock.json',
-  yarn: 'yarn.lock',
-  pnpm: 'pnpm-lock.yaml',
-  bun: 'bun.lock',
-}
 
 /** get package.json content for a test */
 async function getPackageJson(targetCwd: string) {
@@ -48,8 +39,8 @@ const installedVersionsMap = new Map<string, string>()
 // console.error('NCU_DEBUG:', 'setupMock', ctx)
 
 export const newDoctorActions = async (ctx: SpawnCtx) => {
-  const { command, args, original, raw } = ctx
-  const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
+  const { command, args, raw } = ctx
+  const [, , spawnPleaseOptions, spawnOptions] = raw
 
   const cwd = spawnOptions?.cwd?.toString()
   if (!cwd) {
@@ -58,8 +49,6 @@ export const newDoctorActions = async (ctx: SpawnCtx) => {
 
   const pkgJson = await getPackageJson(cwd)
   const isInstall = args.includes('install') || args.includes('add')
-
-  // console.error('NCU_DEBUG:', command, args, isInstall)
 
   if (isInstall) {
     let detectedVersion = ''
@@ -132,10 +121,7 @@ export const newDoctorActions = async (ctx: SpawnCtx) => {
     return { stdout: `mocked success output from ${isTest ? 'test' : 'prepare'} script`, stderr: '' }
   }
 
-  // console.error('NCU_DEBUG: call original', { command, args, isInstall, script, isTest, isPrepare })
-
-  // return _original(..._raw)
-  return original(rawCommand, rawArgs, spawnPleaseOptions, spawnOptions)
+  return undefined
 }
 
 /** mock spawn for doctorTest and doctorInstall options  */
@@ -165,9 +151,12 @@ export function mockSpawn() {
   })
 }
 
+// call createStub at the top level to make sure it mock spawnCommand before
+// the general mock from FileCacheManager
+const doctorStub = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
+
 /** stub spawnCommand for doctor tests  */
 export function bootstrapDoctorStub() {
-  const doctorStub = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
   doctorStub.use(newDoctorActions)
   doctorStub.setupMock()
 }

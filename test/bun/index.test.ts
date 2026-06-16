@@ -59,8 +59,6 @@ describe('bun', function () {
       mockSpawn()
     })
 
-    // Note: Vitest has testTimeout in config; per-suite timeout not needed here
-
     testPass({ packageManager: 'bun' })
     testFail({ packageManager: 'bun' })
   })
