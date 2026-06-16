@@ -1,0 +1,10 @@
+{
+  "getInstalledPackages > execute npm ls": {
+    "spawnCommand": {
+      "command: npm, args: --json :: ls :: --depth=0": {
+        "stderr": "",
+        "stdout": "{}\n"
+      }
+    }
+  }
+}
