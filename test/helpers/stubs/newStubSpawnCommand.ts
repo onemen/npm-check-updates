@@ -67,33 +67,12 @@ const generalActions = async (ctx: SpawnCtx) => {
 /** cache handler */
 const generalCache = async (ctx: SpawnCtx) => {
   const { cache, key, original, raw } = ctx
-  const entry = await cache?.getOrSet('spawnCommand', key, async () => {
-    try {
-      const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
-      const result = await original(rawCommand, rawArgs, spawnPleaseOptions, spawnOptions)
-      if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
-      if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
-      return result
-    } catch (err: any) {
-      return {
-        _isError: true,
-        message: sanitizeAndSerialize(err.message || err.toString()),
-        stderr: sanitizeAndSerialize(err.stderr || ''),
-        exitCode: err.exitCode ?? 1,
-      }
-    }
+  return await cache?.getOrSet('spawnCommand', key, async () => {
+    const result = await original(...raw)
+    if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
+    if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
+    return result
   })
-
-  // --- Replay Response Handling ---
-  if (entry?._isError) {
-    const err = Object.assign(new Error(entry.message), {
-      stderr: entry.stderr,
-      exitCode: entry.exitCode,
-    })
-    throw err
-  }
-
-  return entry
 }
 
 export const newStubSpawnCommand = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
