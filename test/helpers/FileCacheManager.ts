@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
 import { registerStub } from './stubRegistry'
-import { newStubGetGitTags } from './stubs/newStubGetGitTags'
-import { newStubSpawnCommand } from './stubs/newStubSpawnCommand'
+import { stubGetGitTags } from './stubs/stubGetGitTags'
+import { stubSpawnCommand } from './stubs/stubSpawnCommand'
 import { sanitizeAndSerialize, sortObjectDeep } from './stubs/utils'
 import { getFullTestName } from './testNameStore'
 
@@ -176,6 +176,6 @@ export class FileCacheManager {
   }
 
   public static bootstrap() {
-    this.registerLifecycle([newStubSpawnCommand, newStubGetGitTags])
+    this.registerLifecycle([stubSpawnCommand, stubGetGitTags])
   }
 }

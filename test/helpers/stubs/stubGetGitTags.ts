@@ -1,40 +1,16 @@
 import { gitApi } from '../../../src/package-managers/gitTags'
 import { type FileCacheManager } from '../FileCacheManager'
-import { sanitizeAndSerialize } from './utils'
+import { type DefaultCtx, createStub } from './genericStubFactory'
 
-/** stub factory for getGitTags */
-export function stubGetGitTags() {
-  return {
-    name: 'getGitTags',
-    setupMock(cache: FileCacheManager) {
-      const original = gitApi.getGitTags
+export type GitTagsCtx = DefaultCtx<typeof gitApi.getGitTags, FileCacheManager>
 
-      vi.spyOn(gitApi, 'getGitTags').mockImplementation(async (url: string) => {
-        const entry = await cache.getOrSet('getGitTags', url, async () => {
-          try {
-            // await here to make sure we catch the error
-            return await original(url)
-          } catch (err: any) {
-            return {
-              _isError: true,
-              message: sanitizeAndSerialize(err.message || err.toString()),
-              stderr: sanitizeAndSerialize(err.stderr || ''),
-              exitCode: err.exitCode ?? 1,
-            }
-          }
-        })
-
-        // --- Replay Response Handling ---
-        if (entry?._isError) {
-          const err = Object.assign(new Error(entry.message), {
-            stderr: entry.stderr,
-            exitCode: entry.exitCode,
-          })
-          throw err
-        }
-
-        return entry
-      })
-    },
-  }
+/** cache handler */
+const generalCache = async (ctx: GitTagsCtx) => {
+  const { cache, original } = ctx
+  const [url] = ctx.raw
+  return cache?.getOrSet('getGitTags', url, async () => await original(url))
 }
+
+export const stubGetGitTags = createStub(gitApi.getGitTags, gitApi, 'getGitTags')
+
+stubGetGitTags.use(generalCache)

@@ -10,7 +10,7 @@ import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import { getStub } from './helpers/stubRegistry'
 import stubVersions from './helpers/stubVersions'
-import { mockSpawn, newDoctorActions } from './helpers/stubs/newStubDoctor'
+import { doctorActions, mockSpawn } from './helpers/stubs/stubDoctor'
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
@@ -26,7 +26,7 @@ describe('doctor', function () {
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
     const spawnStub = getStub('spawnCommand')
-    spawnStub.useFirst(newDoctorActions)
+    spawnStub.useFirst(doctorActions)
     pmSpawn = mockSpawn()
   })
 
