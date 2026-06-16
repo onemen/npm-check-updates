@@ -5,7 +5,7 @@ import { stubGetGitTags } from './stubs/stubGetGitTags'
 import { registerStub } from './stubs/stubRegistry'
 import { stubSpawnCommand } from './stubs/stubSpawnCommand'
 import { sortObjectDeep } from './stubs/utils'
-import { getFullTestName } from './testNameStore'
+import { getFullTestName, getOutputHeader } from './testNameStore'
 
 /** */
 export class FileCacheManager {
@@ -61,6 +61,9 @@ export class FileCacheManager {
   /** Retrieves or sets keys using getTestName() smoothly at runtime */
   public async getOrSet(stubName: string, key: string, fallbackExecution: () => any): Promise<any> {
     const testName = getFullTestName()
+    const header = getOutputHeader()
+
+    // console.log('NCU_DEBUG: testName', { header, testName })
 
     const invocationPath = `${testName}::${stubName}::${key}`
     this.invokedPaths.add(invocationPath)
@@ -78,6 +81,8 @@ export class FileCacheManager {
       return testSpace[key]
     }
 
+    // console.log('NCU_DEBUG: fallbackExecution', { header, testName, stubName, key })
+
     const result = await fallbackExecution()
     testSpace[key] = result
     return result
@@ -89,6 +94,13 @@ export class FileCacheManager {
     if (!this.cacheFilePath) return
 
     const validTests = this.getValidTestNames(file.tasks)
+
+    // const header = getOutputHeader()
+    // console.log('this.invokedPaths', this.invokedPaths)
+    // if (Object.keys(this.data).length > this.invokedPaths.size) {
+    //   console.log(validTests.size, this.invokedPaths.size, Object.keys(this.data).length)
+    // }
+    const count = Object.keys(this.data).length
 
     // Prune orphaned test entries and unused keys.
     for (const testName of Object.keys(this.data)) {
@@ -105,22 +117,28 @@ export class FileCacheManager {
           const stubSpace = testData[stubName]
           for (const inputKey of Object.keys(stubSpace)) {
             if (!this.invokedPaths.has(`${testName}::${stubName}::${inputKey}`)) {
+              // console.log('delete stubSpace[inputKey]', inputKey)
               delete stubSpace[inputKey]
             }
           }
           if (Object.keys(stubSpace).length === 0) {
+            // console.log('delete testData[stubName]', stubName)
             delete testData[stubName]
           }
         }
       }
 
       if (Object.keys(testData).length === 0) {
+        // console.log('delete testData[stubName]', testName)
         delete this.data[testName]
       }
     }
 
+    if (count) console.log('after Prune', count - Object.keys(this.data).length)
+
     if (Object.keys(this.data).length === 0) {
       if (fs.existsSync(this.cacheFilePath)) {
+        // console.log('delete file', this.cacheFilePath)
         try {
           await fs.promises.unlink(this.cacheFilePath)
         } catch (err) {}
@@ -133,6 +151,8 @@ export class FileCacheManager {
     // Ensure trailing newline
     const newContent = JSON.stringify(sortedCache, null, 2) + '\n'
     if (newContent !== this.initialContent) {
+      // console.log('save file ', this.cacheFilePath)
+
       await fs.promises.mkdir(path.dirname(this.cacheFilePath), { recursive: true })
       await fs.promises.writeFile(this.cacheFilePath, newContent)
     }

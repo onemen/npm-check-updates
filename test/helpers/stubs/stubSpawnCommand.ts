@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import * as mod from '../../../src/lib/spawnCommand'
-import { type DefaultCtx } from '../../types/stubsTypes'
+import type spawnPleaseDefault from 'spawn-please'
+import { type BaseSpawnCtx, type SpawnCtx } from '../../types/stubsTypes'
+import { type FileCacheManager } from '../FileCacheManager'
 import { createStub } from './genericStubFactory'
 import {
   type PackageManager,
@@ -11,31 +12,11 @@ import {
   sanitizeAndSerialize,
 } from './utils'
 
-export type BaseSpawnCtx = DefaultCtx<typeof mod.spawnCommand>
-
-export type SpawnCtx = BaseSpawnCtx & {
-  command: string
-  args: string[]
-  key: string
-}
-
 /** SpawnCommand context builder */
 export const buildSpawnContext = ({ raw, original, cache }: BaseSpawnCtx): SpawnCtx => {
-  const [rawCommand, rawArgs, , spawnOptions] = raw
-
   // throw if we are missing cwd in spawnOptions
-  ensureChildProcessCwd(rawCommand, rawArgs, spawnOptions)
-
-  const { command, args, key } = normalizeCommand(rawCommand, rawArgs)
-
-  return {
-    raw,
-    original,
-    command,
-    args,
-    key,
-    cache,
-  }
+  ensureChildProcessCwd(...raw)
+  return { raw, original, cache, ...normalizeCommand(...raw) }
 }
 
 /** mock install command for tests  */
@@ -97,7 +78,22 @@ const generalCache = async (ctx: SpawnCtx) => {
   return entry
 }
 
-export const stubSpawnCommand = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
+vi.mock('spawn-please', async importOriginal => {
+  const actual = await importOriginal<Record<string, any>>()
+  return { ...actual }
+})
+
+const spawnModuleNamespace: Record<string, any> = await import('spawn-please')
+const actualModule = await vi.importActual<Record<string, any>>('spawn-please')
+const originalSpawn = actualModule.default as typeof spawnPleaseDefault
+
+export const stubSpawnCommand = createStub<typeof spawnPleaseDefault, FileCacheManager, SpawnCtx>(
+  originalSpawn,
+  spawnModuleNamespace,
+  'default',
+  buildSpawnContext,
+  'spawnCommand',
+)
 
 stubSpawnCommand.use(generalActions)
 stubSpawnCommand.use(generalCache)
