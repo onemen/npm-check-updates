@@ -9,7 +9,9 @@ export type GitTagsCtx = DefaultCtx<typeof gitApi.getGitTags, FileCacheManager>
 const generalCache = async (ctx: GitTagsCtx) => {
   const { cache, original } = ctx
   const [url] = ctx.raw
-  return cache?.getOrSet('getGitTags', url, async () => await original(url))
+  return await cache?.getOrSet('getGitTags', url, async () => {
+    return await original(url)
+  })
 }
 
 export const stubGetGitTags = createStub(gitApi.getGitTags, gitApi, 'getGitTags')

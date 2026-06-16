@@ -77,7 +77,10 @@ export class FileCacheManager {
     if (!isRegenerate && key in testSpace) {
       const entry = testSpace[key]
       if (entry && entry._isError) {
-        const err = Object.assign(new Error(entry.message), entry.meta)
+        const err = Object.assign(new Error(entry.message), {
+          stderr: entry.stderr,
+          exitCode: entry.exitCode,
+        })
         throw err
       }
       return entry as T

@@ -49,12 +49,16 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
           ? buildContext({ raw, original: realOriginal, cache })
           : ({ raw, original: realOriginal, cache } as DefaultCtx<F, Cache> as Ctx)
 
+        // console.log('NVU_DEBUG: before handlers', raw[1] ? { command: raw[0], args: raw[1] } : { url: raw[0] })
+
         for (const handler of this.handlers) {
           const result = await handler(ctx)
+          // console.log('NVU_DEBUG: result', result)
           if (result !== undefined) return result
         }
 
-        // Now raw is perfectly flat, spreading it works seamlessly
+        // console.log('NVU_DEBUG: before original', { command: raw[0], args: raw[1] })
+
         return await realOriginal(...raw)
       }
 

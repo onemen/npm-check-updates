@@ -37,6 +37,8 @@ export const doctorActions = async (ctx: SpawnCtx) => {
   const { command, args, raw } = ctx
   const [_command, _args, spawnPleaseOptions, spawnOptions] = raw
 
+  // console.log('NVU_DEBUG:', { command: raw[0], args: raw[1] })
+
   const cwd = spawnOptions?.cwd?.toString()
   if (!cwd) {
     throw new Error(`Mock execution failed: 'options.cwd' is required for command '${args.join(' ')}'`)
