@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
+import { registerStub } from './stubRegistry'
 import { newStubGetGitTags } from './stubs/newStubGetGitTags'
 import { newStubSpawnCommand } from './stubs/newStubSpawnCommand'
 import { sanitizeAndSerialize, sortObjectDeep } from './stubs/utils'
@@ -45,6 +46,7 @@ export class FileCacheManager {
 
       for (const stub of stubs) {
         stub.setupMock(manager)
+        registerStub(stub.key, stub)
       }
     })
 

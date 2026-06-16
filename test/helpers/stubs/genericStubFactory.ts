@@ -38,10 +38,16 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
   type Ret = Awaited<ReturnType<F>>
 
   return {
+    key: spyKey,
+
     handlers: [] as StubHandler<Ctx, F>[],
 
     use(handler: StubHandler<Ctx, F>) {
       this.handlers.push(handler)
+    },
+
+    useFirst(handler: StubHandler<Ctx, F>) {
+      this.handlers.unshift(handler)
     },
 
     setupMock(cache?: Cache) {

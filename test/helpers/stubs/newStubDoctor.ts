@@ -1,10 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pm } from '../../../src/lib/doctor'
-import * as mod from '../../../src/lib/spawnCommand'
 import { stripRange } from '../../../src/lib/version-util'
-import { createStub } from './genericStubFactory'
-import { type SpawnCtx, buildSpawnContext } from './newStubSpawnCommand'
+import { type SpawnCtx } from './newStubSpawnCommand'
 import { type PackageManager, normalizeCommand, packageManagerLockfiles } from './utils'
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
@@ -35,12 +33,9 @@ const installedVersionsMap = new Map<string, string>()
  *
  * this function it triggered by stubSpawnCommand.action
  */
-// export async function doctorActions(command: string, args: string[], spawnOptions: any, _raw: any, _original: any) {
-// console.error('NCU_DEBUG:', 'setupMock', ctx)
-
 export const newDoctorActions = async (ctx: SpawnCtx) => {
   const { command, args, raw } = ctx
-  const [, , spawnPleaseOptions, spawnOptions] = raw
+  const [_command, _args, spawnPleaseOptions, spawnOptions] = raw
 
   const cwd = spawnOptions?.cwd?.toString()
   if (!cwd) {
@@ -149,14 +144,4 @@ export function mockSpawn() {
 
     return originalSpawn(command, args, options, spawnOptions)
   })
-}
-
-// call createStub at the top level to make sure it mock spawnCommand before
-// the general mock from FileCacheManager
-const doctorStub = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
-
-/** stub spawnCommand for doctor tests  */
-export function bootstrapDoctorStub() {
-  doctorStub.use(newDoctorActions)
-  doctorStub.setupMock()
 }

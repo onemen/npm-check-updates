@@ -8,8 +8,9 @@ import { pm } from '../src/lib/doctor'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
+import { getStub } from './helpers/stubRegistry'
 import stubVersions from './helpers/stubVersions'
-import { bootstrapDoctorStub, mockSpawn } from './helpers/stubs/newStubDoctor'
+import { mockSpawn, newDoctorActions } from './helpers/stubs/newStubDoctor'
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
@@ -24,8 +25,9 @@ describe('doctor', function () {
 
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
+    const spawnStub = getStub('spawnCommand')
+    spawnStub.useFirst(newDoctorActions)
     pmSpawn = mockSpawn()
-    bootstrapDoctorStub()
   })
 
   afterAll(async () => {

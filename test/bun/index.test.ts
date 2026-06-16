@@ -3,8 +3,9 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
 import { testFail, testPass } from '../helpers/doctorHelpers'
+import { getStub } from '../helpers/stubRegistry'
 import stubVersions from '../helpers/stubVersions'
-import { bootstrapDoctorStub, mockSpawn } from '../helpers/stubs/newStubDoctor'
+import { mockSpawn, newDoctorActions } from '../helpers/stubs/newStubDoctor'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -55,7 +56,8 @@ describe('bun', function () {
 
   describe('doctor', function () {
     beforeAll(async () => {
-      bootstrapDoctorStub()
+      const spawnStub = getStub('spawnCommand')
+      spawnStub.useFirst(newDoctorActions)
       mockSpawn()
     })
 
