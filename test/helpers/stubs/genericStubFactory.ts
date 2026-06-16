@@ -1,31 +1,28 @@
 // import { type FileCacheManager } from '../FileCacheManager'
+import { type FileCacheManager } from '../FileCacheManager'
 
 // BuildContext: transforms raw args → typed context
-export type ContextBuilder<F extends (...args: any) => any, Cache, Ctx> = (input: {
-  raw: Parameters<F>
-  original: F
-  cache: Cache | undefined
-}) => Ctx
-
-export type DefaultCtx<F extends (...args: any) => any, Cache> = {
+export type DefaultCtx<F extends (...args: any) => any, Cache = FileCacheManager> = {
   raw: Parameters<F>
   original: F
   cache: Cache | undefined
 }
 
+export type ContextBuilder<F extends (...args: any) => any, Cache, Ctx> = (input: DefaultCtx<F, Cache>) => Ctx
+
 export type StubHandler<Ctx, F extends (...args: any) => any> = (
   ctx: Ctx,
-) => ReturnType<F> | undefined | Promise<ReturnType<F> | undefined>
+) => Awaited<ReturnType<F>> | undefined | Promise<Awaited<ReturnType<F>> | undefined>
 
 /** Generic stub factory */
-export function createStub<F extends (...args: any) => any, Cache, Ctx = DefaultCtx<F, Cache>>(
+export function createStub<F extends (...args: any) => any, Cache = FileCacheManager, Ctx = DefaultCtx<F, Cache>>(
   original: F,
   spyTarget: Record<string | number, any>,
   spyKey: string | number,
   buildContext?: ContextBuilder<F, Cache, Ctx>,
 ) {
   type Args = Parameters<F>
-  type Ret = ReturnType<F>
+  type Ret = Awaited<ReturnType<F>>
 
   return {
     handlers: [] as StubHandler<Ctx, F>[],
@@ -59,7 +56,7 @@ export function createStub<F extends (...args: any) => any, Cache, Ctx = Default
 
         console.log('NCU_DEBUG:', 'run original')
 
-        return original(...raw)
+        return await original(...raw)
       }
 
       vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: any[]) => impl(raw as Args)) as any)

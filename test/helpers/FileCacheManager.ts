@@ -3,17 +3,8 @@ import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
 import { newStubGetGitTags } from './stubs/newStubGetGitTags'
 import { newStubSpawnCommand } from './stubs/newStubSpawnCommand'
-import { stubGetGitTags } from './stubs/stubGetGitTags'
-import { stubSpawnCommand } from './stubs/stubSpawnCommand'
 import { sortObjectDeep } from './stubs/utils'
 import { getFullTestName } from './testNameStore'
-
-// export declare function StubRegistration(): {
-//   name: string
-//   actions: (...args: any) => Promise<any>
-//   cache: (...args: any) => Promise<any>
-//   setupMock: (cache: FileCacheManager) => void
-// }
 
 /** */
 export class FileCacheManager {
@@ -53,12 +44,7 @@ export class FileCacheManager {
       }
 
       for (const stub of stubs) {
-        // TODO: fix this
-        if (typeof stub === 'function') {
-          stub().setupMock(manager)
-        } else {
-          stub.setupMock(manager)
-        }
+        stub.setupMock(manager)
       }
     })
 
@@ -173,7 +159,5 @@ export class FileCacheManager {
 
   public static bootstrap() {
     this.registerLifecycle([newStubSpawnCommand, newStubGetGitTags])
-    // this.registerLifecycle([newStubGetGitTags])
-    // this.registerLifecycle([stubSpawnCommand, stubGetGitTags])
   }
 }

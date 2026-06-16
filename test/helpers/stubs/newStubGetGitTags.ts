@@ -35,10 +35,6 @@ const generalCache = async (ctx: GitTagsCtx) => {
   return entry
 }
 
-export const newStubGetGitTags = createStub<typeof gitApi.getGitTags, FileCacheManager>(
-  gitApi.getGitTags,
-  gitApi,
-  'getGitTags',
-)
+export const newStubGetGitTags = createStub(gitApi.getGitTags, gitApi, 'getGitTags')
 
 newStubGetGitTags.use(generalCache)

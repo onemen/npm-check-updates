@@ -1,42 +1,20 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import * as mod from '../../../src/lib/spawnCommand'
-import { type FileCacheManager } from '../FileCacheManager'
 import { type DefaultCtx, createStub } from './genericStubFactory'
+import { type PackageManager, packageManagerLockfiles } from './newStubDoctor'
 import { ensureChildProcessCwd, normalizeCommand, sanitizeAndSerialize } from './utils'
 
-// type Fn = (...args: any) => any
+export type BaseSpawnCtx = DefaultCtx<typeof mod.spawnCommand>
 
-// type SpawnRaw<F extends Fn> = {
-//   rawCommand: Parameters<F>[0]
-//   rawArgs: Parameters<F>[1]
-//   spawnPleaseOptions: Parameters<F>[2]
-//   spawnOptions: Parameters<F>[3]
-// }
-
-// // Typed context for spawnCommand
-// export type SpawnCtx<F extends Fn, R = SpawnRaw<F>> = {
-//   raw: R
-//   original: F
-//   command: string
-//   args: string[]
-//   key: string
-//   cache: any
-// }
-
-export type SpawnCtx = DefaultCtx<typeof mod.spawnCommand, FileCacheManager> & {
+export type SpawnCtx = BaseSpawnCtx & {
   command: string
   args: string[]
   key: string
 }
 
 /** SpawnCommand context builder */
-export const buildSpawnContext = ({
-  raw,
-  original,
-  cache,
-}: DefaultCtx<typeof mod.spawnCommand, FileCacheManager>): SpawnCtx => {
-  // const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
+export const buildSpawnContext = ({ raw, original, cache }: BaseSpawnCtx): SpawnCtx => {
   const [rawCommand, rawArgs, , spawnOptions] = raw
 
   // throw if we are missing cwd in spawnOptions
@@ -45,7 +23,6 @@ export const buildSpawnContext = ({
   const { command, args, key } = normalizeCommand(rawCommand, rawArgs)
 
   return {
-    // raw: { rawCommand, rawArgs, spawnPleaseOptions, spawnOptions },
     raw,
     original,
     command,
@@ -55,20 +32,11 @@ export const buildSpawnContext = ({
   }
 }
 
-// TODO: move to utils
-const lockfiles: Record<string, string> = {
-  npm: 'package-lock.json',
-  yarn: 'yarn.lock',
-  pnpm: 'pnpm-lock.yaml',
-  bun: 'bun.lock',
-}
-
 /** mock install command for tests  */
-// async function mockInstall(command: string, args: string[], spawnOptions?: SpawnArgs[3]) {
 const generalActions = async (ctx: SpawnCtx) => {
   const { command, args, raw } = ctx
 
-  const validLockFile = lockfiles[command]
+  const validLockFile = packageManagerLockfiles[command as PackageManager]
   const isInstall = validLockFile && args.length === 1 && args[0] === 'install'
 
   if (isInstall) {
@@ -92,7 +60,6 @@ const generalActions = async (ctx: SpawnCtx) => {
 }
 
 /** cache handler */
-// async function handleCache(cache: FileCacheManager, key: string, originalArgs: SpawnArgs): SpawnReturn {
 const generalCache = async (ctx: SpawnCtx) => {
   const { cache, key, original, raw } = ctx
   const entry = await cache?.getOrSet('spawnCommand', key, async () => {
@@ -124,12 +91,7 @@ const generalCache = async (ctx: SpawnCtx) => {
   return entry
 }
 
-export const newStubSpawnCommand = createStub<typeof mod.spawnCommand, FileCacheManager>(
-  mod.spawnCommand,
-  mod,
-  'spawnCommand',
-  buildSpawnContext,
-)
+export const newStubSpawnCommand = createStub(mod.spawnCommand, mod, 'spawnCommand', buildSpawnContext)
 
 newStubSpawnCommand.use(generalActions)
 newStubSpawnCommand.use(generalCache)

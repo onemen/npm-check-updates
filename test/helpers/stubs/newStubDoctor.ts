@@ -9,9 +9,9 @@ import { normalizeCommand } from './utils'
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
 
-type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
+export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
 
-const packageManagerLockfiles: Record<PackageManager, string> = {
+export const packageManagerLockfiles: Record<PackageManager, string> = {
   npm: 'package-lock.json',
   yarn: 'yarn.lock',
   pnpm: 'pnpm-lock.yaml',
@@ -51,12 +51,12 @@ export const newDoctorActions = async (ctx: SpawnCtx) => {
   const { command, args, original, raw } = ctx
   const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
 
-  const targetCwd = spawnOptions?.cwd?.toString()
-  if (!targetCwd) {
+  const cwd = spawnOptions?.cwd?.toString()
+  if (!cwd) {
     throw new Error(`Mock execution failed: 'options.cwd' is required for command '${args.join(' ')}'`)
   }
 
-  const pkgJson = await getPackageJson(targetCwd)
+  const pkgJson = await getPackageJson(cwd)
   const isInstall = args.includes('install') || args.includes('add')
 
   // console.error('NCU_DEBUG:', command, args, isInstall)
@@ -90,24 +90,21 @@ export const newDoctorActions = async (ctx: SpawnCtx) => {
 
     // Only save to our memory state if we actually tracked a version change for our target
     if (detectedVersion) {
-      installedVersionsMap.set(targetCwd, detectedVersion)
+      installedVersionsMap.set(cwd, detectedVersion)
     }
 
     // Create the empty lockfile
     const lockFileName = packageManagerLockfiles[command as PackageManager]
-    const lockfilePath = path.join(targetCwd, lockFileName)
+    const lockfilePath = path.join(cwd, lockFileName)
     await fs.writeFile(lockfilePath, '', 'utf8')
 
-    // currently doctor run prepare script manually when installed used with --no-save
+    // doctor run prepare script manually when installed used with --no-save
     // this code will mock all other cases
     if (!args.includes('--no-save') && (command === 'npm' || command === 'pnpm') && pkgJson?.scripts?.prepare) {
-      // console.error('NCU_DEBUG: before run prepare', command, args, pkgJson)
-      // console.error('NCU_DEBUG: before run prepare', { spawnPleaseOptions, spawnOptions })
-      // throw new Error('ZZZZZZZZZZZZZZZZZZZZZZ')
-      // const result = await pm.run(['run', 'prepare'], {}, true, { spawnOptions, spawnPleaseOptions })
-      // console.error('NCU_DEBUG: prepare result', { result })
-      // return result
-      const stdout = await pm.run(['run', 'prepare'], {}, false, { spawnOptions, spawnPleaseOptions })
+      const stdout = await pm.run(['run', 'prepare'], {}, false, {
+        spawnOptions: { cwd },
+        spawnPleaseOptions,
+      })
       return { stdout, stderr: '' }
     }
 
@@ -123,7 +120,7 @@ export const newDoctorActions = async (ctx: SpawnCtx) => {
       return { stdout: 'Skipping unhandled test runner script\n', stderr: '' }
     }
 
-    const version = installedVersionsMap.get(targetCwd) || '1.0.0'
+    const version = installedVersionsMap.get(cwd) || '1.0.0'
 
     // pass on < 2
     // No need to print to the terminal when the test is successful.
