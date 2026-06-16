@@ -3,9 +3,9 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
 import { testFail, testPass } from '../helpers/doctorHelpers'
-import { getStub } from '../helpers/stubRegistry'
 import stubVersions from '../helpers/stubVersions'
 import { doctorActions, mockSpawn } from '../helpers/stubs/stubDoctor'
+import { getStub } from '../helpers/stubs/stubRegistry'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 

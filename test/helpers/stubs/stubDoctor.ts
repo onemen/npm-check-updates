@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pm } from '../../../src/lib/doctor'
 import { stripRange } from '../../../src/lib/version-util'
-import { type SpawnCtx } from './stubSpawnCommand'
+import { type SpawnCtx } from '../../types/stubsTypes'
 import { type PackageManager, normalizeCommand, packageManagerLockfiles } from './utils'
 
 const TARGET_PACKAGE = 'ncu-test-return-version'

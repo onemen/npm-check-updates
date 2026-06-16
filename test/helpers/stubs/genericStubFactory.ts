@@ -1,17 +1,5 @@
+import type { ContextBuilder, DefaultCtx, MockSpyInstance, StubHandler } from '../../types/stubsTypes'
 import { type FileCacheManager } from '../FileCacheManager'
-
-// BuildContext: transforms raw args → typed context
-export type DefaultCtx<F extends (...args: any) => any, Cache = FileCacheManager> = {
-  raw: Parameters<F>
-  original: F
-  cache: Cache | undefined
-}
-
-export type ContextBuilder<F extends (...args: any) => any, Cache, Ctx> = (input: DefaultCtx<F, Cache>) => Ctx
-
-export type StubHandler<Ctx, F extends (...args: any) => any> = (
-  ctx: Ctx,
-) => Awaited<ReturnType<F>> | undefined | Promise<Awaited<ReturnType<F>> | undefined>
 
 /** make sure we get the original function */
 function ensureNotMock(fn: any, key: string | number | symbol) {
@@ -29,15 +17,18 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
   spyTarget: Record<string | number, any>,
   spyKey: string | number,
   buildContext?: ContextBuilder<F, Cache, Ctx>,
+  spyName: string = spyKey.toString(),
 ) {
   ensureNotMock(original, spyKey)
+
   const realOriginal = original
+  let spyInstance: MockSpyInstance | null = null
 
   type Args = Parameters<F>
   type Ret = Awaited<ReturnType<F>>
 
   return {
-    key: spyKey,
+    key: spyName,
 
     handlers: [] as StubHandler<Ctx, F>[],
 
@@ -50,6 +41,8 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
     },
 
     setupMock(cache?: Cache) {
+      if (spyInstance) return
+
       /** spy implementation */
       const impl = async (raw: Args): Promise<Ret> => {
         const ctx: Ctx = buildContext
@@ -61,10 +54,19 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
           if (result !== undefined) return result
         }
 
+        // Now raw is perfectly flat, spreading it works seamlessly
         return await realOriginal(...raw)
       }
 
-      vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: Args) => impl(raw)) as F)
+      // spyInstance = vi.spyOn(spyTarget, spyKey as any).mockImplementation(impl as any)
+      spyInstance = vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: Args) => impl(raw)) as F)
+    },
+
+    restore() {
+      if (spyInstance) {
+        spyInstance.mockRestore()
+        spyInstance = null
+      }
     },
   }
 }

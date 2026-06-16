@@ -58,7 +58,7 @@ export function sanitizeAndSerialize(value: string): string {
  * Normalizes a command by stripping OS-specific executable extensions (.cmd, .exe, .bat)
  * and replace absolute developer paths in arguments to safe forward-slashed placeholders
  */
-export function normalizeCommand(command: string, args: string[]) {
+export function normalizeCommand(command: string, args: string[] = [], _spawnPleaseOptions?: any, _options?: any) {
   const normalized = { command: command.replace(/\.(cmd|exe|bat)$/i, ''), args: args.map(serializeTokens), key: '' }
   /** make readable cache key */
   const quoteIfNeeded = (s: string) => (s.includes(' ') ? JSON.stringify(s) : s)
@@ -113,7 +113,7 @@ export const SANDBOX_CWD_ERROR = Symbol('SANDBOX_CWD_ERROR')
  * This is required because Vitest workers cannot change the real OS cwd,
  * and process.cwd() is mocked only inside the worker, not in child processes.
  */
-export function ensureChildProcessCwd(cmd: string, args?: string[], options?: any) {
+export function ensureChildProcessCwd(cmd: string, args?: string[], _spawnPleaseOptions?: any, options?: any) {
   if (options?.cwd) {
     return
   }

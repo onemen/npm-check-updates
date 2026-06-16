@@ -8,9 +8,9 @@ import { pm } from '../src/lib/doctor'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
-import { getStub } from './helpers/stubRegistry'
 import stubVersions from './helpers/stubVersions'
 import { doctorActions, mockSpawn } from './helpers/stubs/stubDoctor'
+import { getStub } from './helpers/stubs/stubRegistry'
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
