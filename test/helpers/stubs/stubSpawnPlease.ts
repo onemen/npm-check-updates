@@ -28,14 +28,11 @@ const installHandler = async (ctx: SpawnCtx) => {
     const cwd = raw[3]?.cwd?.toString()
     if (cwd) {
       // Create the empty lockfile and empty node_module
-      await fs.promises.mkdir(path.join(cwd, 'node_modules'), { recursive: true })
+      fs.mkdirSync(path.join(cwd, 'node_modules'), { recursive: true })
 
       const lockfilePath = path.join(cwd, validLockFile)
-      try {
-        await fs.promises.access(lockfilePath)
-        // File exists — do nothing
-      } catch {
-        await fs.promises.writeFile(lockfilePath, '', 'utf8')
+      if (!fs.existsSync(lockfilePath)) {
+        fs.writeFileSync(lockfilePath, '', 'utf8')
       }
     }
     return { stdout: `stubSpawnCommand for '${command} install' finished successfully.`, stderr: '' }
@@ -47,7 +44,7 @@ const installHandler = async (ctx: SpawnCtx) => {
 /** cache handler */
 const cacheHandler = async (ctx: SpawnCtx) => {
   const { cache, key, original, raw } = ctx
-  return await cache?.getOrSet('spawnPlease', key, async () => {
+  return cache?.getOrSet('spawnPlease', key, async () => {
     const result = await original(...raw)
     if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
     if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
