@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { pm } from '../../../src/lib/doctor'
+import spawn from 'spawn-please'
 import { stripRange } from '../../../src/lib/version-util'
 import { type SpawnCtx } from '../../types/stubsTypes'
-import { type PackageManager, normalizeCommand, packageManagerLockfiles } from './utils'
+import { type PackageManager, packageManagerLockfiles } from './utils'
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
 
@@ -35,9 +35,7 @@ const installedVersionsMap = new Map<string, string>()
  */
 export const doctorActions = async (ctx: SpawnCtx) => {
   const { command, args, raw } = ctx
-  const [_command, _args, spawnPleaseOptions, spawnOptions] = raw
-
-  const cwd = spawnOptions?.cwd?.toString()
+  const cwd = raw[3]?.cwd?.toString()
   if (!cwd) {
     throw new Error(`Mock execution failed: 'options.cwd' is required for command '${args.join(' ')}'`)
   }
@@ -85,11 +83,7 @@ export const doctorActions = async (ctx: SpawnCtx) => {
     // doctor run prepare script manually when installed used with --no-save
     // this code will mock all other cases
     if (!args.includes('--no-save') && (command === 'npm' || command === 'pnpm') && pkgJson?.scripts?.prepare) {
-      const stdout = await pm.run(['run', 'prepare'], {}, false, {
-        spawnOptions: { cwd },
-        spawnPleaseOptions,
-      })
-      return { stdout, stderr: '' }
+      return spawn(command, ['run', 'prepare'], {}, { cwd })
     }
 
     return { stdout: 'mocked success output', stderr: '' }
@@ -116,30 +110,21 @@ export const doctorActions = async (ctx: SpawnCtx) => {
     return { stdout: `mocked success output from ${isTest ? 'test' : 'prepare'} script`, stderr: '' }
   }
 
+  const inputStr = JSON.stringify({ command, args })
+  // handle run script
+  switch (inputStr) {
+    case '{"command":"npm","args":["run","myinstall"]}':
+      // "myinstall": "echo 'Install Success'",
+      return { stdout: 'Install Success', stderr: '' }
+    case '{"command":"npm","args":["run","mytest"]}':
+      // "mytest": "echo Success"
+      return { stdout: 'Success', stderr: '' }
+    case '{"command":"node","args":["<ROOT>/echo.js","123 456"]}':
+      // node echo.js "123 456"
+      // echo.js -> console.log(process.argv)
+      console.log('simulated echo.js output:', args.at(-1))
+      return { stdout: 'Success', stderr: '' }
+  }
+
   return undefined
-}
-
-/** mock spawn for doctorTest and doctorInstall options  */
-export function mockSpawn() {
-  const originalSpawn = pm.spawn
-  return vi.spyOn(pm, 'spawn').mockImplementation(async (rawCommand, rawArgs, options, spawnOptions) => {
-    const { command, args } = normalizeCommand(rawCommand, rawArgs ?? [])
-    const inputStr = JSON.stringify({ command, args })
-
-    switch (inputStr) {
-      case '{"command":"npm","args":["run","myinstall"]}':
-        // "myinstall": "echo 'Install Success'",
-        return { stdout: 'Install Success', stderr: '' }
-      case '{"command":"npm","args":["run","mytest"]}':
-        // "mytest": "echo Success"
-        return { stdout: 'Success', stderr: '' }
-      case '{"command":"node","args":["<ROOT>/echo.js","123 456"]}':
-        // node echo.js "123 456"
-        // echo.js -> console.log(process.argv)
-        console.log('simulated echo.js output:', args.at(-1))
-        return { stdout: 'Success', stderr: '' }
-    }
-
-    return originalSpawn(command, args, options, spawnOptions)
-  })
 }

@@ -2,15 +2,16 @@ import fs from 'fs/promises'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
+import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
-import { pm } from '../src/lib/doctor'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-import { doctorActions, mockSpawn } from './helpers/stubs/stubDoctor'
+import { doctorActions } from './helpers/stubs/stubDoctor'
 import { getStub } from './helpers/stubs/stubRegistry'
+import { spawnPleaseSpy } from './helpers/stubs/stubSpawnPlease'
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
@@ -21,13 +22,11 @@ const mockNpmVersions = {
 
 describe('doctor', function () {
   let stub: { mockRestore: () => void }
-  let pmSpawn: ReturnType<typeof mockSpawn>
 
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
     const spawnStub = getStub('spawnPlease')
     spawnStub.useFirst(doctorActions)
-    pmSpawn = mockSpawn()
   })
 
   afterAll(async () => {
@@ -117,9 +116,13 @@ describe('doctor', function () {
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // spawn have been called with the right arguments
-      const [cmd, args = []] = pmSpawn.mock.calls.at(-1)!
-      cmd.should.equal(npmCmd)
-      args.join(' ').should.equal('run myinstall')
+      const [cmd1, args1 = []] = spawnPleaseSpy.mock.calls.at(-2)!
+      cmd1.should.equal(npmCmd)
+      args1.join(' ').should.endsWith('run myinstall')
+      // doctor run test after the custom install
+      const [cmd2, args2 = []] = spawnPleaseSpy.mock.calls.at(-1)!
+      cmd2.should.equal(npmCmd)
+      args2.join(' ').should.endsWith('run test')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -153,9 +156,9 @@ describe('doctor', function () {
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // spawn have been called with the right arguments
-      const [cmd, args = []] = pmSpawn.mock.calls.at(-1)!
+      const [cmd, args = []] = spawnPleaseSpy.mock.calls.at(-1)!
       cmd.should.equal(npmCmd)
-      args.join(' ').should.equal('run mytest')
+      args.join(' ').should.endsWith('run mytest')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -189,10 +192,10 @@ describe('doctor', function () {
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // spawn have been called with the right arguments
-      const [cmd, args = []] = pmSpawn.mock.calls.at(-1)!
+      const [cmd, args = []] = spawnPleaseSpy.mock.calls.at(-1)!
       cmd.should.equal('node')
-      args[0].should.endWith('echo.js')
-      args[1].should.equal('123 456')
+      args[0].should.equal(echoPath)
+      args[1].should.endsWith('123 456')
 
       // stderr should be empty
       stderr.should.equal('')
@@ -245,7 +248,7 @@ else {
       )
 
       // explicitly set packageManager to avoid auto yarn detection
-      await pm.run(['install'], { cwd: tempDir, packageManager: 'npm' })
+      await spawn('npm', ['install'], {}, { cwd: tempDir })
       const { stdout, stderr } = await runNcuCli(['--doctor', '-u', '-p', 'npm'], {
         rejectOnError: false,
         cwd: tempDir,

@@ -63,6 +63,11 @@ export const stubSpawnPlease: SpawnStubManager = new ModuleStubManager(
   buildSpawnContext,
 )
 
+// spy instance for testing
+export const spawnPleaseSpy = vi.fn(async (...args: Parameters<typeof stubSpawnPlease.handleExecution>[0]) =>
+  stubSpawnPlease.handleExecution(args),
+)
+
 vi.mock('spawn-please', async importOriginal => {
   const actual = await importOriginal<any>()
 
@@ -74,8 +79,6 @@ vi.mock('spawn-please', async importOriginal => {
 
   return {
     __esModule: true,
-    // Explicitly call via instance object layout to preserve class scoping context
-    default: async (...args: Parameters<typeof stubSpawnPlease.handleExecution>[0]) =>
-      stubSpawnPlease.handleExecution(args),
+    default: spawnPleaseSpy,
   }
 })

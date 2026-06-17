@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
-import { doctorActions, mockSpawn } from '../helpers/stubs/stubDoctor'
+import { doctorActions } from '../helpers/stubs/stubDoctor'
 import { getStub } from '../helpers/stubs/stubRegistry'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -58,7 +58,6 @@ describe('bun', function () {
     beforeAll(async () => {
       const spawnStub = getStub('spawnPlease')
       spawnStub.useFirst(doctorActions)
-      mockSpawn()
     })
 
     testPass({ packageManager: 'bun' })
