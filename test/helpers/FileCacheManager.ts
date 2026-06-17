@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
 import { registerStub } from './stubs/stubRegistry'
-import { sortObjectDeep } from './stubs/utils'
-import { getFullTestName, getOutputHeader } from './testNameStore'
+import { sanitizeAndSerialize, sortObjectDeep } from './stubs/utils'
+import { getFullTestName } from './testNameStore'
 
 /** */
 export class FileCacheManager {
@@ -13,7 +13,6 @@ export class FileCacheManager {
   private data: Record<string, Record<string, Record<string, any>>> = {}
   /** Tracks which entries were actually used: "testName::stubName::key" */
   private invokedPaths = new Set<string>()
-  private testFullname = ''
 
   // public static registerLifecycle(stubs: StubRegistration[]) {
   public static registerLifecycle(stubs: any[]) {
@@ -49,10 +48,6 @@ export class FileCacheManager {
       }
     })
 
-    beforeEach(context => {
-      manager.testFullname = context.task.fullTestName
-    })
-
     // eslint-disable-next-line no-empty-pattern
     afterAll(async ({}, input) => {
       const file = input as RunnerTestFile
@@ -65,9 +60,8 @@ export class FileCacheManager {
   }
 
   /** Retrieves or sets keys using getTestName() smoothly at runtime */
-  public async getOrSet(stubName: string, key: string, fallbackExecution: () => any): Promise<any> {
+  public async getOrSet<T>(stubName: string, key: string, fallbackExecution: () => Promise<T>): Promise<T> {
     const testName = getFullTestName()
-    const header = getOutputHeader()
 
     const invocationPath = `${testName}::${stubName}::${key}`
     this.invokedPaths.add(invocationPath)
@@ -82,14 +76,31 @@ export class FileCacheManager {
 
     const isRegenerate = process.env.REGENERATE_TEST_CACHE === 'true'
     if (!isRegenerate && key in testSpace) {
-      return testSpace[key]
+      const entry = testSpace[key]
+      if (entry?._isError) {
+        const err = Object.assign(new Error(entry.message), {
+          stderr: entry.stderr,
+          exitCode: entry.exitCode,
+        })
+        throw err
+      }
+      return entry as T
     }
 
-    const result = await fallbackExecution()
-    result.testName = testName
-    result.header = header
-    testSpace[key] = result
-    return result
+    try {
+      const result = await fallbackExecution()
+      testSpace[key] = result
+      return result
+    } catch (err: any) {
+      const serialized = {
+        _isError: true,
+        message: sanitizeAndSerialize(err.message || err.toString()),
+        stderr: sanitizeAndSerialize(err.stderr || ''),
+        exitCode: err.exitCode ?? 1,
+      }
+      testSpace[key] = serialized
+      throw err
+    }
   }
 
   /** Final validation and disk sync loop */
@@ -114,26 +125,22 @@ export class FileCacheManager {
           const stubSpace = testData[stubName]
           for (const inputKey of Object.keys(stubSpace)) {
             if (!this.invokedPaths.has(`${testName}::${stubName}::${inputKey}`)) {
-              // console.log('delete stubSpace[inputKey]', inputKey)
               delete stubSpace[inputKey]
             }
           }
           if (Object.keys(stubSpace).length === 0) {
-            // console.log('delete testData[stubName]', stubName)
             delete testData[stubName]
           }
         }
       }
 
       if (Object.keys(testData).length === 0) {
-        // console.log('delete testData[stubName]', testName)
         delete this.data[testName]
       }
     }
 
     if (Object.keys(this.data).length === 0) {
       if (fs.existsSync(this.cacheFilePath)) {
-        // console.log('delete file', this.cacheFilePath)
         try {
           await fs.promises.unlink(this.cacheFilePath)
         } catch (err) {}
@@ -146,8 +153,6 @@ export class FileCacheManager {
     // Ensure trailing newline
     const newContent = JSON.stringify(sortedCache, null, 2) + '\n'
     if (newContent !== this.initialContent) {
-      // console.log('save file ', this.cacheFilePath)
-
       await fs.promises.mkdir(path.dirname(this.cacheFilePath), { recursive: true })
       await fs.promises.writeFile(this.cacheFilePath, newContent)
     }
