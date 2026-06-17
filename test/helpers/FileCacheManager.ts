@@ -1,9 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
-import { stubGetGitTags } from './stubs/stubGetGitTags'
 import { registerStub } from './stubs/stubRegistry'
-import { stubSpawnCommand } from './stubs/stubSpawnCommand'
 import { sortObjectDeep } from './stubs/utils'
 import { getFullTestName, getOutputHeader } from './testNameStore'
 
@@ -15,6 +13,7 @@ export class FileCacheManager {
   private data: Record<string, Record<string, Record<string, any>>> = {}
   /** Tracks which entries were actually used: "testName::stubName::key" */
   private invokedPaths = new Set<string>()
+  private testFullname = ''
 
   // public static registerLifecycle(stubs: StubRegistration[]) {
   public static registerLifecycle(stubs: any[]) {
@@ -50,6 +49,10 @@ export class FileCacheManager {
       }
     })
 
+    beforeEach(context => {
+      manager.testFullname = context.task.fullTestName
+    })
+
     // eslint-disable-next-line no-empty-pattern
     afterAll(async ({}, input) => {
       const file = input as RunnerTestFile
@@ -63,7 +66,16 @@ export class FileCacheManager {
     const testName = getFullTestName()
     const header = getOutputHeader()
 
-    // console.log('NCU_DEBUG: testName', { header, testName })
+    // if (this.testFullname !== testName) {
+    //   console.log('NCU_DEBUG: testName', { testName, testFullname: this.testFullname })
+    // }
+
+    // const expected = expect.getState().currentTestName
+    // console.log('NCU_DEBUG: CACHE_SANITY_CHECK:', {
+    //   expected,
+    //   fromStore: testName,
+    //   test: expected === testName,
+    // })
 
     const invocationPath = `${testName}::${stubName}::${key}`
     this.invokedPaths.add(invocationPath)
@@ -81,9 +93,11 @@ export class FileCacheManager {
       return testSpace[key]
     }
 
-    // console.log('NCU_DEBUG: fallbackExecution', { header, testName, stubName, key })
+    // console.log('NCU_DEBUG: fallbackExecution', { header, invocationPath, data: this.data[testName] })
 
     const result = await fallbackExecution()
+    result.testName = testName
+    result.header = header
     testSpace[key] = result
     return result
   }
@@ -103,38 +117,38 @@ export class FileCacheManager {
     const count = Object.keys(this.data).length
 
     // Prune orphaned test entries and unused keys.
-    for (const testName of Object.keys(this.data)) {
-      const testInfo = validTests.get(testName)
-      const testData = this.data[testName]
+    // for (const testName of Object.keys(this.data)) {
+    //   const testInfo = validTests.get(testName)
+    //   const testData = this.data[testName]
 
-      if (!testInfo) {
-        delete this.data[testName]
-        continue
-      }
+    //   if (!testInfo) {
+    //     delete this.data[testName]
+    //     continue
+    //   }
 
-      if (testInfo.ran) {
-        for (const stubName of Object.keys(testData)) {
-          const stubSpace = testData[stubName]
-          for (const inputKey of Object.keys(stubSpace)) {
-            if (!this.invokedPaths.has(`${testName}::${stubName}::${inputKey}`)) {
-              // console.log('delete stubSpace[inputKey]', inputKey)
-              delete stubSpace[inputKey]
-            }
-          }
-          if (Object.keys(stubSpace).length === 0) {
-            // console.log('delete testData[stubName]', stubName)
-            delete testData[stubName]
-          }
-        }
-      }
+    //   if (testInfo.ran) {
+    //     for (const stubName of Object.keys(testData)) {
+    //       const stubSpace = testData[stubName]
+    //       for (const inputKey of Object.keys(stubSpace)) {
+    //         if (!this.invokedPaths.has(`${testName}::${stubName}::${inputKey}`)) {
+    //           // console.log('delete stubSpace[inputKey]', inputKey)
+    //           delete stubSpace[inputKey]
+    //         }
+    //       }
+    //       if (Object.keys(stubSpace).length === 0) {
+    //         // console.log('delete testData[stubName]', stubName)
+    //         delete testData[stubName]
+    //       }
+    //     }
+    //   }
 
-      if (Object.keys(testData).length === 0) {
-        // console.log('delete testData[stubName]', testName)
-        delete this.data[testName]
-      }
-    }
+    //   if (Object.keys(testData).length === 0) {
+    //     // console.log('delete testData[stubName]', testName)
+    //     delete this.data[testName]
+    //   }
+    // }
 
-    if (count) console.log('after Prune', count - Object.keys(this.data).length)
+    // if (count) console.log('after Prune', count - Object.keys(this.data).length)
 
     if (Object.keys(this.data).length === 0) {
       if (fs.existsSync(this.cacheFilePath)) {
@@ -177,9 +191,5 @@ export class FileCacheManager {
     }
     traverse(tasks)
     return validTests
-  }
-
-  public static bootstrap() {
-    this.registerLifecycle([stubSpawnCommand, stubGetGitTags])
   }
 }

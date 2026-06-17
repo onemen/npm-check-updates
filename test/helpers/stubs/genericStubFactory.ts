@@ -57,7 +57,7 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
           if (result !== undefined) return result
         }
 
-        // console.log('NVU_DEBUG: before original', { command: raw[0], args: raw[1] })
+        console.log('NVU_DEBUG: before original', raw[1] ? { command: raw[0], args: raw[1] } : { url: raw[0] })
 
         return await realOriginal(...raw)
       }

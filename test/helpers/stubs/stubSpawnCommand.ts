@@ -1,9 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type spawnPleaseDefault from 'spawn-please'
 import { type BaseSpawnCtx, type SpawnCtx } from '../../types/stubsTypes'
-import { type FileCacheManager } from '../FileCacheManager'
-import { createStub } from './genericStubFactory'
+import { ModuleStubManager } from './ModuleStubManager'
 import {
   type PackageManager,
   ensureChildProcessCwd,
@@ -52,9 +50,13 @@ const generalCache = async (ctx: SpawnCtx) => {
   const entry = await cache?.getOrSet('spawnCommand', key, async () => {
     try {
       const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
+      // console.error('NVU_DEBUG: run original', raw[1] ? { command: raw[0], raw: raw[1] } : { url: raw[0] })
       const result = await original(rawCommand, rawArgs, spawnPleaseOptions, spawnOptions)
       if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
       if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
+      // result.testName0 = getFullTestName()
+      // result.header0 = getOutputHeader()
+
       return result
     } catch (err: any) {
       return {
@@ -78,22 +80,41 @@ const generalCache = async (ctx: SpawnCtx) => {
   return entry
 }
 
-vi.mock('spawn-please', async importOriginal => {
-  const actual = await importOriginal<Record<string, any>>()
-  return { ...actual }
-})
+// export let stubSpawnCommand: ModuleStubManager<any, any>
 
-const spawnModuleNamespace: Record<string, any> = await import('spawn-please')
-const actualModule = await vi.importActual<Record<string, any>>('spawn-please')
-const originalSpawn = actualModule.default as typeof spawnPleaseDefault
+// vi.mock('spawn-please', async importOriginal => {
+//   const actual = await importOriginal<any>()
+//   const originalDefault = actual.default || actual
 
-export const stubSpawnCommand = createStub<typeof spawnPleaseDefault, FileCacheManager, SpawnCtx>(
-  originalSpawn,
-  spawnModuleNamespace,
-  'default',
-  buildSpawnContext,
+//   // Perfectly valid without a second parameter!
+//   stubSpawnCommand = new ModuleStubManager('spawnCommand', originalDefault, buildSpawnContext)
+
+//   return {
+//     __esModule: true,
+//     default: async (...args: any[]) => stubSpawnCommand.handleExecution(args),
+//   }
+// })
+
+// Instantiate it immediately as a constant export.
+// It starts with a placeholder function that we will swap later.
+/**
+ *
+ */
+let underlyingSpawn = async (...args: any[]): Promise<any> => {
+  throw new Error('spawn-please was called before it was initialized by vi.mock')
+}
+
+export const stubSpawnCommand = new ModuleStubManager(
   'spawnCommand',
+  async (...args) => underlyingSpawn(...args), // Defer execution to our modifiable pointer
+  buildSpawnContext,
 )
 
-stubSpawnCommand.use(generalActions)
-stubSpawnCommand.use(generalCache)
+/** Export a helper function to let your mock hook up the real implementation safely */
+export function initializeUnderlyingSpawn(realOriginal: any) {
+  underlyingSpawn = realOriginal
+
+  stubSpawnCommand.clearHandlers()
+  stubSpawnCommand.use(generalActions)
+  stubSpawnCommand.use(generalCache)
+}
