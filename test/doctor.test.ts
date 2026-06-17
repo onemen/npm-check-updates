@@ -19,7 +19,7 @@ const mockNpmVersions = {
   'ncu-test-v2': '2.0.0',
 }
 
-describe.skip('doctor', function () {
+describe('doctor', function () {
   let stub: { mockRestore: () => void }
   let pmSpawn: ReturnType<typeof mockSpawn>
 
