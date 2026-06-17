@@ -1,0 +1,36 @@
+{
+  "cache > cache latest versions": {
+    "spawnCommand": {
+      "command: npm, args: --json :: view :: ncu-test-alpha@1.0.0 :: peerDependencies": {
+        "header": "test/cache.test.ts > cache latest versions",
+        "stderr": "",
+        "stdout": "",
+        "testName": "cache > cache latest versions"
+      },
+      "command: npm, args: --json :: view :: ncu-test-tag@1.0.0 :: peerDependencies": {
+        "header": "test/cache.test.ts > cache latest versions",
+        "stderr": "",
+        "stdout": "",
+        "testName": "cache > cache latest versions"
+      },
+      "command: npm, args: --json :: view :: ncu-test-tag@1.1.0 :: peerDependencies": {
+        "header": "test/cache.test.ts > cache latest versions",
+        "stderr": "",
+        "stdout": "",
+        "testName": "cache > cache latest versions"
+      },
+      "command: npm, args: --json :: view :: ncu-test-v2@1.0.0 :: peerDependencies": {
+        "header": "test/cache.test.ts > cache latest versions",
+        "stderr": "",
+        "stdout": "",
+        "testName": "cache > cache latest versions"
+      },
+      "command: npm, args: --json :: view :: ncu-test-v2@2.0.0 :: peerDependencies": {
+        "header": "test/cache.test.ts > cache latest versions",
+        "stderr": "",
+        "stdout": "",
+        "testName": "cache > cache latest versions"
+      }
+    }
+  }
+}

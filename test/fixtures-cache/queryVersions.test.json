@@ -2,6 +2,8 @@
   "queryVersions > github urls > git+https urls should upgrade the embedded version tag": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-v2": {
+        "header": "test/queryVersions.test.ts > git+https urls should upgrade the embedded version tag",
+        "testName": "queryVersions > github urls > git+https urls should upgrade the embedded version tag",
         "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
         "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
         "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
@@ -11,6 +13,8 @@
   "queryVersions > github urls > github urls should not upgrade embedded semver version ranges to prereleases by default": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "header": "test/queryVersions.test.ts > github urls should not upgrade embedded semver version ranges to prereleases by default",
+        "testName": "queryVersions > github urls > github urls should not upgrade embedded semver version ranges to prereleases by default",
         "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
         "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
         "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
@@ -20,6 +24,8 @@
   "queryVersions > github urls > github urls should support --target greatest": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "header": "test/queryVersions.test.ts > github urls should support --target greatest",
+        "testName": "queryVersions > github urls > github urls should support --target greatest",
         "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
         "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
         "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
@@ -29,6 +35,8 @@
   "queryVersions > github urls > github urls should support --target minor": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-return-version": {
+        "header": "test/queryVersions.test.ts > github urls should support --target minor",
+        "testName": "queryVersions > github urls > github urls should support --target minor",
         "v0.1.0": "714b42656544790ba0265bc035d1eb598276eddc",
         "v0.2.0": "1e9896620cc83078608e34ad2a26d961a935decf",
         "v1.0.0": "c0435a12bc701263052e9bf61ee08858b56838bc",
@@ -41,6 +49,8 @@
   "queryVersions > github urls > github urls should support --target newest": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "header": "test/queryVersions.test.ts > github urls should support --target newest",
+        "testName": "queryVersions > github urls > github urls should support --target newest",
         "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
         "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
         "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
@@ -50,6 +60,8 @@
   "queryVersions > github urls > github urls should support --target patch": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-return-version": {
+        "header": "test/queryVersions.test.ts > github urls should support --target patch",
+        "testName": "queryVersions > github urls > github urls should support --target patch",
         "v0.1.0": "714b42656544790ba0265bc035d1eb598276eddc",
         "v0.2.0": "1e9896620cc83078608e34ad2a26d961a935decf",
         "v1.0.0": "c0435a12bc701263052e9bf61ee08858b56838bc",
@@ -62,6 +74,8 @@
   "queryVersions > github urls > github urls should upgrade embedded semver version ranges to prereleases with --target greatest and newest": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "header": "test/queryVersions.test.ts > github urls should upgrade embedded semver version ranges to prereleases with --target greatest and newest",
+        "testName": "queryVersions > github urls > github urls should upgrade embedded semver version ranges to prereleases with --target greatest and newest",
         "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
         "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
         "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
@@ -71,6 +85,8 @@
   "queryVersions > github urls > github urls should upgrade the embedded semver version range": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-v2": {
+        "header": "test/queryVersions.test.ts > github urls should upgrade the embedded semver version range",
+        "testName": "queryVersions > github urls > github urls should upgrade the embedded semver version range",
         "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
         "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
         "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
@@ -80,6 +96,8 @@
   "queryVersions > github urls > github urls should upgrade the embedded version tag": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-v2": {
+        "header": "test/queryVersions.test.ts > github urls should upgrade the embedded version tag",
+        "testName": "queryVersions > github urls > github urls should upgrade the embedded version tag",
         "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
         "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
         "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
@@ -91,8 +109,10 @@
       "https://github.com/raineorshine/ncu-test-no-tags": {
         "_isError": true,
         "exitCode": 1,
+        "header": "test/queryVersions.test.ts > ignore repos with no tags",
         "message": "Cannot read properties of undefined (reading 'replace')",
-        "stderr": ""
+        "stderr": "",
+        "testName": "queryVersions > github urls > ignore repos with no tags"
       }
     }
   },
@@ -103,6 +123,8 @@
         "1.0.5": "d40b3f2b1f7260185c98ffacbd0828eedd41a142",
         "1.0.6": "cd040c99002b8650e95872c72ce661f527b2f264",
         "1.0.7": "5bd70fdcbf442fb5c1f34dac449dc789c8474760",
+        "header": "test/queryVersions.test.ts > ignore tags that are not valid versions",
+        "testName": "queryVersions > github urls > ignore tags that are not valid versions",
         "v0.1.3": "6a6b137902a941fc5c680f7b90a1ed233b7d9db6",
         "v0.1.3a": "3b04fa253d5a0d7e165154ab2429530391e1f1f4",
         "v0.1.4": "5a42921e5e626d3fb49429dbce0a2b9e235824ed",
@@ -129,6 +151,8 @@
         "2.0.0": "0223d7b34a5df9153c34e322a2fd7c4721a7a606",
         "2.1.0": "077bacd847df631f82c7162db9b3a54276cbfe19",
         "2.1.1": "e55c2b85aa037e9ecd4ef30f913104dde91a2826",
+        "header": "test/queryVersions.test.ts > ignore tags that are not valid versions",
+        "testName": "queryVersions > github urls > ignore tags that are not valid versions",
         "v1.2.1": "2ef7d1e4cfc27bc3e60961f9b3ff446b59d30933",
         "v2.0.0": "4a4457b5d3ad0ce265342d2e2784dc39110a16cf",
         "v2.0.1": "4a4457b5d3ad0ce265342d2e2784dc39110a16cf",
@@ -197,6 +221,8 @@
   "queryVersions > github urls > support simple, non-semver tags in the format \"v1\"": {
     "getGitTags": {
       "https://github.com/raineorshine/ncu-test-simple-tag": {
+        "header": "test/queryVersions.test.ts > support simple, non-semver tags in the format \"v1\"",
+        "testName": "queryVersions > github urls > support simple, non-semver tags in the format \"v1\"",
         "v1": "d8310694fc5bbe430be14f4fe04081faa5e9c4c6",
         "v2": "81362b907727132475803f27f8689db33a45da5b",
         "v3": "f48482b689172bf4f3a8c5828992b7229f6409b4"
@@ -208,14 +234,18 @@
       "https://raineorshine@github.com/ncu-return-version": {
         "_isError": true,
         "exitCode": 1,
+        "header": "test/queryVersions.test.ts > valid but nonexistent github urls with tags should be ignored",
         "message": "Command failed: git ls-remote --tags https://raineorshine@github.com/ncu-return-version\nremote: Not Found\nfatal: repository 'https://github.com/ncu-return-version/' not found\n",
-        "stderr": "remote: Not Found\nfatal: repository 'https://github.com/ncu-return-version/' not found\n"
+        "stderr": "remote: Not Found\nfatal: repository 'https://github.com/ncu-return-version/' not found\n",
+        "testName": "queryVersions > github urls > valid but nonexistent github urls with tags should be ignored"
       },
       "https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git": {
         "_isError": true,
         "exitCode": 1,
+        "header": "test/queryVersions.test.ts > valid but nonexistent github urls with tags should be ignored",
         "message": "Command failed: git ls-remote --tags https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git\nremote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n",
-        "stderr": "remote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n"
+        "stderr": "remote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n",
+        "testName": "queryVersions > github urls > valid but nonexistent github urls with tags should be ignored"
       }
     }
   }

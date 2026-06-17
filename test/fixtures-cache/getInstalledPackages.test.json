@@ -2,8 +2,10 @@
   "getInstalledPackages > execute npm ls": {
     "spawnCommand": {
       "command: npm, args: --json :: ls :: --depth=0": {
+        "header": "test/getInstalledPackages.test.ts > execute npm ls",
         "stderr": "",
-        "stdout": "{}\n"
+        "stdout": "{}\n",
+        "testName": "getInstalledPackages > execute npm ls"
       }
     }
   }
