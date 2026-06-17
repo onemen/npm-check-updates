@@ -33,7 +33,7 @@ const installedVersionsMap = new Map<string, string>()
  *
  * this function it triggered by stubSpawnCommand.action
  */
-export const doctorActions = async (ctx: SpawnCtx) => {
+export const doctorSpawnHandler = async (ctx: SpawnCtx) => {
   const { command, args, raw } = ctx
   const cwd = raw[3]?.cwd?.toString()
   if (!cwd) {

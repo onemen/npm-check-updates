@@ -6,7 +6,7 @@ import { createStub } from './genericStubFactory'
 export type GitTagsCtx = DefaultCtx<typeof gitApi.getGitTags, FileCacheManager>
 
 /** cache handler */
-const generalCache = async (ctx: GitTagsCtx) => {
+const cacheHandler = async (ctx: GitTagsCtx) => {
   const { cache, original } = ctx
   const [url] = ctx.raw
   return cache?.getOrSet('getGitTags', url, () => original(url))
@@ -14,4 +14,4 @@ const generalCache = async (ctx: GitTagsCtx) => {
 
 export const stubGetGitTags = createStub(gitApi.getGitTags, gitApi, 'getGitTags')
 
-stubGetGitTags.use(generalCache)
+stubGetGitTags.use(cacheHandler)

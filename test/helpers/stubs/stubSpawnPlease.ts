@@ -18,7 +18,7 @@ export const buildSpawnContext = ({ raw, original, cache }: BaseSpawnCtx): Spawn
 }
 
 /** mock install command for tests  */
-const generalActions = async (ctx: SpawnCtx) => {
+const installHandler = async (ctx: SpawnCtx) => {
   const { command, args, raw } = ctx
 
   const validLockFile = packageManagerLockfiles[command as PackageManager]
@@ -45,7 +45,7 @@ const generalActions = async (ctx: SpawnCtx) => {
 }
 
 /** cache handler */
-const generalCache = async (ctx: SpawnCtx) => {
+const cacheHandler = async (ctx: SpawnCtx) => {
   const { cache, key, original, raw } = ctx
   return await cache?.getOrSet('spawnPlease', key, async () => {
     const result = await original(...raw)
@@ -74,8 +74,8 @@ vi.mock('spawn-please', async importOriginal => {
   // Capture the underlying module function references clean
   stubSpawnPlease.realOriginal = actual.default || actual
   stubSpawnPlease.clearHandlers()
-  stubSpawnPlease.use(generalActions)
-  stubSpawnPlease.use(generalCache)
+  stubSpawnPlease.use(installHandler)
+  stubSpawnPlease.use(cacheHandler)
 
   return {
     __esModule: true,

@@ -9,7 +9,7 @@ import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-import { doctorActions } from './helpers/stubs/stubDoctor'
+import { doctorSpawnHandler } from './helpers/stubs/stubDoctor'
 import { getStub } from './helpers/stubs/stubRegistry'
 import { spawnPleaseSpy } from './helpers/stubs/stubSpawnPlease'
 
@@ -26,7 +26,7 @@ describe('doctor', function () {
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
     const spawnStub = getStub('spawnPlease')
-    spawnStub.useFirst(doctorActions)
+    spawnStub.useFirst(doctorSpawnHandler)
   })
 
   afterAll(async () => {
