@@ -1,6 +1,6 @@
 {
   "yarn > \"No lockfile\" error should be thrown on list command when there is no lockfile": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: yarn, args: --depth=0 :: --json :: --no-progress :: list": {
         "_isError": true,
         "exitCode": 1,
@@ -10,7 +10,7 @@
     }
   },
   "yarn > getPeerDependencies v1": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: yarn, args: --json :: info :: fffffffffffff@1.0.0 :: peerDependencies": {
         "stderr": "(node:<PID>) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n{\"type\":\"error\",\"data\":\"Received invalid response from npm.\"}\n",
         "stdout": ""
@@ -30,7 +30,7 @@
     }
   },
   "yarn > getPeerDependencies v4": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: yarn, args: --json :: npm :: info :: fffffffffffff@1.0.0 :: --fields :: peerDependencies": {
         "stderr": "",
         "stdout": "{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"Package not found\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Response Code: 404 (Not Found)\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Request Method: GET\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Request URL: https://registry.yarnpkg.com/fffffffffffff\"}\n"

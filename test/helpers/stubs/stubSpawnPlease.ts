@@ -47,7 +47,7 @@ const generalActions = async (ctx: SpawnCtx) => {
 /** cache handler */
 const generalCache = async (ctx: SpawnCtx) => {
   const { cache, key, original, raw } = ctx
-  return await cache?.getOrSet('spawnCommand', key, async () => {
+  return await cache?.getOrSet('spawnPlease', key, async () => {
     const result = await original(...raw)
     if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
     if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
@@ -57,9 +57,9 @@ const generalCache = async (ctx: SpawnCtx) => {
 
 // Instantiate it immediately as a constant export.
 // It starts with a placeholder function that we will inside vi.mock
-export const stubSpawnCommand: SpawnStubManager = new ModuleStubManager(
-  'spawnCommand',
-  (...args) => stubSpawnCommand.realOriginal(...args),
+export const stubSpawnPlease: SpawnStubManager = new ModuleStubManager(
+  'spawnPlease',
+  (...args) => stubSpawnPlease.realOriginal(...args),
   buildSpawnContext,
 )
 
@@ -67,15 +67,15 @@ vi.mock('spawn-please', async importOriginal => {
   const actual = await importOriginal<any>()
 
   // Capture the underlying module function references clean
-  stubSpawnCommand.realOriginal = actual.default || actual
-  stubSpawnCommand.clearHandlers()
-  stubSpawnCommand.use(generalActions)
-  stubSpawnCommand.use(generalCache)
+  stubSpawnPlease.realOriginal = actual.default || actual
+  stubSpawnPlease.clearHandlers()
+  stubSpawnPlease.use(generalActions)
+  stubSpawnPlease.use(generalCache)
 
   return {
     __esModule: true,
     // Explicitly call via instance object layout to preserve class scoping context
-    default: async (...args: Parameters<typeof stubSpawnCommand.handleExecution>[0]) =>
-      stubSpawnCommand.handleExecution(args),
+    default: async (...args: Parameters<typeof stubSpawnPlease.handleExecution>[0]) =>
+      stubSpawnPlease.handleExecution(args),
   }
 })

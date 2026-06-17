@@ -1,6 +1,6 @@
 {
   "cache > cache latest versions": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: npm, args: --json :: view :: ncu-test-alpha@1.0.0 :: peerDependencies": {
         "stderr": "",
         "stdout": ""

@@ -1,6 +1,6 @@
 {
   "getIgnoredUpgradesDueToPeerDeps > ignored peer after upgrade": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: npm, args: --json :: view :: @vitest/ui@1.6.0 :: peerDependencies": {
         "stderr": "",
         "stdout": "{\n  \"vitest\": \"1.6.0\"\n}\n"
@@ -16,7 +16,7 @@
     }
   },
   "getIgnoredUpgradesDueToPeerDeps > ncu-test-peer-update": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: npm, args: --json :: view :: ncu-test-return-version@2.0.0 :: peerDependencies": {
         "stderr": "",
         "stdout": ""

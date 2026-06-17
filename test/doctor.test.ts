@@ -25,7 +25,7 @@ describe.skip('doctor', function () {
 
   beforeAll(async () => {
     stub = stubVersions(mockNpmVersions, { spawn: true })
-    const spawnStub = getStub('spawnCommand')
+    const spawnStub = getStub('spawnPlease')
     spawnStub.useFirst(doctorActions)
     pmSpawn = mockSpawn()
   })

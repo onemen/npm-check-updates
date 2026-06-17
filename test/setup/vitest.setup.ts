@@ -6,7 +6,7 @@ import { FileCacheManager } from '../helpers/FileCacheManager'
 import { TestSandbox } from '../helpers/TestSandbox'
 import { registerIOCapture } from '../helpers/mockIO'
 import { stubGetGitTags } from '../helpers/stubs/stubGetGitTags'
-import { stubSpawnCommand } from '../helpers/stubs/stubSpawnCommand'
+import { stubSpawnPlease } from '../helpers/stubs/stubSpawnPlease'
 import { registerTestNameCapture } from '../helpers/testNameStore'
 
 installGlobalErrorHandlers()
@@ -30,4 +30,4 @@ registerIOCapture()
 /* Initialize the test sandbox and make it globally available for all tests */
 TestSandbox.registerLifecycle()
 
-FileCacheManager.registerLifecycle([stubSpawnCommand, stubGetGitTags])
+FileCacheManager.registerLifecycle([stubSpawnPlease, stubGetGitTags])

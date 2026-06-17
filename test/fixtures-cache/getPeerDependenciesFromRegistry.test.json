@@ -1,6 +1,6 @@
 {
   "getPeerDependenciesFromRegistry > multiple packages": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies": {
         "stderr": "",
         "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
@@ -12,7 +12,7 @@
     }
   },
   "getPeerDependenciesFromRegistry > single package": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: npm, args: --json :: view :: ncu-test-peer@1.0 :: peerDependencies": {
         "stderr": "",
         "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
@@ -20,7 +20,7 @@
     }
   },
   "getPeerDependenciesFromRegistry > single package empty": {
-    "spawnCommand": {
+    "spawnPlease": {
       "command: npm, args: --json :: view :: ncu-test-return-version@1.0 :: peerDependencies": {
         "stderr": "",
         "stdout": ""

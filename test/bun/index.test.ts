@@ -56,7 +56,7 @@ describe('bun', function () {
 
   describe('doctor', function () {
     beforeAll(async () => {
-      const spawnStub = getStub('spawnCommand')
+      const spawnStub = getStub('spawnPlease')
       spawnStub.useFirst(doctorActions)
       mockSpawn()
     })
