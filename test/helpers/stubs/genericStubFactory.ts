@@ -1,5 +1,5 @@
 import type { ContextBuilder, DefaultCtx, MockSpyInstance, StubHandler } from '../../types/stubsTypes'
-import { type FileCacheManager } from '../FileCacheManager'
+import { type FileCacheManager } from './FileCacheManager'
 
 /** make sure we get the original function */
 function ensureNotMock(fn: any, key: string | number | symbol) {

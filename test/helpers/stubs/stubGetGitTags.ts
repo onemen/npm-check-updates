@@ -1,6 +1,6 @@
 import { gitApi } from '../../../src/package-managers/gitTags'
 import { type DefaultCtx } from '../../types/stubsTypes'
-import { type FileCacheManager } from '../FileCacheManager'
+import { type FileCacheManager } from './FileCacheManager'
 import { createStub } from './genericStubFactory'
 
 export type GitTagsCtx = DefaultCtx<typeof gitApi.getGitTags, FileCacheManager>

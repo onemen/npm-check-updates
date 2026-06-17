@@ -1,9 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
-import { registerStub } from './stubs/stubRegistry'
-import { sanitizeAndSerialize, sortObjectDeep } from './stubs/utils'
-import { getFullTestName } from './testNameStore'
+import { getFullTestName } from '../testNameStore'
+import { registerStub } from './stubRegistry'
+import { sanitizeAndSerialize, sortObjectDeep } from './utils'
 
 /** */
 export class FileCacheManager {

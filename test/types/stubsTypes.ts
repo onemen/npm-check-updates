@@ -1,5 +1,5 @@
 import type spawnPleaseDefault from 'spawn-please'
-import { type FileCacheManager } from '../helpers/FileCacheManager'
+import { type FileCacheManager } from '../helpers/stubs/FileCacheManager'
 import { type ModuleStubManager } from '../helpers/stubs/ModuleStubManager'
 
 // BuildContext: transforms raw args → typed context
