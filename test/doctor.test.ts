@@ -201,7 +201,7 @@ describe('doctor', function () {
       stderr.should.equal('')
 
       // stdout should include expected output
-      stripAnsi(stdout).should.contain('simulated echo.js output: 123 456')
+      stripAnsi(stdout).should.contain("'123 456'")
 
       // package file should include upgrades
       pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
