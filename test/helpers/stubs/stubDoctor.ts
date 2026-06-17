@@ -37,8 +37,6 @@ export const doctorActions = async (ctx: SpawnCtx) => {
   const { command, args, raw } = ctx
   const [_command, _args, spawnPleaseOptions, spawnOptions] = raw
 
-  // console.log('NVU_DEBUG:', { command: raw[0], args: raw[1] })
-
   const cwd = spawnOptions?.cwd?.toString()
   if (!cwd) {
     throw new Error(`Mock execution failed: 'options.cwd' is required for command '${args.join(' ')}'`)
@@ -127,8 +125,6 @@ export function mockSpawn() {
   return vi.spyOn(pm, 'spawn').mockImplementation(async (rawCommand, rawArgs, options, spawnOptions) => {
     const { command, args } = normalizeCommand(rawCommand, rawArgs ?? [])
     const inputStr = JSON.stringify({ command, args })
-
-    // console.error('NCU_DEBUG:', inputStr)
 
     switch (inputStr) {
       case '{"command":"npm","args":["run","myinstall"]}':

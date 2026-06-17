@@ -49,20 +49,14 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
           ? buildContext({ raw, original: realOriginal, cache })
           : ({ raw, original: realOriginal, cache } as DefaultCtx<F, Cache> as Ctx)
 
-        // console.log('NVU_DEBUG: before handlers', raw[1] ? { command: raw[0], args: raw[1] } : { url: raw[0] })
-
         for (const handler of this.handlers) {
           const result = await handler(ctx)
-          // console.log('NVU_DEBUG: result', result)
           if (result !== undefined) return result
         }
-
-        console.log('NVU_DEBUG: before original', raw[1] ? { command: raw[0], args: raw[1] } : { url: raw[0] })
 
         return await realOriginal(...raw)
       }
 
-      // spyInstance = vi.spyOn(spyTarget, spyKey as any).mockImplementation(impl as any)
       spyInstance = vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: Args) => impl(raw)) as F)
     },
 

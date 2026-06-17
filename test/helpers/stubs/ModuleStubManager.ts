@@ -2,7 +2,7 @@
 export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
   public handlers: ((ctx: Ctx) => any | Promise<any>)[] = []
   public key: string = ''
-  private realOriginal: (...args: Args) => Promise<Ret>
+  public realOriginal: (...args: Args) => Promise<Ret>
 
   // Scoped cache variable assigned by each file's beforeAll hook
   private currentCacheManager: any = null
@@ -52,15 +52,11 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
     // Fall back to a standard object literal context if no custom function is passed
     const ctx = this.buildContextFn ? this.buildContextFn(payload) : (payload as unknown as Ctx)
 
-    // console.error('NCU_DEBUG: ModuleStubManager.handleExecution', { ctx })
-    // console.error('NVU_DEBUG: handlers', args[1] ? { command: args[0], args: args[1] } : { url: args[0] })
-
     // Loop through registered execution handlers
     for (const handler of this.handlers) {
       const result = await handler(ctx)
       if (result !== undefined) return result
     }
-    console.error('NVU_DEBUG: run original', args[1] ? { command: args[0], args: args[1] } : { url: args[0] })
 
     return await this.realOriginal(...args)
   }

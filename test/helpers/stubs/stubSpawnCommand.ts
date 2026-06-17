@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { type BaseSpawnCtx, type SpawnCtx } from '../../types/stubsTypes'
+import { type BaseSpawnCtx, type SpawnCtx, type SpawnStubManager } from '../../types/stubsTypes'
 import { ModuleStubManager } from './ModuleStubManager'
 import {
   type PackageManager,
@@ -49,14 +49,9 @@ const generalCache = async (ctx: SpawnCtx) => {
   const { cache, key, original, raw } = ctx
   const entry = await cache?.getOrSet('spawnCommand', key, async () => {
     try {
-      const [rawCommand, rawArgs, spawnPleaseOptions, spawnOptions] = raw
-      // console.error('NVU_DEBUG: run original', raw[1] ? { command: raw[0], raw: raw[1] } : { url: raw[0] })
-      const result = await original(rawCommand, rawArgs, spawnPleaseOptions, spawnOptions)
+      const result = await original(...raw)
       if (result.stdout) result.stdout = sanitizeAndSerialize(result.stdout)
       if (result.stderr) result.stderr = sanitizeAndSerialize(result.stderr)
-      // result.testName0 = getFullTestName()
-      // result.header0 = getOutputHeader()
-
       return result
     } catch (err: any) {
       return {
@@ -80,41 +75,27 @@ const generalCache = async (ctx: SpawnCtx) => {
   return entry
 }
 
-// export let stubSpawnCommand: ModuleStubManager<any, any>
-
-// vi.mock('spawn-please', async importOriginal => {
-//   const actual = await importOriginal<any>()
-//   const originalDefault = actual.default || actual
-
-//   // Perfectly valid without a second parameter!
-//   stubSpawnCommand = new ModuleStubManager('spawnCommand', originalDefault, buildSpawnContext)
-
-//   return {
-//     __esModule: true,
-//     default: async (...args: any[]) => stubSpawnCommand.handleExecution(args),
-//   }
-// })
-
 // Instantiate it immediately as a constant export.
-// It starts with a placeholder function that we will swap later.
-/**
- *
- */
-let underlyingSpawn = async (...args: any[]): Promise<any> => {
-  throw new Error('spawn-please was called before it was initialized by vi.mock')
-}
-
-export const stubSpawnCommand = new ModuleStubManager(
+// It starts with a placeholder function that we will inside vi.mock
+export const stubSpawnCommand: SpawnStubManager = new ModuleStubManager(
   'spawnCommand',
-  async (...args) => underlyingSpawn(...args), // Defer execution to our modifiable pointer
+  async (...args) => stubSpawnCommand.realOriginal(...args),
   buildSpawnContext,
 )
 
-/** Export a helper function to let your mock hook up the real implementation safely */
-export function initializeUnderlyingSpawn(realOriginal: any) {
-  underlyingSpawn = realOriginal
+vi.mock('spawn-please', async importOriginal => {
+  const actual = await importOriginal<any>()
 
+  // Capture the underlying module function references clean
+  stubSpawnCommand.realOriginal = actual.default || actual
   stubSpawnCommand.clearHandlers()
   stubSpawnCommand.use(generalActions)
   stubSpawnCommand.use(generalCache)
-}
+
+  return {
+    __esModule: true,
+    // Explicitly call via instance object layout to preserve class scoping context
+    default: async (...args: Parameters<typeof stubSpawnCommand.handleExecution>[0]) =>
+      stubSpawnCommand.handleExecution(args),
+  }
+})

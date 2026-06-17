@@ -4,12 +4,15 @@ const store = new AsyncLocalStorage<{ name: string; fullName: string; header: st
 
 /** use by vitest.setup.ts to register this lifecycle */
 export function registerTestNameCapture() {
-  beforeEach(context => {
+  aroundEach(async (runTest, context) => {
     const fileName = context.task.file?.name ?? 'unknown'
     const testName = context.task.name ?? 'unknown'
     const fullTestName = context.task.fullTestName ?? 'unknown'
     const header = `${fileName} > ${testName}`
-    store.enterWith({ name: testName, fullName: fullTestName, header })
+
+    return store.run({ name: testName, fullName: fullTestName, header }, async () => {
+      await runTest()
+    })
   })
 }
 

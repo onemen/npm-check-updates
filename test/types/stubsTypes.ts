@@ -1,5 +1,6 @@
 import type spawnPleaseDefault from 'spawn-please'
 import { type FileCacheManager } from '../helpers/FileCacheManager'
+import { type ModuleStubManager } from '../helpers/stubs/ModuleStubManager'
 
 // BuildContext: transforms raw args → typed context
 export type DefaultCtx<F extends (...args: any) => any, Cache = FileCacheManager> = {
@@ -16,6 +17,8 @@ export type StubHandler<Ctx, F extends (...args: any) => any> = (
 
 export type MockSpyInstance = ReturnType<typeof vi.spyOn>
 
+export type SpawnPlease = typeof spawnPleaseDefault
+
 export type BaseSpawnCtx = DefaultCtx<typeof spawnPleaseDefault>
 
 export type SpawnCtx = BaseSpawnCtx & {
@@ -23,3 +26,5 @@ export type SpawnCtx = BaseSpawnCtx & {
   args: string[]
   key: string
 }
+
+export type SpawnStubManager = ModuleStubManager<Parameters<SpawnPlease>, Awaited<ReturnType<SpawnPlease>>, SpawnCtx>
