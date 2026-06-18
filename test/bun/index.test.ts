@@ -41,7 +41,7 @@ describe('bun', function () {
   })
 
   afterAll(async () => {
-    versionStub.mockRestore()
+    versionStub?.mockRestore()
   })
 
   it('list', async () => {

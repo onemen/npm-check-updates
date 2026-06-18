@@ -1,3 +1,5 @@
+import { type CacheManager } from '../../types/stubsTypes'
+
 /** */
 export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
   public handlers: ((ctx: Ctx) => any | Promise<any>)[] = []
@@ -31,7 +33,7 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
   }
 
   /** Called inside beforeAll for each file to register its local cache manager */
-  public setupMock(manager: any) {
+  public setupMock(manager: CacheManager) {
     this.currentCacheManager = manager
   }
 
@@ -59,5 +61,25 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
     }
 
     return await this.realOriginal(...args)
+  }
+
+  public registerLifecycle(
+    cacheManager: CacheManager,
+    defaultHandlers: typeof this.handlers = [],
+    onRegister?: (key: string, instance: any) => void,
+  ) {
+    beforeAll(() => {
+      this.clearHandlers()
+
+      for (const handler of defaultHandlers) {
+        this.use(handler)
+      }
+
+      this.setupMock(cacheManager)
+
+      if (onRegister) {
+        onRegister(this.key, this)
+      }
+    })
   }
 }

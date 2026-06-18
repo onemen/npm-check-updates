@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import spawn from 'spawn-please'
 import { stripRange } from '../../../src/lib/version-util'
 import { type SpawnCtx } from '../../types/stubsTypes'
+import { spawnPleaseSpy } from './stubSpawnPlease'
 import { type PackageManager, packageManagerLockfiles } from './utils'
 
 const TARGET_PACKAGE = 'ncu-test-return-version'
@@ -83,7 +83,7 @@ export const doctorSpawnHandler = async (ctx: SpawnCtx) => {
     // doctor run prepare script manually when installed used with --no-save
     // this code will mock all other cases
     if (!args.includes('--no-save') && (command === 'npm' || command === 'pnpm') && pkgJson?.scripts?.prepare) {
-      return spawn(command, ['run', 'prepare'], {}, { cwd })
+      return spawnPleaseSpy(command, ['run', 'prepare'], {}, { cwd })
     }
 
     return { stdout: 'mocked success output', stderr: '' }

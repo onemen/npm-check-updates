@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { type RunnerTask, type RunnerTestFile } from 'vitest'
 import { getFullTestName } from '../testNameStore'
-import { registerStub } from './stubRegistry'
 import { sanitizeAndSerialize, sortObjectDeep } from './utils'
 
 /** */
@@ -14,8 +13,7 @@ export class FileCacheManager {
   /** Tracks which entries were actually used: "testName::stubName::key" */
   private invokedPaths = new Set<string>()
 
-  // public static registerLifecycle(stubs: StubRegistration[]) {
-  public static registerLifecycle(stubs: any[]) {
+  public static registerLifecycle() {
     const manager = new FileCacheManager()
 
     // eslint-disable-next-line no-empty-pattern
@@ -41,22 +39,16 @@ export class FileCacheManager {
           manager.data = {}
         }
       }
-
-      for (const stub of stubs) {
-        stub.setupMock(manager)
-        registerStub(stub.key, stub)
-      }
     })
 
     // eslint-disable-next-line no-empty-pattern
     afterAll(async ({}, input) => {
       const file = input as RunnerTestFile
       await manager.flushAndAuditAll(file)
-      for (const stub of stubs) {
-        stub.restore?.()
-      }
       vi.restoreAllMocks()
     })
+
+    return manager
   }
 
   /** Retrieves or sets keys using getTestName() smoothly at runtime */

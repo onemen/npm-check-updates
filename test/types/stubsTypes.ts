@@ -2,8 +2,10 @@ import type spawnPleaseDefault from 'spawn-please'
 import { type FileCacheManager } from '../helpers/stubs/FileCacheManager'
 import { type ModuleStubManager } from '../helpers/stubs/ModuleStubManager'
 
+export type CacheManager = FileCacheManager
+
 // BuildContext: transforms raw args → typed context
-export type DefaultCtx<F extends (...args: any) => any, Cache = FileCacheManager> = {
+export type DefaultCtx<F extends (...args: any) => any, Cache = CacheManager> = {
   raw: Parameters<F>
   original: F
   cache: Cache | undefined

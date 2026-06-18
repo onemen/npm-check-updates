@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { type BaseSpawnCtx, type SpawnCtx, type SpawnStubManager } from '../../types/stubsTypes'
+import { type BaseSpawnCtx, type CacheManager, type SpawnCtx, type SpawnStubManager } from '../../types/stubsTypes'
 import { ModuleStubManager } from './ModuleStubManager'
+import { registerStub } from './stubRegistry'
 import {
   type PackageManager,
   ensureChildProcessCwd,
@@ -11,7 +12,7 @@ import {
 } from './utils'
 
 /** SpawnCommand context builder */
-export const buildSpawnContext = ({ raw, original, cache }: BaseSpawnCtx): SpawnCtx => {
+const buildSpawnContext = ({ raw, original, cache }: BaseSpawnCtx): SpawnCtx => {
   // throw if we are missing cwd in spawnOptions
   ensureChildProcessCwd(...raw)
   return { raw, original, cache, ...normalizeCommand(...raw) }
@@ -52,9 +53,8 @@ const cacheHandler = async (ctx: SpawnCtx) => {
   })
 }
 
-// Instantiate it immediately as a constant export.
-// It starts with a placeholder function that we will inside vi.mock
-export const stubSpawnPlease: SpawnStubManager = new ModuleStubManager(
+// It starts with a placeholder function that we will replace inside vi.mock
+const stubSpawnPlease: SpawnStubManager = new ModuleStubManager(
   'spawnPlease',
   (...args) => stubSpawnPlease.realOriginal(...args),
   buildSpawnContext,
@@ -68,14 +68,17 @@ export const spawnPleaseSpy = vi.fn(async (...args: Parameters<typeof stubSpawnP
 vi.mock('spawn-please', async importOriginal => {
   const actual = await importOriginal<any>()
 
-  // Capture the underlying module function references clean
   stubSpawnPlease.realOriginal = actual.default || actual
-  stubSpawnPlease.clearHandlers()
-  stubSpawnPlease.use(installHandler)
-  stubSpawnPlease.use(cacheHandler)
 
   return {
     __esModule: true,
     default: spawnPleaseSpy,
   }
 })
+
+/** run in vitest.setup */
+export const spawnPleaseController = {
+  registerLifecycle(cacheManager: CacheManager) {
+    stubSpawnPlease.registerLifecycle(cacheManager, [installHandler, cacheHandler], registerStub)
+  },
+}

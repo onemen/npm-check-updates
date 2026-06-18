@@ -5,8 +5,8 @@ import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-han
 import { TestSandbox } from '../helpers/TestSandbox'
 import { registerIOCapture } from '../helpers/mockIO'
 import { FileCacheManager } from '../helpers/stubs/FileCacheManager'
-import { stubGetGitTags } from '../helpers/stubs/stubGetGitTags'
-import { stubSpawnPlease } from '../helpers/stubs/stubSpawnPlease'
+import { stubGetGitTagsController } from '../helpers/stubs/stubGetGitTags'
+import { spawnPleaseController } from '../helpers/stubs/stubSpawnPlease'
 import { registerTestNameCapture } from '../helpers/testNameStore'
 
 installGlobalErrorHandlers()
@@ -30,4 +30,9 @@ registerIOCapture()
 /* Initialize the test sandbox and make it globally available for all tests */
 TestSandbox.registerLifecycle()
 
-FileCacheManager.registerLifecycle([stubSpawnPlease, stubGetGitTags])
+/* Initialize the central cache lifecycle */
+const cacheManager = FileCacheManager.registerLifecycle()
+
+/* Initialize each global stub/mock and bind it to the cache manager */
+spawnPleaseController.registerLifecycle(cacheManager)
+stubGetGitTagsController.registerLifecycle(cacheManager)

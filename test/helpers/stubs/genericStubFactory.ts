@@ -1,5 +1,4 @@
-import type { ContextBuilder, DefaultCtx, MockSpyInstance, StubHandler } from '../../types/stubsTypes'
-import { type FileCacheManager } from './FileCacheManager'
+import type { CacheManager, ContextBuilder, DefaultCtx, MockSpyInstance, StubHandler } from '../../types/stubsTypes'
 
 /** make sure we get the original function */
 function ensureNotMock(fn: any, key: string | number | symbol) {
@@ -12,7 +11,7 @@ function ensureNotMock(fn: any, key: string | number | symbol) {
 }
 
 /** Generic stub factory */
-export function createStub<F extends (...args: any) => any, Cache = FileCacheManager, Ctx = DefaultCtx<F, Cache>>(
+export function createStub<F extends (...args: any) => any, Cache = CacheManager, Ctx = DefaultCtx<F, Cache>>(
   original: F,
   spyTarget: Record<string | number, any>,
   spyKey: string | number,
@@ -26,18 +25,23 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
 
   type Args = Parameters<F>
   type Ret = Awaited<ReturnType<F>>
+  type Handler = StubHandler<Ctx, F>
 
   return {
     key: spyName,
 
-    handlers: [] as StubHandler<Ctx, F>[],
+    handlers: [] as Handler[],
 
-    use(handler: StubHandler<Ctx, F>) {
+    use(handler: Handler) {
       this.handlers.push(handler)
     },
 
-    useFirst(handler: StubHandler<Ctx, F>) {
+    useFirst(handler: Handler) {
       this.handlers.unshift(handler)
+    },
+
+    clearHandlers() {
+      this.handlers = []
     },
 
     setupMock(cache?: Cache) {
@@ -61,10 +65,35 @@ export function createStub<F extends (...args: any) => any, Cache = FileCacheMan
     },
 
     restore() {
+      this.clearHandlers()
       if (spyInstance) {
         spyInstance.mockRestore()
         spyInstance = null
       }
+    },
+
+    registerLifecycle(
+      cacheManager: Cache,
+      defaultHandlers: Handler[] = [],
+      onRegister?: (key: string, instance: any) => void,
+    ) {
+      beforeAll(() => {
+        this.clearHandlers()
+
+        for (const handler of defaultHandlers) {
+          this.use(handler)
+        }
+
+        this.setupMock(cacheManager)
+
+        if (onRegister) {
+          onRegister(this.key, this)
+        }
+      })
+
+      afterAll(() => {
+        this.restore()
+      })
     },
   }
 }
