@@ -11,7 +11,7 @@ const cacheHandler = async (ctx: GitTagsCtx) => {
   return cache?.getOrSet('getGitTags', url, () => original(url))
 }
 
-const stubGetGitTags = createStub(gitApi.getGitTags, gitApi, 'getGitTags')
+const stubGetGitTags = createStub(gitApi, 'getGitTags')
 
 /** run in vitest.setup */
 export const stubGetGitTagsController = {

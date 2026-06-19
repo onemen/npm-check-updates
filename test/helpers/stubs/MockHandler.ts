@@ -1,6 +1,13 @@
 import type { CacheManager, DefaultCtx, MockSpyInstance, StubHandler } from '../../types/stubsTypes'
 
-/** */
+/**
+ * A standalone, generic routing and state execution engine designed to manage
+ * the lifecycle, cache context, and middleware execution chain of an intercepted
+ * function or module.
+ * @template F The type of the function being mocked or spied upon.
+ * @template Cache The type of the cache manager instance, defaults to `CacheManager`.
+ * @template Ctx The evaluation context type passed down to execution handlers.
+ */
 export class MockHandler<F extends (...args: any[]) => any, Cache = CacheManager, Ctx = DefaultCtx<F, Cache>> {
   public handlers: StubHandler<Ctx, F>[] = []
   public key: string = ''

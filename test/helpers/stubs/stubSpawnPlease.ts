@@ -1,12 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import {
-  type BaseSpawnCtx,
-  type CacheManager,
-  type SpawnCtx,
-  type SpawnPlease,
-  type SpawnStubManager,
-} from '../../types/stubsTypes'
+import { type BaseSpawnCtx, type CacheManager, type SpawnCtx, type SpawnPlease } from '../../types/stubsTypes'
 import { MockHandler } from './MockHandler'
 import {
   type PackageManager,
@@ -15,6 +9,8 @@ import {
   packageManagerLockfiles,
   sanitizeAndSerialize,
 } from './utils'
+
+export type SpawnStubManager = MockHandler<SpawnPlease, CacheManager, SpawnCtx>
 
 /** SpawnCommand context builder */
 const buildSpawnContext = ({ raw, original, cache }: BaseSpawnCtx): SpawnCtx => {
