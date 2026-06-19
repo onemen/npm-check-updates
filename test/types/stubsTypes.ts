@@ -1,6 +1,6 @@
 import type spawnPleaseDefault from 'spawn-please'
 import { type FileCacheManager } from '../helpers/stubs/FileCacheManager'
-import { type ModuleStubManager } from '../helpers/stubs/ModuleStubManager'
+import { type MockHandler } from '../helpers/stubs/MockHandler'
 
 export type CacheManager = FileCacheManager
 
@@ -29,4 +29,4 @@ export type SpawnCtx = BaseSpawnCtx & {
   key: string
 }
 
-export type SpawnStubManager = ModuleStubManager<Parameters<SpawnPlease>, Awaited<ReturnType<SpawnPlease>>, SpawnCtx>
+export type SpawnStubManager = MockHandler<SpawnPlease, CacheManager, SpawnCtx>

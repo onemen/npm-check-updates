@@ -1,7 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { type BaseSpawnCtx, type CacheManager, type SpawnCtx, type SpawnStubManager } from '../../types/stubsTypes'
-import { ModuleStubManager } from './ModuleStubManager'
+import {
+  type BaseSpawnCtx,
+  type CacheManager,
+  type SpawnCtx,
+  type SpawnPlease,
+  type SpawnStubManager,
+} from '../../types/stubsTypes'
+import { MockHandler } from './MockHandler'
 import {
   type PackageManager,
   ensureChildProcessCwd,
@@ -53,16 +59,14 @@ const cacheHandler = async (ctx: SpawnCtx) => {
 }
 
 // It starts with a placeholder function that we will replace inside vi.mock
-export const stubSpawnPlease: SpawnStubManager = new ModuleStubManager(
+export const stubSpawnPlease: SpawnStubManager = new MockHandler(
   'spawnPlease',
-  () => Promise.resolve({ stdout: '', stderr: '' } as any),
+  ((..._args: any[]) => Promise.resolve({ stdout: '', stderr: '' })) as SpawnPlease,
   buildSpawnContext,
 )
 
 // spy instance for testing
-export const spawnPleaseSpy = vi.fn(async (...args: Parameters<typeof stubSpawnPlease.handleExecution>[0]) =>
-  stubSpawnPlease.handleExecution(args),
-)
+export const spawnPleaseSpy = vi.fn(stubSpawnPlease.handleExecution.bind(stubSpawnPlease))
 
 vi.mock('spawn-please', async importOriginal => {
   const actual = await importOriginal<any>()

@@ -1,8 +1,8 @@
-import type { CacheManager, DefaultCtx } from '../../types/stubsTypes'
-import { ModuleStubManager } from './ModuleStubManager'
+import type { CacheManager, ContextBuilder, DefaultCtx, StubHandler } from '../../types/stubsTypes'
+import { MockHandler } from './MockHandler'
 
 /** make sure we get the original function */
-function ensureNotMock(fn: any, key: string | number | symbol) {
+function ensureNotMock(fn: unknown, key: string | number | symbol): void {
   if (vi.isMockFunction(fn)) {
     throw new Error(
       `createStub: The function "${key.toString()}" is already mocked. ` +
@@ -12,28 +12,22 @@ function ensureNotMock(fn: any, key: string | number | symbol) {
 }
 
 /** Generic stub factory */
-export function createStub<
-  F extends (...args: any) => any,
-  Cache = CacheManager,
-  Ctx = DefaultCtx<F, Cache>,
-  Args extends any[] = Parameters<F>,
-  Ret = Awaited<ReturnType<F>>,
->(
+export function createStub<F extends (...args: any[]) => any, Cache = CacheManager, Ctx = DefaultCtx<F, Cache>>(
   original: F,
   spyTarget: Record<string | number, any>,
   spyKey: string | number,
-  buildContext?: (data: { raw: Args; original: (...args: Args) => Promise<Ret>; cache: Cache }) => Ctx,
+  buildContext?: ContextBuilder<F, Cache, Ctx>,
 ) {
   ensureNotMock(original, spyKey)
 
-  const stub = new ModuleStubManager<Args, Ret, Ctx>(spyKey.toString(), original, buildContext as any)
+  const stub = new MockHandler<F, Cache, Ctx>(spyKey.toString(), original, buildContext)
 
-  // Intercept registerLifecycle to automatically provide the vi.spyOn initialization step
+  // Bind registerLifecycle to auto-inject the specific spy routine seamlessly
   const originalRegister = stub.registerLifecycle.bind(stub)
 
-  stub.registerLifecycle = (cacheManager: any, defaultHandlers?: any) => {
+  stub.registerLifecycle = (cacheManager: Cache, defaultHandlers?: StubHandler<Ctx, F>[]) => {
     originalRegister(cacheManager, defaultHandlers, instance => {
-      return vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: Args) => instance.handleExecution(raw)) as any)
+      return vi.spyOn(spyTarget, spyKey).mockImplementation(instance.handleExecution.bind(instance) as F)
     })
   }
 
