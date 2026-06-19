@@ -72,11 +72,7 @@ export function createStub<F extends (...args: any) => any, Cache = CacheManager
       }
     },
 
-    registerLifecycle(
-      cacheManager: Cache,
-      defaultHandlers: Handler[] = [],
-      onRegister?: (key: string, instance: any) => void,
-    ) {
+    registerLifecycle(cacheManager: Cache, defaultHandlers: Handler[] = []) {
       beforeAll(() => {
         this.clearHandlers()
 
@@ -85,10 +81,6 @@ export function createStub<F extends (...args: any) => any, Cache = CacheManager
         }
 
         this.setupMock(cacheManager)
-
-        if (onRegister) {
-          onRegister(this.key, this)
-        }
       })
 
       afterAll(() => {

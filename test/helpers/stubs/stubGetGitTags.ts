@@ -2,7 +2,6 @@ import { gitApi } from '../../../src/package-managers/gitTags'
 import { type CacheManager, type DefaultCtx } from '../../types/stubsTypes'
 import { type FileCacheManager } from './FileCacheManager'
 import { createStub } from './genericStubFactory'
-import { registerStub } from './stubRegistry'
 
 type GitTagsCtx = DefaultCtx<typeof gitApi.getGitTags, FileCacheManager>
 
@@ -18,6 +17,6 @@ const stubGetGitTags = createStub(gitApi.getGitTags, gitApi, 'getGitTags')
 /** run in vitest.setup */
 export const stubGetGitTagsController = {
   registerLifecycle(cacheManager: CacheManager) {
-    stubGetGitTags.registerLifecycle(cacheManager, [cacheHandler], registerStub)
+    stubGetGitTags.registerLifecycle(cacheManager, [cacheHandler])
   },
 }

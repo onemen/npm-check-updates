@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { type BaseSpawnCtx, type CacheManager, type SpawnCtx, type SpawnStubManager } from '../../types/stubsTypes'
 import { ModuleStubManager } from './ModuleStubManager'
-import { registerStub } from './stubRegistry'
 import {
   type PackageManager,
   ensureChildProcessCwd,
@@ -54,9 +53,9 @@ const cacheHandler = async (ctx: SpawnCtx) => {
 }
 
 // It starts with a placeholder function that we will replace inside vi.mock
-const stubSpawnPlease: SpawnStubManager = new ModuleStubManager(
+export const stubSpawnPlease: SpawnStubManager = new ModuleStubManager(
   'spawnPlease',
-  (...args) => stubSpawnPlease.realOriginal(...args),
+  () => Promise.resolve({ stdout: '', stderr: '' } as any),
   buildSpawnContext,
 )
 
@@ -79,6 +78,6 @@ vi.mock('spawn-please', async importOriginal => {
 /** run in vitest.setup */
 export const spawnPleaseController = {
   registerLifecycle(cacheManager: CacheManager) {
-    stubSpawnPlease.registerLifecycle(cacheManager, [installHandler, cacheHandler], registerStub)
+    stubSpawnPlease.registerLifecycle(cacheManager, [installHandler, cacheHandler])
   },
 }

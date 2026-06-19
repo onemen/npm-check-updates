@@ -63,11 +63,7 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
     return await this.realOriginal(...args)
   }
 
-  public registerLifecycle(
-    cacheManager: CacheManager,
-    defaultHandlers: typeof this.handlers = [],
-    onRegister?: (key: string, instance: any) => void,
-  ) {
+  public registerLifecycle(cacheManager: CacheManager, defaultHandlers: typeof this.handlers = []) {
     beforeAll(() => {
       this.clearHandlers()
 
@@ -76,10 +72,6 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
       }
 
       this.setupMock(cacheManager)
-
-      if (onRegister) {
-        onRegister(this.key, this)
-      }
     })
   }
 }

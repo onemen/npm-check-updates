@@ -5,7 +5,7 @@ import * as bun from '../../src/package-managers/bun'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
 import { doctorSpawnHandler } from '../helpers/stubs/stubDoctor'
-import { getStub } from '../helpers/stubs/stubRegistry'
+import { stubSpawnPlease } from '../helpers/stubs/stubSpawnPlease'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -56,8 +56,7 @@ describe('bun', function () {
 
   describe('doctor', function () {
     beforeAll(async () => {
-      const spawnStub = getStub('spawnPlease')
-      spawnStub.useFirst(doctorSpawnHandler)
+      stubSpawnPlease.useFirst(doctorSpawnHandler)
     })
 
     testPass({ packageManager: 'bun' })
