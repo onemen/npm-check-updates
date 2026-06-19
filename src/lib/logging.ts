@@ -17,6 +17,7 @@ import filterObject from './filterObject'
 import getPackageJson from './getPackageJson'
 import getPackageVersion from './getPackageVersion'
 import getRepoUrl from './getRepoUrl'
+import isFetchable from './isFetchable'
 import {
   WILDCARDS,
   colorizeDiff,
@@ -40,15 +41,6 @@ const logLevels = {
   verbose: 5,
   silly: 6,
 }
-
-/** Returns true if the dependency spec is not fetchable from the registry and is ignored. */
-const isFetchable = (spec: VersionSpec) =>
-  !spec.startsWith('file:') &&
-  !spec.startsWith('link:') &&
-  !spec.startsWith('workspace:') &&
-  !spec.startsWith('catalog:') &&
-  // short github urls that are ignored, e.g. raineorshine/foo
-  !/^[^/:@]+\/\w+/.test(spec)
 
 /**
  * Prints a message if it is included within options.loglevel.
@@ -242,8 +234,17 @@ export async function toDependencyTable({
           const diffUrl = format?.includes('diff')
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
             : ''
-          const timestamp = format?.includes('time') && time?.[dep] ? time[dep] : null
-          const publishTime = timestamp ? timeAgoFormat(timestamp, 'en_US') : ''
+
+          const showCoolDown = format?.includes('cooldown')
+          const showTime = format?.includes('time')
+          // show '[missing time]' in publishTime column or cooldown column
+          const missingTime = (showTime || showCoolDown) && !time?.[dep] ? '[missing time]' : ''
+          const timestamp = showTime && time?.[dep] ? time[dep] : null
+          const publishTime = timestamp
+            ? timeAgoFormat(timestamp, 'en_US')
+            : showTime || !showCooldownCol
+              ? missingTime
+              : ''
 
           const cooldownVersion = skippedByCooldown?.[dep]?.version
           let cooldown = ''
@@ -256,6 +257,8 @@ export async function toDependencyTable({
               coerced && !cooldownVersion.endsWith(coerced.version) ? `${coerced.version}-+` : cooldownVersion
             const skippedColorized = colorizeDiff(to, wildcard + getVersion(shortended))
             cooldown = `[cooldown] ${skippedColorized.replace(wildcard, '')}`
+          } else if (showCoolDown && !showTime) {
+            cooldown = missingTime
           }
 
           return [
@@ -302,7 +305,7 @@ async function printSkippedByCooldownTable({
 
   for (const params of Object.values(skippedByCooldown)) {
     const { name, version, currentVersion, fallbackVersion, time: versionTime } = params
-    if (!isFetchable(currentVersion)) continue
+    if (!isFetchable(currentVersion) || !version) continue
 
     const wildcard = WILDCARDS.includes(currentVersion[0]) ? currentVersion[0] : ''
     const caf = wildcard + stripRange(fallbackVersion ?? currentVersion)

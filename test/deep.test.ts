@@ -157,14 +157,14 @@ describe('--deep', function () {
     try {
       const { stdout } = await runNcuCli(['-u', '--deep'], { cwd: tempDir })
       const output = stripAnsi(stdout)
-      const rootPackage = path.resolve(tempDir, 'package.json')
-      const nestedPackage = path.resolve(tempDir, 'packages/no-deps/package.json')
 
-      output.should.include(`Upgrading ${rootPackage}\nAll dependencies match the latest package versions :)`)
-      output.should.include(
-        `All dependencies match the latest package versions :)\n\nUpgrading ${nestedPackage}\nNo dependencies.`,
+      // Use path-agnostic regexes since the absolute temp path printed by the CLI may differ from
+      // os.tmpdir() (e.g. /var vs /private/var on macOS, or short 8.3 paths on Windows).
+      output.should.match(/Upgrading .*package\.json\nAll dependencies match the latest package versions :\)/)
+      output.should.match(
+        /All dependencies match the latest package versions :\)\n\nUpgrading .*no-deps.*package\.json\nNo dependencies\./,
       )
-      output.should.not.include(`Upgrading ${rootPackage}\n\nAll dependencies match the latest package versions :)`)
+      output.should.not.match(/Upgrading .*package\.json\n\nAll dependencies match the latest package versions :\)/)
     } finally {
       await removeDir(tempDir)
     }

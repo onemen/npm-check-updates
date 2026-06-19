@@ -114,8 +114,8 @@ export default defineConfig(({ mode }) => ({
     target: 'node20',
     outDir: 'build',
     sourcemap: true,
-    minify: mode === 'production' && 'esbuild',
-    rollupOptions: {
+    minify: mode === 'production' && 'oxc',
+    rolldownOptions: {
       checks: {
         pluginTimings: false,
       },

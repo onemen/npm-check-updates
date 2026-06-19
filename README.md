@@ -506,6 +506,16 @@ You can also provide a custom function in your .ncurc.js file or when importing 
 cooldown: packageName => (packageName.startsWith('@my-company') ? 0 : 3)
 ```
 
+### Package Manager Configurations
+
+If `--cooldown` is not set explicitly, `ncu` automatically reads the cooldown configuration from your package manager's config file:
+
+<table>
+  <tr><td>npm</td><td>Reads <code>min-release-age</code> from <code>.npmrc</code>, excluding packages matched by <code>min-release-age-exclude</code>.</td></tr>
+  <tr><td>yarn</td><td>Reads <code>npmMinimalAgeGate</code> from <code>.yarnrc.yml</code>, excluding packages matched by <code>npmPreapprovedPackages</code>.</td></tr>
+  <tr><td>pnpm</td><td>Reads <code>minimumReleaseAge</code> from <code>pnpm-workspace.yaml</code>, excluding packages matched by <code>minimumReleaseAgeExclude</code>.</td></tr>
+</table>
+
 ### Cooldown Formatting
 
 When using `--format cooldown` alongside the `--cooldown` option, `ncu` will show a list of packages that were skipped due to the `--cooldown` threshold.
@@ -547,8 +557,8 @@ To be more precise:
 Additional options:
 
 <table>
-  <tr><td>--doctorInstall</td><td>specify a custom install script (default: `npm install` or `yarn`)</td></tr>
-  <tr><td>--doctorTest</td><td>specify a custom test script (default: `npm test`)</td></tr>
+  <tr><td>--doctorInstall</td><td>specify a custom install script (default: <code>npm install</code> or <code>yarn</code>)</td></tr>
+  <tr><td>--doctorTest</td><td>specify a custom test script (default: <code>npm test</code>)</td></tr>
 </table>
 
 Example:
@@ -799,7 +809,7 @@ Specify whether `--registry` refers to a full npm registry or a simple JSON file
 
 <table>
   <tr><td>npm</td><td>Default npm registry</td></tr>
-  <tr><td>json</td><td>Checks versions from a file or url to a simple JSON registry. Must include the `--registry` option.
+  <tr><td>json</td><td>Checks versions from a file or url to a simple JSON registry. Must include the <code>--registry</code> option.
 
 Example:
 
