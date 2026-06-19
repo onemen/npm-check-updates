@@ -19,19 +19,31 @@
   },
   "github urls > upgrade short github urls": {
     "getGitTags": {
-      "ssh://git@github.com/raineorshine/ncu-test-v2": {
+      "https://github.com/raineorshine/ncu-test-v2": {
         "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
         "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
         "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
+      },
+      "ssh://git@github.com/raineorshine/ncu-test-v2": {
+        "_isError": true,
+        "exitCode": 1,
+        "message": "Command failed: git ls-remote --tags ssh://git@github.com/raineorshine/ncu-test-v2\ngit@github.com: Permission denied (publickey).\r\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n",
+        "stderr": "git@github.com: Permission denied (publickey).\r\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n"
       }
     }
   },
   "github urls > upgrade shortest github urls": {
     "getGitTags": {
-      "ssh://git@github.com/raineorshine/ncu-test-v2": {
+      "https://github.com/raineorshine/ncu-test-v2": {
         "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
         "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
         "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
+      },
+      "ssh://git@github.com/raineorshine/ncu-test-v2": {
+        "_isError": true,
+        "exitCode": 1,
+        "message": "Command failed: git ls-remote --tags ssh://git@github.com/raineorshine/ncu-test-v2\ngit@github.com: Permission denied (publickey).\r\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n",
+        "stderr": "git@github.com: Permission denied (publickey).\r\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n"
       }
     }
   }

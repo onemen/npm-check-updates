@@ -1,10 +1,11 @@
-import { type CacheManager } from '../../types/stubsTypes'
+import type { CacheManager, MockSpyInstance } from '../../types/stubsTypes'
 
 /** */
 export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
   public handlers: ((ctx: Ctx) => any | Promise<any>)[] = []
   public key: string = ''
   public realOriginal: (...args: Args) => Promise<Ret>
+  public spyInstance: MockSpyInstance | null = null
 
   // Scoped cache variable assigned by each file's beforeAll hook
   private currentCacheManager: any = null
@@ -43,6 +44,14 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
     this.currentCacheManager = null
   }
 
+  public restore() {
+    this.clearHandlers()
+    if (this.spyInstance) {
+      this.spyInstance.mockRestore()
+      this.spyInstance = null
+    }
+  }
+
   /** The execution routing engine triggered by the intercepted module */
   public async handleExecution(args: Args): Promise<Ret> {
     const payload = {
@@ -63,7 +72,12 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
     return await this.realOriginal(...args)
   }
 
-  public registerLifecycle(cacheManager: CacheManager, defaultHandlers: typeof this.handlers = []) {
+  /** Accept an optional setup hook to initialize the spy safely within beforeAll */
+  public registerLifecycle(
+    cacheManager: CacheManager,
+    defaultHandlers: typeof this.handlers = [],
+    setupMockFn?: (manager: ModuleStubManager<Args, Ret, Ctx>) => MockSpyInstance | null,
+  ) {
     beforeAll(() => {
       this.clearHandlers()
 
@@ -72,6 +86,15 @@ export class ModuleStubManager<Args extends any[], Ret, Ctx = any> {
       }
 
       this.setupMock(cacheManager)
+
+      // If a spy initialization function is passed, run it here
+      if (setupMockFn && !this.spyInstance) {
+        this.spyInstance = setupMockFn(this)
+      }
+    })
+
+    afterAll(() => {
+      this.restore()
     })
   }
 }

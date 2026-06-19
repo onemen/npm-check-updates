@@ -98,25 +98,7 @@
   },
   "queryVersions > github urls > ignore tags that are not valid versions": {
     "getGitTags": {
-      "https://github.com/raineorshine/ncu-test-v0.1.3a.git": {
-        "0.1.2": "7c1617ccc23b54aeeb63e6a594a65a79ddc885d2",
-        "1.0.5": "d40b3f2b1f7260185c98ffacbd0828eedd41a142",
-        "1.0.6": "cd040c99002b8650e95872c72ce661f527b2f264",
-        "1.0.7": "5bd70fdcbf442fb5c1f34dac449dc789c8474760",
-        "v0.1.3": "6a6b137902a941fc5c680f7b90a1ed233b7d9db6",
-        "v0.1.3a": "3b04fa253d5a0d7e165154ab2429530391e1f1f4",
-        "v0.1.4": "5a42921e5e626d3fb49429dbce0a2b9e235824ed",
-        "v0.1.5": "f3830e7bb7dc2f4ea2062e6175f658fb39d06709",
-        "v0.1.6": "6f9d4cbe2fdc52d8343a29ad5d361f683eeda16e",
-        "v0.1.7": "9f40bfb0d13cfc55a94cabcc1b5c7301f055d7d8",
-        "v0.1.8": "e86917d3e101c9b84ebe4c94f8aef1c4cb06176c",
-        "v1.0.0": "46a9dd345791bded859a187dfab35c14ab8dd84c",
-        "v1.0.1": "3bd8ebb988a8c8b3544ba6150fcebdcd04a42aa5",
-        "v1.0.2": "b7553f61648c9de80f7f72ad27c2bef82f56a75e",
-        "v1.0.3": "8cee4fcdf2be350259831053b72458c05dd67ce5",
-        "v1.0.4": "3dab633f65541b2ba8c113d28eca743016b08c30"
-      },
-      "ssh://git@github.com/raineorshine/ncu-test-invalid-tag.git": {
+      "https://github.com/raineorshine/ncu-test-invalid-tag.git": {
         "0.1": "858303df6a3eb43fb4a793a4d096e41c47294041",
         "1.0": "b2a34fdcd3e9fd13d854a5a9a76bcc59fc2b633b",
         "1.1": "30b27596b2964fa810d5b314a7b7e77cdd6331c6",
@@ -191,6 +173,30 @@
         "v3.0.3": "87b8078d9b6b8556db5c04e0e6c9eb87966cb759",
         "v3.0.4": "4723bccf4321f28d9ac8ec4f8c64b785e277ba71",
         "v3.0.5": "6b8b69261f1aacbb4be037c934f3c3652e6dff27"
+      },
+      "https://github.com/raineorshine/ncu-test-v0.1.3a.git": {
+        "0.1.2": "7c1617ccc23b54aeeb63e6a594a65a79ddc885d2",
+        "1.0.5": "d40b3f2b1f7260185c98ffacbd0828eedd41a142",
+        "1.0.6": "cd040c99002b8650e95872c72ce661f527b2f264",
+        "1.0.7": "5bd70fdcbf442fb5c1f34dac449dc789c8474760",
+        "v0.1.3": "6a6b137902a941fc5c680f7b90a1ed233b7d9db6",
+        "v0.1.3a": "3b04fa253d5a0d7e165154ab2429530391e1f1f4",
+        "v0.1.4": "5a42921e5e626d3fb49429dbce0a2b9e235824ed",
+        "v0.1.5": "f3830e7bb7dc2f4ea2062e6175f658fb39d06709",
+        "v0.1.6": "6f9d4cbe2fdc52d8343a29ad5d361f683eeda16e",
+        "v0.1.7": "9f40bfb0d13cfc55a94cabcc1b5c7301f055d7d8",
+        "v0.1.8": "e86917d3e101c9b84ebe4c94f8aef1c4cb06176c",
+        "v1.0.0": "46a9dd345791bded859a187dfab35c14ab8dd84c",
+        "v1.0.1": "3bd8ebb988a8c8b3544ba6150fcebdcd04a42aa5",
+        "v1.0.2": "b7553f61648c9de80f7f72ad27c2bef82f56a75e",
+        "v1.0.3": "8cee4fcdf2be350259831053b72458c05dd67ce5",
+        "v1.0.4": "3dab633f65541b2ba8c113d28eca743016b08c30"
+      },
+      "ssh://git@github.com/raineorshine/ncu-test-invalid-tag.git": {
+        "_isError": true,
+        "exitCode": 1,
+        "message": "Command failed: git ls-remote --tags ssh://git@github.com/raineorshine/ncu-test-invalid-tag.git\ngit@github.com: Permission denied (publickey).\r\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n",
+        "stderr": "git@github.com: Permission denied (publickey).\r\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n"
       }
     }
   },

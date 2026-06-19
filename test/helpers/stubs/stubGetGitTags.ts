@@ -1,9 +1,8 @@
 import { gitApi } from '../../../src/package-managers/gitTags'
 import { type CacheManager, type DefaultCtx } from '../../types/stubsTypes'
-import { type FileCacheManager } from './FileCacheManager'
 import { createStub } from './genericStubFactory'
 
-type GitTagsCtx = DefaultCtx<typeof gitApi.getGitTags, FileCacheManager>
+type GitTagsCtx = DefaultCtx<typeof gitApi.getGitTags, CacheManager>
 
 /** cache handler */
 const cacheHandler = async (ctx: GitTagsCtx) => {

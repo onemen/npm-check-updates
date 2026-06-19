@@ -1,4 +1,5 @@
-import type { CacheManager, ContextBuilder, DefaultCtx, MockSpyInstance, StubHandler } from '../../types/stubsTypes'
+import type { CacheManager, DefaultCtx } from '../../types/stubsTypes'
+import { ModuleStubManager } from './ModuleStubManager'
 
 /** make sure we get the original function */
 function ensureNotMock(fn: any, key: string | number | symbol) {
@@ -11,81 +12,30 @@ function ensureNotMock(fn: any, key: string | number | symbol) {
 }
 
 /** Generic stub factory */
-export function createStub<F extends (...args: any) => any, Cache = CacheManager, Ctx = DefaultCtx<F, Cache>>(
+export function createStub<
+  F extends (...args: any) => any,
+  Cache = CacheManager,
+  Ctx = DefaultCtx<F, Cache>,
+  Args extends any[] = Parameters<F>,
+  Ret = Awaited<ReturnType<F>>,
+>(
   original: F,
   spyTarget: Record<string | number, any>,
   spyKey: string | number,
-  buildContext?: ContextBuilder<F, Cache, Ctx>,
-  spyName: string = spyKey.toString(),
+  buildContext?: (data: { raw: Args; original: (...args: Args) => Promise<Ret>; cache: Cache }) => Ctx,
 ) {
   ensureNotMock(original, spyKey)
 
-  const realOriginal = original
-  let spyInstance: MockSpyInstance | null = null
+  const stub = new ModuleStubManager<Args, Ret, Ctx>(spyKey.toString(), original, buildContext as any)
 
-  type Args = Parameters<F>
-  type Ret = Awaited<ReturnType<F>>
-  type Handler = StubHandler<Ctx, F>
+  // Intercept registerLifecycle to automatically provide the vi.spyOn initialization step
+  const originalRegister = stub.registerLifecycle.bind(stub)
 
-  return {
-    key: spyName,
-
-    handlers: [] as Handler[],
-
-    use(handler: Handler) {
-      this.handlers.push(handler)
-    },
-
-    useFirst(handler: Handler) {
-      this.handlers.unshift(handler)
-    },
-
-    clearHandlers() {
-      this.handlers = []
-    },
-
-    setupMock(cache?: Cache) {
-      if (spyInstance) return
-
-      /** spy implementation */
-      const impl = async (raw: Args): Promise<Ret> => {
-        const ctx: Ctx = buildContext
-          ? buildContext({ raw, original: realOriginal, cache })
-          : ({ raw, original: realOriginal, cache } as DefaultCtx<F, Cache> as Ctx)
-
-        for (const handler of this.handlers) {
-          const result = await handler(ctx)
-          if (result !== undefined) return result
-        }
-
-        return await realOriginal(...raw)
-      }
-
-      spyInstance = vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: Args) => impl(raw)) as F)
-    },
-
-    restore() {
-      this.clearHandlers()
-      if (spyInstance) {
-        spyInstance.mockRestore()
-        spyInstance = null
-      }
-    },
-
-    registerLifecycle(cacheManager: Cache, defaultHandlers: Handler[] = []) {
-      beforeAll(() => {
-        this.clearHandlers()
-
-        for (const handler of defaultHandlers) {
-          this.use(handler)
-        }
-
-        this.setupMock(cacheManager)
-      })
-
-      afterAll(() => {
-        this.restore()
-      })
-    },
+  stub.registerLifecycle = (cacheManager: any, defaultHandlers?: any) => {
+    originalRegister(cacheManager, defaultHandlers, instance => {
+      return vi.spyOn(spyTarget, spyKey).mockImplementation(((...raw: Args) => instance.handleExecution(raw)) as any)
+    })
   }
+
+  return stub
 }
