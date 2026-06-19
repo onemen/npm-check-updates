@@ -2,7 +2,6 @@ import fs from 'fs/promises'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
-import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
@@ -246,7 +245,7 @@ else {
       )
 
       // explicitly set packageManager to avoid auto yarn detection
-      await spawn('npm', ['install'], {}, { cwd: tempDir })
+      await spawnPleaseSpy('npm', ['install'], {}, { cwd: tempDir })
       const { stdout, stderr } = await runNcuCli(['--doctor', '-u', '-p', 'npm'], {
         rejectOnError: false,
         cwd: tempDir,
