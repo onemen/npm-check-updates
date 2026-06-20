@@ -524,7 +524,7 @@ describe('cooldown', () => {
       }),
     )
 
-    const logSpy = Sinon.stub(console, 'log')
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     silenceProgressBar()
 
     // When ncu is run with cooldown and jsonUpgraded disabled
@@ -532,12 +532,12 @@ describe('cooldown', () => {
     await ncu({ packageData, cooldown, target: 'latest', jsonUpgraded: false, loglevel: 'warn' })
 
     // Then: the output should say "All dependencies match the latest package versions", not "No package versions were returned"
-    const allMessages = logSpy.args.flat().filter(arg => typeof arg === 'string')
+    const allMessages = logSpy.mock.calls.flat().filter(arg => typeof arg === 'string')
     expect(allMessages.some(msg => msg.includes('All dependencies match the latest package versions'))).to.be.true
     expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
 
-    logSpy.restore()
-    stub.restore()
+    logSpy.mockRestore()
+    stub.mockRestore()
   })
 
   describe('when @TAG target', () => {
@@ -1693,12 +1693,12 @@ describe('cooldown', () => {
       format: ['cooldown'],
     }
 
-    let stub: { restore: () => void }
+    let stub: { mockRestore: () => void }
     const versions = {
       'test-package': mockedVersion,
       'test-package-with-no-time': mockedVersionWithNoTime,
     }
-    after(() => stub.restore())
+    afterAll(() => stub.mockRestore())
 
     const targets = ['latest', 'greatest', 'minor', 'patch', 'semver'] as const
     targets.forEach(async target => {
@@ -1709,7 +1709,7 @@ describe('cooldown', () => {
         stub = stubVersions(versions)
         const cooldown = 5
 
-        const logSpy = Sinon.stub(console, 'log')
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
         await ncu({ ...options, cooldown, target })
@@ -1723,7 +1723,7 @@ describe('cooldown', () => {
         expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] ${truncateVersion}`)
         expect(allMessages[4]).to.equal(`test-package-with-no-time ^1.0.0 → ^${upgradeVersion} [missing time]`)
 
-        logSpy.restore()
+        logSpy.mockRestore()
       })
     })
 
@@ -1731,7 +1731,7 @@ describe('cooldown', () => {
       stub = stubVersions(versions)
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: '@latest' })
@@ -1742,7 +1742,7 @@ describe('cooldown', () => {
       expect(allMessages[1]).to.equal(`test-package ^1.0.0 → ^1.0.2 3 days ago`)
       expect(allMessages[3]).to.equal(`test-package-with-no-time ^1.0.0 → ^1.0.2 [missing time]`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
 
     it(`"target: newest" - ignore versions without time`, async () => {
@@ -1751,7 +1751,7 @@ describe('cooldown', () => {
       stub = stubVersions(versions)
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: 'newest' })
@@ -1762,7 +1762,7 @@ describe('cooldown', () => {
       expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.3-+`)
       expect(allMessages[4]).to.equal(`test-package-with-no-time ^1.0.0 → ^1.0.1`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
 
     it(`"target: newest" - no upgrade is possible when all times are missing`, async () => {
@@ -1774,7 +1774,7 @@ describe('cooldown', () => {
 
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: 'newest' })
@@ -1785,7 +1785,7 @@ describe('cooldown', () => {
       expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.3-+`)
       expect(allMessages.join('/n')).not.to.include(`test-package-with-no-time`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
     // prints "All dependencies match the latest package versions"
     it(`handles "target: newest" when all packages are without time`, async () => {
@@ -1797,7 +1797,7 @@ describe('cooldown', () => {
 
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: 'newest' })
@@ -1805,7 +1805,7 @@ describe('cooldown', () => {
       const allMessages = getNormalizedLogs(logSpy)
       expect(allMessages[0]).to.equal(`All dependencies match the newest package versions :)`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
   })
 
@@ -1843,7 +1843,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, packageData, target: '@latest' })
@@ -1852,8 +1852,8 @@ describe('cooldown', () => {
       expect(allMessages.length).to.equal(1)
       expect(allMessages[0]).to.equal(`test-package 2.0.0-beta.1 → 1.5.0`)
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
 
     it('skip by cooldown downgrades from prerelease to older stable version when target @latest is within cooldown', async () => {
@@ -1879,7 +1879,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, packageData, target: '@latest' })
@@ -1891,8 +1891,8 @@ describe('cooldown', () => {
       expect(allMessages.join('\n')).not.to.include(`test-package 2.0.0-beta.1 → 1.0.0`)
       expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @latest package versions :)`)
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
 
     it('skip by cooldown upgrades from prerelease to specific tag when target tag version is within cooldown', async () => {
@@ -1918,7 +1918,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, packageData, target: '@next' })
@@ -1930,8 +1930,8 @@ describe('cooldown', () => {
       expect(allMessages.join('\n')).not.to.include(`test-package 1.0.0-dev.0 → 1.1.0-dev.0`)
       expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @next package versions :)`)
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
   })
 })

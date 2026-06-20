@@ -241,13 +241,13 @@ describe('bin', async function () {
 
   it('do not warn about empty results when every dep is already at the highest version for non-latest --target', async () => {
     const stub = stubVersions({ 'ncu-test-v2': '1.0.0' }, { spawn: true })
-    const { stdout } = await spawn('node', [bin, '--stdin', '--target', 'minor'], {
+    const { stdout } = await runNcuCli(['--stdin', '--target', 'minor'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
     const out = stripAnsi(stdout)!
     out.should.not.include('No package versions were returned.')
     out.should.include('All dependencies match the minor package versions')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('combine boolean flags with arguments', async () => {
