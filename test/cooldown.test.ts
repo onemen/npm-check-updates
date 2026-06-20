@@ -1597,31 +1597,26 @@ describe('cooldown', () => {
   })
 
   describe('pnpm global minimumReleaseAge config fallback', () => {
-    let originalCwd: string
     let originalXdg: string | undefined
     let projectDir: string
     let xdgDir: string
 
     beforeEach(async () => {
-      originalCwd = process.cwd()
       originalXdg = process.env.XDG_CONFIG_HOME
       // A project directory without a pnpm-workspace.yaml so the workspace layer is absent.
-      projectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-project-'))
+      projectDir = sandbox.cwd
       // An isolated XDG_CONFIG_HOME so pnpm's global config resolves to a temp directory.
       xdgDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-xdg-'))
       await fs.mkdir(path.join(xdgDir, 'pnpm'), { recursive: true })
       process.env.XDG_CONFIG_HOME = xdgDir
-      process.chdir(projectDir)
     })
 
     afterEach(async () => {
-      process.chdir(originalCwd)
       if (originalXdg === undefined) {
         delete process.env.XDG_CONFIG_HOME
       } else {
         process.env.XDG_CONFIG_HOME = originalXdg
       }
-      await fs.rm(projectDir, { recursive: true, force: true })
       await fs.rm(xdgDir, { recursive: true, force: true })
     })
 
