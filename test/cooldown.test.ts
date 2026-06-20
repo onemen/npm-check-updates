@@ -1698,7 +1698,7 @@ describe('cooldown', () => {
       'test-package': mockedVersion,
       'test-package-with-no-time': mockedVersionWithNoTime,
     }
-    afterAll(() => stub.mockRestore())
+    afterEach(() => stub.mockRestore())
 
     const targets = ['latest', 'greatest', 'minor', 'patch', 'semver'] as const
     targets.forEach(async target => {

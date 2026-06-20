@@ -109,7 +109,7 @@ let stub: { mockRestore: () => void }
 
 describe('workspaces', () => {
   describe('stubbed', () => {
-    beforeAll(() => {
+    beforeEach(() => {
       stub = stubVersions(
         {
           'ncu-test-v2': '2.0.0',
@@ -119,7 +119,7 @@ describe('workspaces', () => {
         { spawn: true },
       )
     })
-    afterAll(() => {
+    afterEach(() => {
       stub.mockRestore()
     })
 

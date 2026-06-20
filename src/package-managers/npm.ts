@@ -1098,8 +1098,8 @@ export const distTag: GetVersion = async (
   const current = (nodeSemver.validRange(currentVersion) && nodeSemver.minVersion(currentVersion)?.version) || '0.0.0'
 
   const isSatisfiesCooldown =
-    tagPackument.version === current ||
-    (tagPackument && satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown))
+    tagPackument?.version === current ||
+    (tagPackument && satisfiesCooldownPeriod(packageName, tagPackument?.version, publishTime, options.cooldown))
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it

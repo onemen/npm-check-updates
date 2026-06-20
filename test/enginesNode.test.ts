@@ -6,7 +6,7 @@ import stubVersions from './helpers/stubVersions'
 
 describe('enginesNode', () => {
   let stub: { mockRestore: () => void }
-  beforeAll(() => {
+  beforeEach(() => {
     stub = stubVersions({
       del: {
         version: '8.0.1',
@@ -22,7 +22,7 @@ describe('enginesNode', () => {
       'ncu-test-v2': '2.0.0',
     } as MockedVersions)
   })
-  afterAll(() => {
+  afterEach(() => {
     stub.mockRestore()
   })
 

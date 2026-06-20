@@ -36,11 +36,13 @@ describe('bun', function () {
           `System Error: ${details}`,
       )
     }
+  })
 
+  beforeEach(async () => {
     versionStub = stubVersions(mockNpmVersions, { spawn: true })
   })
 
-  afterAll(async () => {
+  afterEach(async () => {
     versionStub?.mockRestore()
   })
 

@@ -11,8 +11,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 describe('filter', () => {
   describe('module', () => {
     let stub: { mockRestore: () => void }
-    beforeAll(() => (stub = stubVersions('99.9.9')))
-    afterAll(() => stub.mockRestore())
+    beforeEach(() => (stub = stubVersions('99.9.9')))
+    afterEach(() => stub.mockRestore())
 
     it('filter by package name with one arg', async () => {
       const upgraded = (await ncu({
@@ -209,8 +209,8 @@ describe('filter', () => {
 
   describe('cli', () => {
     let stub: { mockRestore: () => void }
-    beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
-    afterAll(() => stub.mockRestore())
+    beforeEach(() => (stub = stubVersions('99.9.9', { spawn: true })))
+    afterEach(() => stub.mockRestore())
 
     it('filter by package name with --filter', async () => {
       const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '--filter', 'express'], {
@@ -298,8 +298,8 @@ describe('filter', () => {
 describe('reject', () => {
   describe('cli', () => {
     let stub: { mockRestore: () => void }
-    beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
-    afterAll(() => stub.mockRestore())
+    beforeEach(() => (stub = stubVersions('99.9.9', { spawn: true })))
+    afterEach(() => stub.mockRestore())
 
     it('reject by package name with --reject', async () => {
       const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '--reject', 'chalk'], {

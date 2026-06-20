@@ -16,7 +16,12 @@ describe('target', () => {
       'ncu-mock-pre': ncuMockPreData,
       'ncu-test-semver': {
         version: '0.0.0',
-        versions: [{ version: '1.0.0' }, { version: '1.0.1' }, { version: '1.1.0' }, { version: '1.2.0' }],
+        versions: {
+          '1.0.0': { version: '1.0.0' },
+          '1.0.1': { version: '1.0.1' },
+          '1.1.0': { version: '1.1.0' },
+          '1.2.0': { version: '1.2.0' },
+        },
       },
       'ncu-test-pre1': '0.1.2',
       'eslint-plugin-jsdoc': '36.1.1',
@@ -466,30 +471,30 @@ describe('target', () => {
 
 describe('tags', () => {
   let stub: { mockRestore: () => void }
-  beforeEach(() => {
-    stub = stubVersions({
-      name: 'ncu-test-tag',
-      version: '1.1.0',
-      'dist-tags': {
-        beta: '1.0.1-beta.0',
-        latest: '1.1.0',
-        next: '1.0.0-1',
-        'task-42': '1.0.0-task-42.0',
-      },
-      versions: {
-        '1.1.0': { version: '1.1.0' },
-        '1.0.0-task-42.0': { version: '1.0.0-task-42.0' },
-        '1.0.1-beta.0': { version: '1.0.1-beta.0' },
-        '1.0.0-1': { version: '1.0.0-1' },
-        '0.1.0': { version: '0.1.0' },
-      },
-    } as MockedVersions)
-  })
+  const versionInfo = {
+    name: 'ncu-test-tag',
+    version: '1.1.0',
+    'dist-tags': {
+      beta: '1.0.1-beta.0',
+      latest: '1.1.0',
+      next: '1.0.0-1',
+      'task-42': '1.0.0-task-42.0',
+    },
+    versions: {
+      '1.1.0': { version: '1.1.0' },
+      '1.0.0-task-42.0': { version: '1.0.0-task-42.0' },
+      '1.0.1-beta.0': { version: '1.0.1-beta.0' },
+      '1.0.0-1': { version: '1.0.0-1' },
+      '0.1.0': { version: '0.1.0' },
+    },
+  } as MockedVersions
+
   afterEach(() => {
     stub.mockRestore()
   })
 
   it('upgrade nonprerelease version to specific tag', async () => {
+    stub = stubVersions(versionInfo)
     const upgraded = (await ncu({
       target: '@next',
       packageData: {
@@ -503,6 +508,7 @@ describe('tags', () => {
   })
 
   it('upgrade prerelease version without preid to nonprerelease', async () => {
+    stub = stubVersions(versionInfo)
     const upgraded = (await ncu({
       target: 'latest',
       packageData: {
@@ -516,6 +522,7 @@ describe('tags', () => {
   })
 
   it('upgrade prerelease version with preid to higher version on a specific tag', async () => {
+    stub = stubVersions(versionInfo)
     const upgraded = (await ncu({
       target: '@beta',
       packageData: {
@@ -530,6 +537,7 @@ describe('tags', () => {
 
   // can't detect which prerelease is higher, so just allow switching
   it('upgrade from prerelease without preid to prerelease with preid at a specific tag if major.minor.patch is the same', async () => {
+    stub = stubVersions(versionInfo)
     const upgraded = (await ncu({
       target: '@task-42',
       packageData: {
@@ -544,6 +552,7 @@ describe('tags', () => {
 
   // need to test reverse order too, because by base semver logic preid are sorted alphabetically
   it('upgrade from prerelease with preid to prerelease without preid at a specific tag if major.minor.patch is the same', async () => {
+    stub = stubVersions(versionInfo)
     const upgraded = (await ncu({
       target: '@next',
       packageData: {
@@ -559,6 +568,7 @@ describe('tags', () => {
   // comparing semver between different dist-tags is incorrect, both versions could be released from the same latest
   // so instead of looking at numbers, we should focus on intention of the user upgrading to specific dist-tag
   it('downgrade to tag with a non-matching preid and lower patch', async () => {
+    stub = stubVersions(versionInfo)
     const upgraded = (await ncu({
       target: '@task-42',
       packageData: {
@@ -573,6 +583,7 @@ describe('tags', () => {
 
   // same as previous, doesn't matter if it's patch, minor or major, comparing different dist-tags is incorrect
   it('downgrade to tag with a non-matching preid and lower minor', async () => {
+    stub = stubVersions(versionInfo)
     const upgraded = (await ncu({
       target: '@next',
       packageData: {
@@ -586,7 +597,7 @@ describe('tags', () => {
   })
 
   it('do not downgrade nonprerelease version to lower version with specific tag', async () => {
-    const stub = stubVersions('1.0.0-1')
+    stub = stubVersions('1.0.0-1')
 
     const upgraded = await ncu({
       target: '@next',
@@ -598,12 +609,10 @@ describe('tags', () => {
     })
 
     upgraded!.should.not.have.property('ncu-test-tag')
-
-    stub.mockRestore()
   })
 
   it('do not downgrade to latest with lower version by default', async () => {
-    const stub = stubVersions('1.1.0')
+    stub = stubVersions('1.1.0')
 
     const upgraded = await ncu({
       packageData: {
@@ -614,12 +623,10 @@ describe('tags', () => {
     })
 
     upgraded!.should.not.have.property('ncu-test-tag')
-
-    stub.mockRestore()
   })
 
   it('do not downgrade to latest with lower version with --target latest', async () => {
-    const stub = stubVersions('1.1.0')
+    stub = stubVersions('1.1.0')
 
     const upgraded = await ncu({
       target: 'latest',
@@ -631,12 +638,10 @@ describe('tags', () => {
     })
 
     upgraded!.should.not.have.property('ncu-test-tag')
-
-    stub.mockRestore()
   })
 
   it('downgrade to latest with lower version with explicit --target @latest', async () => {
-    const stub = stubVersions('1.1.0')
+    stub = stubVersions('1.1.0')
 
     const upgraded = (await ncu({
       target: '@latest',
@@ -648,12 +653,10 @@ describe('tags', () => {
     })) as Index<Version>
 
     upgraded['ncu-test-tag'].should.equal('^1.1.0')
-
-    stub.mockRestore()
   })
 
   it('downgrade to latest with lower version with target function returning @latest', async () => {
-    const stub = stubVersions('1.1.0')
+    stub = stubVersions('1.1.0')
 
     const upgraded = (await ncu({
       target: () => '@latest',
@@ -665,7 +668,5 @@ describe('tags', () => {
     })) as Index<Version>
 
     upgraded['ncu-test-tag'].should.equal('^1.1.0')
-
-    stub.mockRestore()
   })
 }) // end 'tags'

@@ -8,8 +8,8 @@ import stubVersions from '../../helpers/stubVersions'
 
 describe('deno', async function () {
   let versionStub: { mockRestore: () => void }
-  beforeAll(() => (versionStub = stubVersions({ 'ncu-test-v2': '2.0.0' })))
-  afterAll(() => versionStub.mockRestore())
+  beforeEach(() => (versionStub = stubVersions({ 'ncu-test-v2': '2.0.0' })))
+  afterEach(() => versionStub.mockRestore())
 
   it('handle import map', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))

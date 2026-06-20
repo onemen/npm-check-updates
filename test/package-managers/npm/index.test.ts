@@ -53,10 +53,13 @@ describe('npm', function () {
         },
       },
     } as MockedVersions)
-    await npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1').should.eventually.equal(true)
-    await npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0').should.eventually.equal(false)
-    await npm.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0').should.eventually.equal(false)
-    stub.mockRestore()
+    try {
+      await npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1').should.eventually.equal(true)
+      await npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0').should.eventually.equal(false)
+      await npm.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0').should.eventually.equal(false)
+    } finally {
+      stub.mockRestore()
+    }
   })
 
   it('getPeerDependencies', async () => {
@@ -78,11 +81,14 @@ describe('npm', function () {
         engines: {},
       },
     } as MockedVersions)
-    await npm.getEngines('del', '2.0.0').should.eventually.deep.equal({ node: '>=0.10.0' })
-    await npm.getEngines('ncu-test-return-version', '1.0.0').should.eventually.deep.equal({})
-    await npm
-      .getEngines('ncu-test-return-version', '1.0')
-      .should.eventually.be.rejectedWith('404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/1.0')
-    stub.mockRestore()
+    try {
+      await npm.getEngines('del', '2.0.0').should.eventually.deep.equal({ node: '>=0.10.0' })
+      await npm.getEngines('ncu-test-return-version', '1.0.0').should.eventually.deep.equal({})
+      await npm
+        .getEngines('ncu-test-return-version', '1.0')
+        .should.eventually.be.rejectedWith('404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/1.0')
+    } finally {
+      stub.mockRestore()
+    }
   })
 })

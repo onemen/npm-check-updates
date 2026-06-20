@@ -22,12 +22,13 @@ describe('doctor', function () {
   let stub: { mockRestore: () => void }
 
   beforeAll(async () => {
-    stub = stubVersions(mockNpmVersions, { spawn: true })
     stubSpawnPlease.useFirst(doctorSpawnHandler)
   })
 
+  beforeEach(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
+  afterEach(() => stub.mockRestore())
+
   afterAll(async () => {
-    stub.mockRestore()
     vi.restoreAllMocks()
     sandbox.cleanup()
   })

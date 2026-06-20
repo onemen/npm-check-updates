@@ -7,7 +7,7 @@ import stubVersions from './helpers/stubVersions'
 
 describe('--interactive', () => {
   let stub: { mockRestore: () => void }
-  beforeAll(() => {
+  beforeEach(() => {
     stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
@@ -20,7 +20,7 @@ describe('--interactive', () => {
     )
   })
 
-  afterAll(() => {
+  afterEach(() => {
     stub.mockRestore()
   })
 

@@ -52,13 +52,13 @@ describe('yarn', function () {
     const testDir = path.join(__dirname, 'default')
     versionStub = stubVersions({
       version: '1.15.0',
-      versions: [
-        { version: '1.15.0', deprecated: true },
-        { version: '1.16.0', deprecated: true },
-        { version: '1.16.1', deprecated: true },
-        { version: '1.16.1-lts' },
-        { version: '2.0.0-next-4' },
-      ],
+      versions: {
+        '1.15.0': { version: '1.15.0', deprecated: true },
+        '1.16.0': { version: '1.16.0', deprecated: true },
+        '1.16.1': { version: '1.16.1', deprecated: true },
+        '1.16.1-lts': { version: '1.16.1-lts' },
+        '2.0.0-next-4': { version: '2.0.0-next-4' },
+      },
       time: {},
     } as MockedVersions)
     const { version } = await yarn.minor('popper.js', '1.15.0', { cwd: testDir, pre: true })

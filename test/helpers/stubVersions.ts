@@ -1,5 +1,28 @@
+import { type RunnerTestFile } from 'vitest'
+import { expect } from 'vitest'
 import { npmApi } from '../../src/package-managers/npm'
 import { type MockedVersions } from '../../src/types/MockedVersions'
+
+/** throw if test file have a leaked stub */
+export function ensureNotLeaked(stubName: string, methodName: keyof typeof npmApi) {
+  if (!vi.isMockFunction(npmApi[methodName])) {
+    return
+  }
+
+  const state = expect.getState()
+  const file = { filepath: state.testPath } as RunnerTestFile
+
+  const message =
+    `Leaked stub: ${stubName}\n` +
+    `  Method: ${methodName}\n` +
+    `  File: ${file.filepath}\n` +
+    `  Note: This mock was already active before this stub was created.\n` +
+    `        The leak may have originated in this test file OR in a previous\n` +
+    `        test file that ran earlier in the same worker.\n` +
+    `  Fix: Ensure every test that creates this stub calls stub.mockRestore() in afterEach.`
+
+  throw new Error(message)
+}
 
 /** Stubs the npmView function from package-managers/npm. Returns the stub object. Call stub.mockRestore() after assertions to restore the original function. Set spawn:true to stub ncu spawned as a child process. */
 const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: boolean } = {}) => {
@@ -14,6 +37,8 @@ const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?:
       },
     }
   }
+
+  ensureNotLeaked('stubVersions', 'fetchUpgradedPackumentMemo')
 
   // Save the original memoized method reference to avoid fast-memoize side effects
   const originalMethod = npmApi.fetchUpgradedPackumentMemo
@@ -34,6 +59,8 @@ const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?:
 
 /** Stubs fetchPartialPackument. Returns the stub object. Call stub.mockRestore() after assertions to restore the original function. */
 export const stubFetchPartialPackument = (mockReturnedVersions: MockedVersions) => {
+  ensureNotLeaked('stubFetchPartialPackument', 'fetchPartialPackument')
+
   const originalMethod = npmApi.fetchPartialPackument
 
   const mockFn = vi.fn().mockImplementation(npmApi.mockFetchPartialPackument(mockReturnedVersions))

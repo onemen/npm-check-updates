@@ -99,7 +99,11 @@ describe('run', function () {
     stub = stubVersions({
       name: 'ncu-test-alpha-latest',
       version: '1.0.0-alpha.1',
-      versions: [{ version: '1.0.0-alpha.1' }, { version: '1.0.0-alpha.2' }],
+      'dist-tags': { latest: '1.0.0-alpha.2' },
+      versions: {
+        '1.0.0-alpha.1': { version: '1.0.0-alpha.1' },
+        '1.0.0-alpha.2': { version: '1.0.0-alpha.2' },
+      },
     } as MockedVersions)
     return ncu({
       packageData: {
@@ -118,7 +122,11 @@ describe('run', function () {
     stub = stubVersions({
       name: 'ncu-test-alpha-latest',
       version: '1.0.0-alpha.1',
-      versions: [{ version: '1.0.0-alpha.1' }, { version: '1.0.0-alpha.2' }],
+      'dist-tags': { latest: '1.0.0-alpha.2' },
+      versions: {
+        '1.0.0-alpha.1': { version: '1.0.0-alpha.1' },
+        '1.0.0-alpha.2': { version: '1.0.0-alpha.2' },
+      },
     } as MockedVersions)
     return ncu({
       pre: false,

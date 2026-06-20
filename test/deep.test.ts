@@ -64,8 +64,8 @@ const setupDeepStatusTest = async () => {
 
 describe('--deep', function () {
   let stub: { mockRestore: () => void }
-  beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  afterAll(() => stub.mockRestore())
+  beforeEach(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterEach(() => stub.mockRestore())
 
   it('do not allow --packageFile and --deep together', async () => {
     await ncu({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
@@ -175,8 +175,8 @@ describe('--deep with nested ncurc files', function () {
   const cwd = path.join(__dirname, 'test-data/deep-ncurc')
 
   let stub: { mockRestore: () => void }
-  beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  afterAll(() => stub.mockRestore())
+  beforeEach(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterEach(() => stub.mockRestore())
 
   it('use ncurc of nested packages', async () => {
     const { stdout } = await runNcuCli(['--jsonUpgraded', '--deep'], { cwd })
