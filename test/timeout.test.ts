@@ -20,13 +20,9 @@ function getLastFetchUpgradedPackumentResult<T>() {
 
 describe('timeout', async () => {
   let pkgPath: string
-  let stub: { mockRestore: () => void }
   beforeEach(async () => {
     pkgPath = await sandbox.createPackageJson({ dependencies: { express: '1' } })
-    stub = stubVersions({ express: '1' })
-  })
-  afterEach(async () => {
-    stub.mockRestore()
+    stubVersions({ express: '1' })
   })
 
   it('throw an exception instead of printing to the console when timeout is exceeded', async () => {

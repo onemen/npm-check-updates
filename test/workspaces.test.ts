@@ -105,22 +105,14 @@ const setupSymlinkedPackages = async (
   return tempDir
 }
 
-let stub: { mockRestore: () => void }
-
 describe('workspaces', () => {
   describe('stubbed', () => {
     beforeEach(() => {
-      stub = stubVersions(
-        {
-          'ncu-test-v2': '2.0.0',
-          'ncu-test-tag': '1.1.0',
-          'ncu-test-return-version': '2.0.0',
-        },
-        { spawn: true },
-      )
-    })
-    afterEach(() => {
-      stub.mockRestore()
+      stubVersions({
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-tag': '1.1.0',
+        'ncu-test-return-version': '2.0.0',
+      })
     })
 
     describe('--workspaces', function () {

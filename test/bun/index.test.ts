@@ -17,8 +17,6 @@ const mockNpmVersions = {
 }
 
 describe('bun', function () {
-  let versionStub: { mockRestore: () => void }
-
   // Use a synchronous check to fail the suite immediately if bun is missing
   beforeAll(function () {
     const result = spawnSync('bun', ['--version'], {
@@ -39,11 +37,7 @@ describe('bun', function () {
   })
 
   beforeEach(async () => {
-    versionStub = stubVersions(mockNpmVersions, { spawn: true })
-  })
-
-  afterEach(async () => {
-    versionStub?.mockRestore()
+    stubVersions(mockNpmVersions)
   })
 
   it('list', async () => {

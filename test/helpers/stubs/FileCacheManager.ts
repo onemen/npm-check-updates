@@ -13,7 +13,7 @@ export class FileCacheManager {
   /** Tracks which entries were actually used: "testName::stubName::key" */
   private invokedPaths = new Set<string>()
 
-  public static registerLifecycle() {
+  public static register() {
     const manager = new FileCacheManager()
 
     // eslint-disable-next-line no-empty-pattern

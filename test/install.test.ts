@@ -19,7 +19,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -32,7 +32,6 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
@@ -43,7 +42,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -55,7 +54,6 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
@@ -66,7 +64,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -79,7 +77,6 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
   })
@@ -92,7 +89,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -109,7 +106,6 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
@@ -120,7 +116,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -133,7 +129,6 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
@@ -144,7 +139,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -159,7 +154,6 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
@@ -170,7 +164,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -185,7 +179,6 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
   })

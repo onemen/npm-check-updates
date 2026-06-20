@@ -16,7 +16,6 @@ const NOW = Date.now()
 const getTime = (daysAgo: number) => new Date(NOW - daysAgo * DAY).toISOString()
 
 describe('cache', () => {
-  let versionStub: { mockRestore: () => void }
   let cacheFile: string
 
   beforeEach(async () => {
@@ -25,12 +24,11 @@ describe('cache', () => {
   })
 
   afterEach(async () => {
-    versionStub?.mockRestore()
     await fs.rm(cacheFile, { recursive: true, force: true })
   })
 
   it('cache latest versions', async () => {
-    versionStub = stubVersions({
+    stubVersions({
       'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': getTime(10) } },
       'ncu-test-tag': { version: '1.1.0', time: { '1.1.0': getTime(20) } },
       'ncu-test-alpha': { version: '1.0.0', time: { '1.0.0': getTime(30) } },
@@ -76,7 +74,7 @@ describe('cache', () => {
       'ncu-test-alpha': { version: '2.0.0-alpha.2', time: { '2.0.0-alpha.2': getTime(15) } },
     }
 
-    versionStub = stubVersions(options => {
+    stubVersions(options => {
       if (options.target === 'latest') return latest
       if (options.target === 'greatest') return greatest
       return null
@@ -122,7 +120,7 @@ describe('cache', () => {
   })
 
   it('clears the cache file', async () => {
-    versionStub = stubVersions('99.9.9')
+    stubVersions('99.9.9')
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -144,7 +142,7 @@ describe('cache', () => {
   })
 
   it('expires cache when schema version does not match', async () => {
-    versionStub = stubVersions('2.0.0')
+    stubVersions('2.0.0')
     const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
 
     // 1. Manually write an "old" schema (e.g., schema: 0)
@@ -167,7 +165,7 @@ describe('cache', () => {
   })
 
   it('expires cache when timestamp is older than 10 minutes', async () => {
-    versionStub = stubVersions('2.0.0')
+    stubVersions('2.0.0')
     const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
 
     // 1. Create a cache file with a valid schema but expired timestamp (11 mins ago)

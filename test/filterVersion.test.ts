@@ -4,16 +4,12 @@ import stubVersions from './helpers/stubVersions'
 
 describe('filterVersion', () => {
   describe('module', () => {
-    let stub: { mockRestore: () => void }
     beforeEach(() => {
-      stub = stubVersions({
+      stubVersions({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
         'fp-and-or': '1.0.2',
       })
-    })
-    afterEach(() => {
-      stub.mockRestore()
     })
 
     it('filter by package version with string', async () => {
@@ -112,7 +108,7 @@ describe('filterVersion', () => {
 
   describe('cli', () => {
     it('allow multiple --filterVersion options', async () => {
-      const stub = stubVersions('99.9.9', { spawn: true })
+      stubVersions('99.9.9')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -127,7 +123,6 @@ describe('filterVersion', () => {
       const upgraded = JSON.parse(stdout)
       upgraded.should.have.property('ncu-test-v2')
       upgraded.should.have.property('ncu-test-10')
-      stub.mockRestore()
     })
   })
 })
@@ -135,7 +130,7 @@ describe('filterVersion', () => {
 describe('rejectVersion', () => {
   describe('cli', () => {
     it('allow multiple --rejectVersion options', async () => {
-      const stub = stubVersions('99.9.9', { spawn: true })
+      stubVersions('99.9.9')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -150,7 +145,6 @@ describe('rejectVersion', () => {
       const upgraded = JSON.parse(stdout)
       upgraded.should.not.have.property('ncu-test-v2')
       upgraded.should.not.have.property('ncu-test-10')
-      stub.mockRestore()
     })
   })
 })

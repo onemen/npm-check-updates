@@ -30,27 +30,22 @@ const cleanEnv = {
 }
 
 describe('yarn', function () {
-  let versionStub: { mockRestore: () => void }
-  afterEach(() => {
-    versionStub?.mockRestore()
-  })
-
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
-    versionStub = stubVersions({ chalk: '5.0.0' })
+    stubVersions({ chalk: '5.0.0' })
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
 
   it('greatest', async () => {
-    versionStub = stubVersions({ 'ncu-test-greatest-not-newest': '2.0.0-beta' })
+    stubVersions({ 'ncu-test-greatest-not-newest': '2.0.0-beta' })
     const { version } = await yarn.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })
 
   it('avoids deprecated', async () => {
     const testDir = path.join(__dirname, 'default')
-    versionStub = stubVersions({
+    stubVersions({
       version: '1.15.0',
       versions: {
         '1.15.0': { version: '1.15.0', deprecated: true },

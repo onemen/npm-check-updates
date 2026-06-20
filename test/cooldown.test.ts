@@ -90,7 +90,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 7 * DAY).toISOString() },
@@ -104,8 +104,6 @@ describe('cooldown', () => {
       })
 
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('skips upgrade when cooldown is given in days ("6d") and version is inside period', async () => {
@@ -113,7 +111,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 5 * DAY).toISOString() },
@@ -127,8 +125,6 @@ describe('cooldown', () => {
       })
 
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
 
     it('upgrades package when cooldown is given in hours ("12h")', async () => {
@@ -137,7 +133,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 13 * HOUR).toISOString() },
@@ -151,8 +147,6 @@ describe('cooldown', () => {
       })
 
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('skips upgrade when cooldown is given in hours ("12h") and version is inside period', async () => {
@@ -161,7 +155,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 11 * HOUR).toISOString() },
@@ -175,8 +169,6 @@ describe('cooldown', () => {
       })
 
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
 
     it('upgrades package when cooldown is given in minutes ("30m")', async () => {
@@ -185,7 +177,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 31 * MINUTE).toISOString() },
@@ -199,8 +191,6 @@ describe('cooldown', () => {
       })
 
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('skips upgrade when cooldown is given in minutes ("30m") and version is inside period', async () => {
@@ -209,7 +199,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 29 * MINUTE).toISOString() },
@@ -223,8 +213,6 @@ describe('cooldown', () => {
       })
 
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
 
     it('"6d" string is equivalent to the number 6', async () => {
@@ -238,19 +226,16 @@ describe('cooldown', () => {
         distTags: { latest: '1.1.0' },
       })
 
-      const stub1 = stubVersions(mockData)
+      stubVersions(mockData)
       const resultNumber = await ncu({
         packageData,
         cooldown: 6,
       })
-      stub1.mockRestore()
 
-      const stub2 = stubVersions(mockData)
       const resultString = await ncu({
         packageData,
         cooldown: '6d',
       })
-      stub2.mockRestore()
 
       expect(resultNumber).to.deep.equal(resultString)
     })
@@ -263,7 +248,7 @@ describe('cooldown', () => {
         'test-package': '1.0.0',
       },
     }
-    const stub = stubVersions(
+    stubVersions(
       createMockVersion({
         name: 'test-package',
         versions: {
@@ -283,7 +268,6 @@ describe('cooldown', () => {
     // Then: package is upgraded to latest version (1.2.0)
     expect(result).to.have.property('test-package', '1.2.0')
 
-    stub.mockRestore()
     findNpmConfigStub.mockRestore()
   })
 
@@ -295,7 +279,7 @@ describe('cooldown', () => {
         'test-package': '1.0.0',
       },
     }
-    const stub = stubVersions(
+    stubVersions(
       createMockVersion({
         name: 'test-package',
         versions: {
@@ -312,8 +296,6 @@ describe('cooldown', () => {
 
     // Then test-package should be upgraded to version 1.2.0 (latest) - as cooldown of 0 means no cooldown.
     expect(result).to.have.property('test-package', '1.2.0')
-
-    stub.mockRestore()
   })
 
   describe('when latest target', () => {
@@ -325,7 +307,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -342,8 +324,6 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to version 1.1.0
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('falls back to most recent passing version when latest dist-tag is within cooldown', async () => {
@@ -353,7 +333,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -367,8 +347,6 @@ describe('cooldown', () => {
       const result = await ncu({ packageData, cooldown, target: 'latest' })
 
       expect(result).to.have.property('test-package', '1.0.1')
-
-      stub.mockRestore()
     })
 
     it('skips package entirely when all versions are within cooldown (no fallback possible)', async () => {
@@ -381,7 +359,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -399,8 +377,6 @@ describe('cooldown', () => {
 
       // Then: package is not upgraded (latest version within cooldown, 1.0.1 is ignored as not latest)
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
 
     it('does not return a pre-release version as the fallback when latest is within cooldown', async () => {
@@ -411,7 +387,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -425,8 +401,6 @@ describe('cooldown', () => {
       const result = await ncu({ packageData, cooldown, target: 'latest' })
 
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
 
     it('logs a verbose message when a package is skipped due to cooldown', async () => {
@@ -437,7 +411,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -463,7 +437,6 @@ describe('cooldown', () => {
       expect(cooldownMessages[0]).to.include('test-package@1.1.0')
 
       logSpy.mockRestore()
-      stub.mockRestore()
     })
 
     it('prints "All dependencies not in cooldown" instead of registry error when all packages are within cooldown', async () => {
@@ -474,7 +447,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -499,7 +472,6 @@ describe('cooldown', () => {
       expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
 
       logSpy.mockRestore()
-      stub.mockRestore()
     })
   })
 
@@ -511,7 +483,7 @@ describe('cooldown', () => {
         'test-package': '1.1.0',
       },
     }
-    const stub = stubVersions(
+    stubVersions(
       createMockVersion({
         name: 'test-package',
         versions: {
@@ -537,7 +509,6 @@ describe('cooldown', () => {
     expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
 
     logSpy.mockRestore()
-    stub.mockRestore()
   })
 
   describe('when @TAG target', () => {
@@ -549,7 +520,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -566,8 +537,6 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to @next version 1.1.0-rc.1
       expect(result).to.have.property('test-package', '1.1.0-rc.1')
-
-      stub.mockRestore()
     })
 
     it('skips package upgrade completely when @next version is inside cooldown period', async () => {
@@ -578,7 +547,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -596,8 +565,6 @@ describe('cooldown', () => {
 
       // Then: package is not upgraded (next version within cooldown, 1.1.0-rc.2 is ignored as not tagged as next)
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
   })
 
@@ -608,7 +575,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -621,8 +588,6 @@ describe('cooldown', () => {
       const result = await ncu({ packageData, cooldown, target: '@latest' })
 
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('skips the package entirely when @latest is within cooldown, with no fallback', async () => {
@@ -633,7 +598,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -647,8 +612,6 @@ describe('cooldown', () => {
       const result = await ncu({ packageData, cooldown, target: '@latest' })
 
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
   })
 
@@ -661,7 +624,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -679,8 +642,6 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to version 1.1.0 (oldest version outside cooldown)
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('skips package upgrade if no versions are older than cooldown period', async () => {
@@ -691,7 +652,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -709,8 +670,6 @@ describe('cooldown', () => {
 
       // Then test-package should not be upgraded (as no versions were released outside cooldown period)
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
   })
 
@@ -723,7 +682,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -738,8 +697,6 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to version 1.1.0 (newest version outside cooldown)
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
   })
 
@@ -752,7 +709,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -767,8 +724,6 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to version 1.1.0 (newest minor version outside cooldown)
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
   })
 
@@ -781,7 +736,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -796,8 +751,6 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to version 1.0.1 (newest patch version outside cooldown)
       expect(result).to.have.property('test-package', '1.0.1')
-
-      stub.mockRestore()
     })
   })
 
@@ -810,7 +763,7 @@ describe('cooldown', () => {
           'test-package': '^1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -825,7 +778,6 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to version ^1.0.1 (newest semver version outside cooldown)
       expect(result).to.have.property('test-package', '^1.0.1')
-      stub.mockRestore()
     })
   })
 
@@ -837,7 +789,7 @@ describe('cooldown', () => {
         'test-package': '1.0.0',
       },
     }
-    const stub = stubVersions(
+    stubVersions(
       createMockVersion({
         name: 'test-package',
         versions: {
@@ -854,8 +806,6 @@ describe('cooldown', () => {
 
     // Then: test-package should be upgraded to version 1.1.0 (as 1.1.0 was released exactly at the cooldown boundary)
     expect(result).to.have.property('test-package', '1.1.0')
-
-    stub.mockRestore()
   })
 
   describe('cooldown predicate function', () => {
@@ -867,7 +817,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -888,8 +838,6 @@ describe('cooldown', () => {
 
       // Then: test-package is upgraded to version 1.1.0 (cooldown check skipped)
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('applies custom cooldown when predicate returns a number', async () => {
@@ -901,7 +849,7 @@ describe('cooldown', () => {
           'test-package-2': '1.0.0',
         },
       }
-      const stub = stubVersions({
+      stubVersions({
         'test-package': createMockVersion({
           name: 'test-package',
           versions: {
@@ -932,8 +880,6 @@ describe('cooldown', () => {
       // Then: test-package is upgraded to version 1.1.0 (as cooldown for this package was set to 5), but test-package-2 is not upgraded (as rest of the packages use default cooldown of 10)
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
-
-      stub.mockRestore()
     })
 
     it('upgrades when predicate returns a sub-day (fractional) value and version is outside that period', async () => {
@@ -942,7 +888,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 13 * HOUR).toISOString() },
@@ -959,8 +905,6 @@ describe('cooldown', () => {
 
       // Then: test-package is upgraded to 1.1.0
       expect(result).to.have.property('test-package', '1.1.0')
-
-      stub.mockRestore()
     })
 
     it('skips upgrade when predicate returns a sub-day (fractional) value and version is inside that period', async () => {
@@ -969,7 +913,7 @@ describe('cooldown', () => {
       const packageData: PackageFile = {
         dependencies: { 'test-package': '1.0.0' },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 11 * HOUR).toISOString() },
@@ -986,8 +930,6 @@ describe('cooldown', () => {
 
       // Then: test-package is not upgraded
       expect(result).to.not.have.property('test-package')
-
-      stub.mockRestore()
     })
 
     it('accepts a string ("3m") returned from the predicate for per-package unit suffixes', async () => {
@@ -1001,7 +943,7 @@ describe('cooldown', () => {
           'test-package-2': '1.0.0',
         },
       }
-      const stub = stubVersions({
+      stubVersions({
         'test-package': createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 4 * MINUTE).toISOString() },
@@ -1024,8 +966,6 @@ describe('cooldown', () => {
       // Then: test-package is upgraded (4 min > 3 min cooldown), test-package-2 is not (1 day < 10 days)
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
-
-      stub.mockRestore()
     })
 
     it('upgrades when predicate returns 0, disabling cooldown for that package', async () => {
@@ -1036,7 +976,7 @@ describe('cooldown', () => {
           'test-package-2': '1.0.0',
         },
       }
-      const stub = stubVersions({
+      stubVersions({
         'test-package': createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - DAY).toISOString() },
@@ -1059,8 +999,6 @@ describe('cooldown', () => {
       // Then: test-package is upgraded (cooldown disabled for it), test-package-2 is not
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
-
-      stub.mockRestore()
     })
   })
 
@@ -1074,7 +1012,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1096,7 +1034,6 @@ describe('cooldown', () => {
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 7-day min-release-age
       expect(result).to.have.property('test-package', '1.0.1')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
     })
 
@@ -1107,7 +1044,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1128,7 +1065,6 @@ describe('cooldown', () => {
       // Then: package is upgraded since explicit cooldown=0 overrides min-release-age
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
     })
 
@@ -1139,7 +1075,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1166,7 +1102,6 @@ describe('cooldown', () => {
       expect(minReleaseAgeMessages).to.have.length(0)
 
       logSpy.mockRestore()
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
     })
   })
@@ -1180,7 +1115,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1207,7 +1142,6 @@ describe('cooldown', () => {
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
       expect(result).to.not.have.property('test-package')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
       pnpmWorkspaceStub.mockRestore()
     })
@@ -1221,7 +1155,7 @@ describe('cooldown', () => {
           '@myorg/pkg': '1.0.0',
         },
       }
-      const stub = stubVersions({
+      stubVersions({
         'test-package': createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
@@ -1249,7 +1183,6 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
       pnpmWorkspaceStub.mockRestore()
     })
@@ -1261,7 +1194,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1285,7 +1218,6 @@ describe('cooldown', () => {
       // Then: package is upgraded since explicit cooldown=0 overrides pnpm minimumReleaseAge
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.mockRestore()
       pnpmWorkspaceStub.mockRestore()
     })
 
@@ -1297,7 +1229,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1323,7 +1255,6 @@ describe('cooldown', () => {
       // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
       pnpmWorkspaceStub.mockRestore()
     })
@@ -1338,7 +1269,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1364,7 +1295,6 @@ describe('cooldown', () => {
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
       expect(result).to.not.have.property('test-package')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
       yarnAgeGateStub.mockRestore()
     })
@@ -1377,7 +1307,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1402,7 +1332,6 @@ describe('cooldown', () => {
       // Then: package is upgraded because 2 days > 1 day cooldown
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
       yarnAgeGateStub.mockRestore()
     })
@@ -1416,7 +1345,7 @@ describe('cooldown', () => {
           '@myorg/pkg': '1.0.0',
         },
       }
-      const stub = stubVersions({
+      stubVersions({
         'test-package': createMockVersion({
           name: 'test-package',
           versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
@@ -1444,7 +1373,6 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
       yarnAgeGateStub.mockRestore()
     })
@@ -1456,7 +1384,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1480,7 +1408,6 @@ describe('cooldown', () => {
       expect(result).to.have.property('test-package', '1.1.0')
       expect(yarnAgeGateStub.mock.calls.length).to.equal(0)
 
-      stub.mockRestore()
       yarnAgeGateStub.mockRestore()
     })
 
@@ -1492,7 +1419,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1518,7 +1445,6 @@ describe('cooldown', () => {
       expect(result).to.have.property('test-package', '1.1.0')
       expect(yarnAgeGateStub.mock.calls.length).to.equal(0)
 
-      stub.mockRestore()
       findNpmConfigStub.mockRestore()
       yarnAgeGateStub.mockRestore()
     })
@@ -1558,7 +1484,7 @@ describe('cooldown', () => {
         // previous version (1.0.1) released 8 days ago — also within cooldown, so no fallback exists
         const cooldown = 10
 
-        const stub = stubVersions(mockedVersion)
+        stubVersions(mockedVersion)
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
@@ -1571,7 +1497,6 @@ describe('cooldown', () => {
         expect(allMessages.at(-1)?.includes('All dependencies not in cooldown')).to.be.true
 
         logSpy.mockRestore()
-        stub.mockRestore()
       })
 
       it(`handles "target: ${target}" when target version are within cooldown and a fallback exist)`, async () => {
@@ -1580,7 +1505,7 @@ describe('cooldown', () => {
         // previous version (1.0.1) released 8 days ago — is before cooldown and return as a fallback
         const cooldown = 6
 
-        const stub = stubVersions(mockedVersion)
+        stubVersions(mockedVersion)
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
@@ -1601,7 +1526,6 @@ describe('cooldown', () => {
         }
 
         logSpy.mockRestore()
-        stub.mockRestore()
       })
     })
   })
@@ -1633,7 +1557,7 @@ describe('cooldown', () => {
       it(`handles "target: ${target}" correctly within cooldown`, async () => {
         const cooldown = 6
 
-        const stub = stubVersions(mockedVersion)
+        stubVersions(mockedVersion)
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
@@ -1646,7 +1570,6 @@ describe('cooldown', () => {
         expect(allMessages.some(msg => msg.includes(`Skipped due to ${cooldown}-day cooldown`))).to.be.false
 
         logSpy.mockRestore()
-        stub.mockRestore()
       })
     })
   })
@@ -1693,12 +1616,10 @@ describe('cooldown', () => {
       format: ['cooldown'],
     }
 
-    let stub: { mockRestore: () => void }
     const versions = {
       'test-package': mockedVersion,
       'test-package-with-no-time': mockedVersionWithNoTime,
     }
-    afterEach(() => stub.mockRestore())
 
     const targets = ['latest', 'greatest', 'minor', 'patch', 'semver'] as const
     targets.forEach(async target => {
@@ -1706,7 +1627,7 @@ describe('cooldown', () => {
         // greatest version time was deleted, all teaget function should return
         // test-package-with-no-time: 1.0.2 or 1.0.3-pre.0, for newest and greatest for the upgrade
         // when newest function get a package with missing time it should return greatest instead
-        stub = stubVersions(versions)
+        stubVersions(versions)
         const cooldown = 5
 
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -1728,7 +1649,7 @@ describe('cooldown', () => {
     })
 
     it(`handles "target: '@latest'" correctly within cooldown`, async () => {
-      stub = stubVersions(versions)
+      stubVersions(versions)
       const cooldown = 5
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -1748,7 +1669,7 @@ describe('cooldown', () => {
     it(`"target: newest" - ignore versions without time`, async () => {
       // test-package-with-no-time versions 1.0.2 and 1.0.3-pre.0 don't have time
       // test-package-with-no-time will upgrade to version 1.0.1
-      stub = stubVersions(versions)
+      stubVersions(versions)
       const cooldown = 5
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -1767,7 +1688,7 @@ describe('cooldown', () => {
 
     it(`"target: newest" - no upgrade is possible when all times are missing`, async () => {
       // delete all times and update stub
-      stub = stubVersions({
+      stubVersions({
         'test-package': mockedVersion,
         'test-package-with-no-time': { ...mockedVersionWithNoTime, time: {} },
       })
@@ -1790,7 +1711,7 @@ describe('cooldown', () => {
     // prints "All dependencies match the latest package versions"
     it(`handles "target: newest" when all packages are without time`, async () => {
       // delete all times for all packages and update stub
-      stub = stubVersions({
+      stubVersions({
         'test-package': { ...mockedVersion, time: {} },
         'test-package-with-no-time': { ...mockedVersionWithNoTime, time: {} },
       })
@@ -1829,7 +1750,7 @@ describe('cooldown', () => {
           'test-package': '2.0.0-beta.1',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1853,7 +1774,6 @@ describe('cooldown', () => {
       expect(allMessages[0]).to.equal(`test-package 2.0.0-beta.1 → 1.5.0`)
 
       logSpy.mockRestore()
-      stub.mockRestore()
     })
 
     it('skip by cooldown downgrades from prerelease to older stable version when target @latest is within cooldown', async () => {
@@ -1865,7 +1785,7 @@ describe('cooldown', () => {
           'test-package': '2.0.0-beta.1',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1892,7 +1812,6 @@ describe('cooldown', () => {
       expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @latest package versions :)`)
 
       logSpy.mockRestore()
-      stub.mockRestore()
     })
 
     it('skip by cooldown upgrades from prerelease to specific tag when target tag version is within cooldown', async () => {
@@ -1904,7 +1823,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0-dev.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1931,7 +1850,6 @@ describe('cooldown', () => {
       expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @next package versions :)`)
 
       logSpy.mockRestore()
-      stub.mockRestore()
     })
   })
 })

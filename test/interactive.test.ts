@@ -6,22 +6,14 @@ import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
 describe('--interactive', () => {
-  let stub: { mockRestore: () => void }
   beforeEach(() => {
-    stub = stubVersions(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-        'ncu-test-return-version': '2.0.0',
-        // this must be a real version for --format repo to work
-        'modern-diacritics': '2.0.0',
-      },
-      { spawn: true },
-    )
-  })
-
-  afterEach(() => {
-    stub.mockRestore()
+    stubVersions({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+      'ncu-test-return-version': '2.0.0',
+      // this must be a real version for --format repo to work
+      'modern-diacritics': '2.0.0',
+    })
   })
 
   it('prompt for each upgraded dependency', async () => {

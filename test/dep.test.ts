@@ -19,43 +19,37 @@ const packageData = JSON.stringify({
 
 describe('--dep', () => {
   it('do not upgrade peerDependencies by default', async () => {
-    const stub = stubVersions('99.9.9')
+    stubVersions('99.9.9')
 
     const upgraded = await ncu({ packageData })
 
     upgraded!.should.have.property('ncu-test-v2')
     upgraded!.should.have.property('ncu-test-tag')
     upgraded!.should.not.have.property('ncu-test-10')
-
-    stub.mockRestore()
   })
 
   it('only upgrade devDependencies with --dep dev', async () => {
-    const stub = stubVersions('99.9.9')
+    stubVersions('99.9.9')
 
     const upgraded = await ncu({ packageData, dep: 'dev' })
 
     upgraded!.should.not.have.property('ncu-test-v2')
     upgraded!.should.have.property('ncu-test-tag')
     upgraded!.should.not.have.property('ncu-test-10')
-
-    stub.mockRestore()
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
-    const stub = stubVersions('99.9.9')
+    stubVersions('99.9.9')
     const upgraded = await ncu({ packageData, dep: 'dev,peer' })
 
     upgraded!.should.not.have.property('ncu-test-v2')
     upgraded!.should.have.property('ncu-test-tag')
     upgraded!.should.have.property('ncu-test-10')
-
-    stub.mockRestore()
   })
 
   describe('section isolation', () => {
     it('do not overwrite the same package in peerDependencies when upgrading devDependencies', async () => {
-      const stub = stubVersions('99.9.9')
+      stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -97,12 +91,11 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
     it('do not overwrite the same package in devDependencies when upgrading peerDependencies', async () => {
-      const stub = stubVersions('99.9.9')
+      stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -144,12 +137,11 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
     it('do not overwrite the same package in devDependencies when upgrading dependencies and peerDependencies', async () => {
-      const stub = stubVersions('99.9.9')
+      stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-tag': '0.1.0',
@@ -191,14 +183,13 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
   })
 
   describe('packageManager field', () => {
     it('upgrade packageManager field by default', async () => {
-      const stub = stubVersions({
+      stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -234,12 +225,11 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
     it('do not upgrade packageManager field if missing from --dep', async () => {
-      const stub = stubVersions({
+      stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -276,12 +266,11 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
     it('do nothing if no packageManager field is present', async () => {
-      const stub = stubVersions({
+      stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -315,12 +304,11 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
     it('upgrade packageManager field if specified in --dep', async () => {
-      const stub = stubVersions({
+      stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -357,12 +345,11 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
     it('do nothing if packageManager is up-to-date', async () => {
-      const stub = stubVersions({
+      stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -398,7 +385,6 @@ describe('--dep', () => {
         })
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
   })

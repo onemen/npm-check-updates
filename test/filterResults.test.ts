@@ -9,14 +9,11 @@ import stubVersions from './helpers/stubVersions'
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
     const dependencies = { 'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' }
-    const stub = stubVersions(
-      {
-        'ncu-test-v2': '3.0.0',
-        'ncu-test-tag': '2.1.0',
-        'ncu-test-return-version': '1.2.0',
-      },
-      { spawn: true },
-    )
+    stubVersions({
+      'ncu-test-v2': '3.0.0',
+      'ncu-test-tag': '2.1.0',
+      'ncu-test-return-version': '1.2.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -48,7 +45,6 @@ describe('filterResults', () => {
       expect(upgraded).to.not.have.property('ncu-test-return-version')
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 })

@@ -5,9 +5,8 @@ import { type VersionSpec } from '../src/types/VersionSpec'
 import stubVersions from './helpers/stubVersions'
 
 describe('enginesNode', () => {
-  let stub: { mockRestore: () => void }
   beforeEach(() => {
-    stub = stubVersions({
+    stubVersions({
       del: {
         version: '8.0.1',
         versions: {
@@ -21,9 +20,6 @@ describe('enginesNode', () => {
       },
       'ncu-test-v2': '2.0.0',
     } as MockedVersions)
-  })
-  afterEach(() => {
-    stub.mockRestore()
   })
 
   it("update packages that satisfy the project's engines.node", async () => {

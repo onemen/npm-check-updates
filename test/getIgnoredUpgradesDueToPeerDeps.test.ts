@@ -6,17 +6,15 @@ import stubVersions from './helpers/stubVersions'
 
 describe('getIgnoredUpgradesDueToPeerDeps', function () {
   let pb: ReturnType<typeof silenceProgressBar>
-  let versionStub: { mockRestore: () => void }
   beforeEach(() => {
     pb = silenceProgressBar()
   })
   afterEach(() => {
     pb.mockRestore()
-    versionStub?.mockRestore()
   })
 
   it('ncu-test-peer-update', async () => {
-    versionStub = stubVersions({
+    stubVersions({
       'ncu-test-return-version': {
         version: '2.0.0',
         versions: {
@@ -53,7 +51,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
   })
 
   it('ignored peer after upgrade', async () => {
-    const stub = stubVersions({
+    stubVersions({
       '@vitest/ui': {
         version: '1.6.0',
         versions: {
@@ -156,6 +154,5 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         to: '4.0.0',
       },
     })
-    stub.mockRestore()
   })
 })

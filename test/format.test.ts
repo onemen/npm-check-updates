@@ -9,15 +9,12 @@ import stubVersions from './helpers/stubVersions'
 
 describe('format', () => {
   it('--format dep', async () => {
-    const stub = stubVersions(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '2.0.0',
-        'ncu-test-peer-update': '2.0.0',
-        'ncu-test-return-version': '2.0.0',
-      },
-      { spawn: true },
-    )
+    stubVersions({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '2.0.0',
+      'ncu-test-peer-update': '2.0.0',
+      'ncu-test-return-version': '2.0.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -50,7 +47,6 @@ describe('format', () => {
       stdout.should.include('optional')
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 
@@ -67,13 +63,12 @@ describe('format', () => {
         }),
         'utf-8',
       )
-      const stub = stubVersions('2.0.0', { spawn: true })
+      stubVersions('2.0.0')
       try {
         const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         stdout.should.include('https://npmdiff.dev/ncu-test-v2/1.0.0/2.0.0')
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
 
@@ -90,14 +85,13 @@ describe('format', () => {
         }),
         'utf-8',
       )
-      const stub = stubVersions('1.1.0', { spawn: true })
+      stubVersions('1.1.0')
       try {
         const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         // purposefully omit 'to' version since this is a live package
         stdout.should.include('https://npmdiff.dev/%40types%2Fjsonlines/0.1.0/')
       } finally {
         await removeDir(tempDir)
-        stub.mockRestore()
       }
     })
   })
@@ -105,7 +99,7 @@ describe('format', () => {
   // do not stubVersions here, because we need to test if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
-    const stub = stubVersions({
+    stubVersions({
       name: 'ncu-test-v2',
       version: '2.0.0',
       time: {
@@ -122,11 +116,10 @@ describe('format', () => {
     })
     const expectedString = timeAgoFormat(timestamp, 'en_US')
     expect(stdout).contains(expectedString)
-    stub.mockRestore()
   })
 
   it('--format repo', async () => {
-    const stub = stubVersions({ 'modern-diacritics': '2.3.1' })
+    stubVersions({ 'modern-diacritics': '2.3.1' })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -151,12 +144,11 @@ describe('format', () => {
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 
   it('--format homepage', async () => {
-    const stub = stubVersions({ 'hosted-git-info': '10.1.1' })
+    stubVersions({ 'hosted-git-info': '10.1.1' })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -181,18 +173,14 @@ describe('format', () => {
       stdout.should.include('https://github.com/npm/hosted-git-info')
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 
   it('--format lines', async () => {
-    const stub = stubVersions(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    stubVersions({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -210,18 +198,14 @@ describe('format', () => {
       stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 
   it('disallow --format lines with --jsonUpgraded', async () => {
-    const stub = stubVersions(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    stubVersions({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -240,18 +224,14 @@ describe('format', () => {
       )
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 
   it('disallow --format lines with --jsonAll', async () => {
-    const stub = stubVersions(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    stubVersions({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -270,18 +250,14 @@ describe('format', () => {
       )
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 
   it('disallow --format lines with other format options', async () => {
-    const stub = stubVersions(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    stubVersions({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -300,7 +276,6 @@ describe('format', () => {
       )
     } finally {
       await removeDir(tempDir)
-      stub.mockRestore()
     }
   })
 })

@@ -6,11 +6,10 @@ import { stubFetchPartialPackument } from './helpers/stubVersions'
 
 describe('getEnginesNodeFromRegistry', function () {
   let pb: ReturnType<typeof silenceProgressBar>
-  let versionStub: { mockRestore: () => void }
   beforeEach(async () => {
     await chalkInit()
     pb = silenceProgressBar()
-    versionStub = stubFetchPartialPackument({
+    stubFetchPartialPackument({
       del: {
         version: '8.0.1',
         engines: { node: '>=0.10.0' },
@@ -25,7 +24,6 @@ describe('getEnginesNodeFromRegistry', function () {
   })
   afterEach(() => {
     pb.mockRestore()
-    versionStub?.mockRestore()
   })
 
   it('single package', async () => {

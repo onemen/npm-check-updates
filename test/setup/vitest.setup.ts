@@ -4,9 +4,10 @@ import chaiString from 'chai-string'
 import { installGlobalErrorHandlers } from '../../src/lib/utils/global-error-handlers'
 import { TestSandbox } from '../helpers/TestSandbox'
 import { registerIOCapture } from '../helpers/mockIO'
+import { stubLifecycle } from '../helpers/stubVersions'
 import { FileCacheManager } from '../helpers/stubs/FileCacheManager'
-import { stubGetGitTagsController } from '../helpers/stubs/stubGetGitTags'
-import { spawnPleaseController } from '../helpers/stubs/stubSpawnPlease'
+import { stubGetGitTagsLifecycle } from '../helpers/stubs/stubGetGitTags'
+import { spawnPleaseLifecycle } from '../helpers/stubs/stubSpawnPlease'
 import { registerTestNameCapture } from '../helpers/testNameStore'
 
 installGlobalErrorHandlers()
@@ -31,8 +32,10 @@ registerIOCapture()
 TestSandbox.registerLifecycle()
 
 /* Initialize the central cache lifecycle */
-const cacheManager = FileCacheManager.registerLifecycle()
+const cacheManager = FileCacheManager.register()
 
 /* Initialize each global stub/mock and bind it to the cache manager */
-spawnPleaseController.registerLifecycle(cacheManager)
-stubGetGitTagsController.registerLifecycle(cacheManager)
+spawnPleaseLifecycle.registerLifecycle(cacheManager)
+stubGetGitTagsLifecycle.registerLifecycle(cacheManager)
+
+stubLifecycle.registerLifecycle()

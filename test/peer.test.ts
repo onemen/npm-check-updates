@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('peer dependencies', function () {
   it('peer dependencies are ignored by default', async () => {
-    const stub = stubVersions({
+    stubVersions({
       'ncu-test-peer': {
         version: '1.0.0',
         versions: { '1.0.0': { version: '1.0.0' } as Packument },
@@ -32,11 +32,10 @@ describe('peer dependencies', function () {
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '2.0.0',
     })
-    stub.mockRestore()
   })
 
   it('peer dependencies are checked when using option peer', async () => {
-    const stub = stubVersions({
+    stubVersions({
       'ncu-test-peer': {
         version: '1.0.0',
         versions: { '1.0.0': { version: '1.0.0' } as Packument },
@@ -62,11 +61,10 @@ describe('peer dependencies', function () {
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '1.1.0',
     })
-    stub.mockRestore()
   })
 
   it('peer dependencies are checked iteratively when using option peer', async () => {
-    const stub = stubVersions({
+    stubVersions({
       'ncu-test-peer-update': {
         version: '1.1.0',
         versions: {
@@ -96,7 +94,6 @@ describe('peer dependencies', function () {
       'ncu-test-return-version': '1.1.0',
       'ncu-test-peer-update': '1.1.0',
     })
-    stub.mockRestore()
   })
 
   it('circular peer dependencies are ignored', async () => {
@@ -107,7 +104,7 @@ describe('peer dependencies', function () {
         '1.6.0': { version: '1.6.0' } as Packument,
       },
     }
-    const stub = stubVersions({
+    stubVersions({
       vitest,
       '@vitest/ui': { ...vitest },
     })
@@ -122,7 +119,6 @@ describe('peer dependencies', function () {
       },
     })
     upgrades!.should.contain.keys('@vitest/ui', 'vitest')
-    stub.mockRestore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1437
@@ -140,7 +136,7 @@ describe('peer dependencies', function () {
   })
 
   it('ignores if post upgrade peers are unmet', async () => {
-    const stub = stubVersions({
+    stubVersions({
       '@vitest/ui': {
         version: '1.6.0',
         versions: {
@@ -203,11 +199,10 @@ describe('peer dependencies', function () {
       },
     })
     upgrades!.should.have.all.keys('@vitest/ui', 'vitest')
-    stub.mockRestore()
   })
 
   it('ignores if post upgrade peers are unmet - no upgrades', async () => {
-    const stub = stubVersions({
+    stubVersions({
       eslint: {
         version: '9.0.0',
         versions: {
@@ -248,7 +243,6 @@ describe('peer dependencies', function () {
       },
     })
     upgrades!.should.deep.equal({})
-    stub.mockRestore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1604
@@ -256,7 +250,7 @@ describe('peer dependencies', function () {
     // In a pnpm workspace, packages can reference catalog entries like "catalog:"
     // instead of a semver version. NCU should not crash when encountering these
     // non-semver specs during peer dependency constraint checking.
-    const stub = stubVersions({
+    stubVersions({
       'ncu-test-peer': { version: '1.0.0', 'dist-tags': { latest: '1.0.0' } },
       'ncu-test-return-version': { version: '2.0.0', 'dist-tags': { latest: '2.0.0' } },
     })
@@ -276,6 +270,5 @@ describe('peer dependencies', function () {
     // Should complete without throwing; ncu-test-return-version at 'catalog:' is treated as
     // compatible (non-semver) so peer constraint is not considered violated.
     upgrades!.should.be.an('object')
-    stub.mockRestore()
   })
 })

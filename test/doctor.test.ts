@@ -19,14 +19,11 @@ const mockNpmVersions = {
 }
 
 describe('doctor', function () {
-  let stub: { mockRestore: () => void }
-
   beforeAll(async () => {
     stubSpawnPlease.useFirst(doctorSpawnHandler)
   })
 
-  beforeEach(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-  afterEach(() => stub.mockRestore())
+  beforeEach(() => stubVersions(mockNpmVersions))
 
   afterAll(async () => {
     vi.restoreAllMocks()

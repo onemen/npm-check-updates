@@ -53,7 +53,7 @@ export class TestSandbox {
     if (!testName) {
       throw new Error(
         'TestSandbox.cwd accessed outside of a named test context. ' +
-          'Ensure to run registerTestNameCapture before TestSandbox.registerLifecycle in vitest.setup.ts.',
+          'Ensure to run registerTestNameCapture before TestSandbox.register in vitest.setup.ts.',
       )
     }
 

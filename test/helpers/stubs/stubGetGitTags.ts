@@ -14,7 +14,7 @@ const cacheHandler = async (ctx: GitTagsCtx) => {
 const stubGetGitTags = createStub(gitApi, 'getGitTags')
 
 /** run in vitest.setup */
-export const stubGetGitTagsController = {
+export const stubGetGitTagsLifecycle = {
   registerLifecycle(cacheManager: CacheManager) {
     stubGetGitTags.registerLifecycle(cacheManager, [cacheHandler])
   },

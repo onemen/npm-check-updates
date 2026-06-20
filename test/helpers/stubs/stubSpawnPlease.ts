@@ -76,7 +76,7 @@ vi.mock('spawn-please', async importOriginal => {
 })
 
 /** run in vitest.setup */
-export const spawnPleaseController = {
+export const spawnPleaseLifecycle = {
   registerLifecycle(cacheManager: CacheManager) {
     stubSpawnPlease.registerLifecycle(cacheManager, [installHandler, cacheHandler])
   },

@@ -71,6 +71,8 @@ export class MockHandler<F extends (...args: any[]) => any, Cache = CacheManager
     defaultHandlers: StubHandler<Ctx, F>[] = [],
     setupMockFn?: (instance: this) => MockSpyInstance | null,
   ): void {
+    console.log('XXXXXXXXXXXXXXXXX register')
+
     beforeAll(() => {
       this.clearHandlers()
       for (const handler of defaultHandlers) {
