@@ -22,7 +22,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
           '1.0.0': { version: '1.0.0' },
         },
       },
-    } as MockedVersions)
+    } as MockedVersions, { spawn: true })
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         'ncu-test-return-version': '1.0.0',
@@ -104,7 +104,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
           } as Packument,
         },
       },
-    })
+    }, { spawn: true })
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         '@vitest/ui': '1.3.1',

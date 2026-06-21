@@ -19,7 +19,7 @@ describe('enginesNode', () => {
         },
       },
       'ncu-test-v2': '2.0.0',
-    } as MockedVersions)
+    } as MockedVersions, { spawn: true })
   })
 
   it("update packages that satisfy the project's engines.node", async () => {

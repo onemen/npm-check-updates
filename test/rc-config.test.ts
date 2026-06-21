@@ -7,7 +7,7 @@ import stubVersions from './helpers/stubVersions'
 
 describe('rc-config', () => {
   // before/after must be placed within the describe block; otherwise, they will apply to tests in other files
-  beforeEach(() => stubVersions('99.9.9'))
+  beforeEach(() => stubVersions('99.9.9', { spawn: true }))
 
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))

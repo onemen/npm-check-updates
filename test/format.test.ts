@@ -14,7 +14,7 @@ describe('format', () => {
       'ncu-test-tag': '2.0.0',
       'ncu-test-peer-update': '2.0.0',
       'ncu-test-return-version': '2.0.0',
-    })
+    }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -63,7 +63,7 @@ describe('format', () => {
         }),
         'utf-8',
       )
-      stubVersions('2.0.0')
+      stubVersions('2.0.0', { spawn: true })
       try {
         const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         stdout.should.include('https://npmdiff.dev/ncu-test-v2/1.0.0/2.0.0')
@@ -85,7 +85,7 @@ describe('format', () => {
         }),
         'utf-8',
       )
-      stubVersions('1.1.0')
+      stubVersions('1.1.0', { spawn: true })
       try {
         const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         // purposefully omit 'to' version since this is a live package
@@ -105,7 +105,7 @@ describe('format', () => {
       time: {
         '2.0.0': timestamp,
       },
-    })
+    }, { spawn: true })
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -119,7 +119,7 @@ describe('format', () => {
   })
 
   it('--format repo', async () => {
-    stubVersions({ 'modern-diacritics': '2.3.1' })
+    stubVersions({ 'modern-diacritics': '2.3.1' }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -148,7 +148,7 @@ describe('format', () => {
   })
 
   it('--format homepage', async () => {
-    stubVersions({ 'hosted-git-info': '10.1.1' })
+    stubVersions({ 'hosted-git-info': '10.1.1' }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -180,7 +180,7 @@ describe('format', () => {
     stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
-    })
+    }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -205,7 +205,7 @@ describe('format', () => {
     stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
-    })
+    }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -231,7 +231,7 @@ describe('format', () => {
     stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
-    })
+    }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -257,7 +257,7 @@ describe('format', () => {
     stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
-    })
+    }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(

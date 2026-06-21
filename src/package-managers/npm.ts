@@ -760,6 +760,12 @@ async function fetchUpgradedPackument(
   npmConfigLocal?: NpmConfig,
   npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Partial<Packument> | undefined> {
+  // See: /test/helpers/stubVersions
+  if (process.env.STUB_VERSIONS) {
+    const mockReturnedVersions = JSON.parse(process.env.STUB_VERSIONS)
+    return npmApi.mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
+  }
+
   if (options.ncuTimeoutSignal?.aborted) {
     throw new Error(`Exceeded global timeout of ${options.timeout}ms`)
   }

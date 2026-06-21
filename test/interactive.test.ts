@@ -13,7 +13,7 @@ describe('--interactive', () => {
       'ncu-test-return-version': '2.0.0',
       // this must be a real version for --format repo to work
       'modern-diacritics': '2.0.0',
-    })
+    }, { spawn: true })
   })
 
   it('prompt for each upgraded dependency', async () => {

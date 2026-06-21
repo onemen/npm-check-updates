@@ -27,7 +27,7 @@ describe('target', () => {
       jsonlines: '0.1.1',
       juggernaut: '2.1.1',
       mocha: '8.4.0',
-    } as MockedVersions)
+    } as MockedVersions, { spawn: true })
   })
 
   describe('minor', () => {
@@ -484,7 +484,7 @@ describe('tags', () => {
   } as MockedVersions
 
   it('upgrade nonprerelease version to specific tag', async () => {
-    stubVersions(versionInfo)
+    stubVersions(versionInfo, { spawn: true })
     const upgraded = (await ncu({
       target: '@next',
       packageData: {
@@ -498,7 +498,7 @@ describe('tags', () => {
   })
 
   it('upgrade prerelease version without preid to nonprerelease', async () => {
-    stubVersions(versionInfo)
+    stubVersions(versionInfo, { spawn: true })
     const upgraded = (await ncu({
       target: 'latest',
       packageData: {
@@ -512,7 +512,7 @@ describe('tags', () => {
   })
 
   it('upgrade prerelease version with preid to higher version on a specific tag', async () => {
-    stubVersions(versionInfo)
+    stubVersions(versionInfo, { spawn: true })
     const upgraded = (await ncu({
       target: '@beta',
       packageData: {
@@ -527,7 +527,7 @@ describe('tags', () => {
 
   // can't detect which prerelease is higher, so just allow switching
   it('upgrade from prerelease without preid to prerelease with preid at a specific tag if major.minor.patch is the same', async () => {
-    stubVersions(versionInfo)
+    stubVersions(versionInfo, { spawn: true })
     const upgraded = (await ncu({
       target: '@task-42',
       packageData: {
@@ -542,7 +542,7 @@ describe('tags', () => {
 
   // need to test reverse order too, because by base semver logic preid are sorted alphabetically
   it('upgrade from prerelease with preid to prerelease without preid at a specific tag if major.minor.patch is the same', async () => {
-    stubVersions(versionInfo)
+    stubVersions(versionInfo, { spawn: true })
     const upgraded = (await ncu({
       target: '@next',
       packageData: {
@@ -558,7 +558,7 @@ describe('tags', () => {
   // comparing semver between different dist-tags is incorrect, both versions could be released from the same latest
   // so instead of looking at numbers, we should focus on intention of the user upgrading to specific dist-tag
   it('downgrade to tag with a non-matching preid and lower patch', async () => {
-    stubVersions(versionInfo)
+    stubVersions(versionInfo, { spawn: true })
     const upgraded = (await ncu({
       target: '@task-42',
       packageData: {
@@ -573,7 +573,7 @@ describe('tags', () => {
 
   // same as previous, doesn't matter if it's patch, minor or major, comparing different dist-tags is incorrect
   it('downgrade to tag with a non-matching preid and lower minor', async () => {
-    stubVersions(versionInfo)
+    stubVersions(versionInfo, { spawn: true })
     const upgraded = (await ncu({
       target: '@next',
       packageData: {
@@ -587,7 +587,7 @@ describe('tags', () => {
   })
 
   it('do not downgrade nonprerelease version to lower version with specific tag', async () => {
-    stubVersions('1.0.0-1')
+    stubVersions('1.0.0-1', { spawn: true })
 
     const upgraded = await ncu({
       target: '@next',
@@ -602,7 +602,7 @@ describe('tags', () => {
   })
 
   it('do not downgrade to latest with lower version by default', async () => {
-    stubVersions('1.1.0')
+    stubVersions('1.1.0', { spawn: true })
 
     const upgraded = await ncu({
       packageData: {
@@ -616,7 +616,7 @@ describe('tags', () => {
   })
 
   it('do not downgrade to latest with lower version with --target latest', async () => {
-    stubVersions('1.1.0')
+    stubVersions('1.1.0', { spawn: true })
 
     const upgraded = await ncu({
       target: 'latest',
@@ -631,7 +631,7 @@ describe('tags', () => {
   })
 
   it('downgrade to latest with lower version with explicit --target @latest', async () => {
-    stubVersions('1.1.0')
+    stubVersions('1.1.0', { spawn: true })
 
     const upgraded = (await ncu({
       target: '@latest',
@@ -646,7 +646,7 @@ describe('tags', () => {
   })
 
   it('downgrade to latest with lower version with target function returning @latest', async () => {
-    stubVersions('1.1.0')
+    stubVersions('1.1.0', { spawn: true })
 
     const upgraded = (await ncu({
       target: () => '@latest',

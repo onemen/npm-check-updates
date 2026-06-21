@@ -14,7 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('bin', async function () {
   it('fetch latest version from registry (not stubbed)', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
@@ -23,7 +23,7 @@ describe('bin', async function () {
   })
 
   it('output only upgraded with --jsonUpgraded', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
@@ -33,7 +33,7 @@ describe('bin', async function () {
 
   it('--loglevel verbose', async () => {
     await sandbox.createPackageJson()
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--loglevel', 'verbose'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
@@ -44,7 +44,7 @@ describe('bin', async function () {
 
   it('--verbose', async () => {
     await sandbox.createPackageJson()
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--verbose'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
@@ -54,7 +54,7 @@ describe('bin', async function () {
   })
 
   it('accept stdin', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--stdin'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     })
@@ -62,7 +62,7 @@ describe('bin', async function () {
   })
 
   it('reject out-of-date stdin with errorLevel 2', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     await runNcuCli(['--stdin', '--errorLevel', '2'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
@@ -70,7 +70,7 @@ describe('bin', async function () {
 
   it('fall back to package.json search when receiving empty content on stdin', async () => {
     await sandbox.createPackageJson()
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--stdin'])
     stdout
       .toString()
@@ -79,7 +79,7 @@ describe('bin', async function () {
   })
 
   it('use package.json in cwd by default', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--jsonUpgraded'], { cwd: path.join(__dirname, 'test-data/ncu') })
     const pkgData = JSON.parse(stdout)
     pkgData.should.have.property('express')
@@ -101,7 +101,7 @@ describe('bin', async function () {
   })
 
   it('read --packageFile', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -115,7 +115,7 @@ describe('bin', async function () {
   })
 
   it('write to --packageFile', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -131,7 +131,7 @@ describe('bin', async function () {
   })
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -150,7 +150,7 @@ describe('bin', async function () {
   })
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -166,7 +166,7 @@ describe('bin', async function () {
   })
 
   it('ignore stdin if --packageFile is specified', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -185,7 +185,7 @@ describe('bin', async function () {
 
   it('suppress stdout when --silent is provided', async () => {
     await sandbox.createPackageJson()
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--silent'], {
       stdin: JSON.stringify({ dependencies: { express: '1' } }),
     })
@@ -193,7 +193,7 @@ describe('bin', async function () {
   })
 
   it('quote arguments with spaces in upgrade hint', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const pkgData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -212,7 +212,7 @@ describe('bin', async function () {
   })
 
   it('ignore file: and link: protocols', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const dependencies = {
       editor: 'file:../editor',
       event: 'link:../link',
@@ -224,7 +224,7 @@ describe('bin', async function () {
   })
 
   it('do not warn about empty results when every dep is already at the highest version for non-latest --target', async () => {
-    stubVersions({ 'ncu-test-v2': '1.0.0' })
+    stubVersions({ 'ncu-test-v2': '1.0.0' }, { spawn: true })
     const { stdout } = await runNcuCli(['--stdin', '--target', 'minor'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     })
@@ -234,7 +234,7 @@ describe('bin', async function () {
   })
 
   it('combine boolean flags with arguments', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const { stdout } = await runNcuCli(['--stdin', '--jsonUpgraded', 'ncu-test-v2'], {
       stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
     })
@@ -246,7 +246,7 @@ describe('bin', async function () {
 
   it('combine short boolean options with long options', async () => {
     await sandbox.createPackageJson()
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const promise = runNcuCli(['-mp', 'foo'])
     await promise.should.eventually.be.rejectedWith('Invalid package manager: foo')
   })
@@ -254,7 +254,7 @@ describe('bin', async function () {
   // TODO
   // https://github.com/raineorshine/npm-check-updates/issues/1594
   it.skip('upgrade duplicate dependencies with different versions', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -287,7 +287,7 @@ describe('bin', async function () {
     })
 
     it('strip prefix from npm alias in "to" output', async () => {
-      stubVersions('99.9.9')
+      stubVersions('99.9.9', { spawn: true })
       const dependencies = {
         request: 'npm:ncu-test-v2@1.0.0',
       }

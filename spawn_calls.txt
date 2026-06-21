@@ -1,0 +1,188 @@
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:17:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:26:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:36:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:47:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:57:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:65:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:73:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:82:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:104:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:118:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:134:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:153:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:169:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:188:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:196:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:215:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:227:    stubVersions({ 'ncu-test-v2': '1.0.0' })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:237:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:249:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:257:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bin.test.ts:290:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/bun/index.test.ts:40:    stubVersions(mockNpmVersions)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cache.test.ts:31:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cache.test.ts:77:    stubVersions(options => {
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cache.test.ts:123:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cache.test.ts:145:    stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cache.test.ts:168:    stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:93:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:114:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:136:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:158:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:180:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:202:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:229:      stubVersions(mockData)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:251:    stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:282:    stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:310:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:336:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:362:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:390:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:414:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:450:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:486:    stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:523:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:550:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:578:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:601:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:627:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:655:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:685:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:712:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:739:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:766:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:792:    stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:820:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:852:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:891:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:916:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:946:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:979:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1015:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1047:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1078:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1118:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1158:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1197:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1232:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1272:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1310:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1348:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1387:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1422:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1487:        stubVersions(mockedVersion)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1508:        stubVersions(mockedVersion)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1560:        stubVersions(mockedVersion)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1630:        stubVersions(versions)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1652:      stubVersions(versions)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1672:      stubVersions(versions)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1691:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1714:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1753:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1788:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/cooldown.test.ts:1826:      stubVersions(
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/deep.test.ts:66:  beforeEach(() => stubVersions('99.9.9'))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/deep.test.ts:175:  beforeEach(() => stubVersions('99.9.9'))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:22:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:32:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:42:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:52:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:98:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:144:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:192:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:232:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:273:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:311:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/dep.test.ts:352:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/doctor.test.ts:26:  beforeEach(() => stubVersions(mockNpmVersions))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/enginesNode.test.ts:9:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/filter.test.ts:13:    beforeEach(() => stubVersions('99.9.9'))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/filter.test.ts:209:    beforeEach(() => stubVersions('99.9.9'))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/filter.test.ts:296:    beforeEach(() => stubVersions('99.9.9'))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/filterResults.test.ts:12:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/filterVersion.test.ts:8:      stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/filterVersion.test.ts:111:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/filterVersion.test.ts:133:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:12:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:66:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:88:      stubVersions('1.1.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:102:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:122:    stubVersions({ 'modern-diacritics': '2.3.1' })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:151:    stubVersions({ 'hosted-git-info': '10.1.1' })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:180:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:205:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:231:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/format.test.ts:257:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/getIgnoredUpgradesDueToPeerDeps.test.ts:17:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/getIgnoredUpgradesDueToPeerDeps.test.ts:54:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/group.test.ts:18:  stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:17:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:28:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:41:    stubVersions('2.1.1')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:53:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:75:    stubVersions(ncuMockPre)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:94:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:117:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:139:    stubVersions(ncuMockPre)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:159:      stubVersions({ name: 'ncu-test-deprecated', version: '2.0.0', deprecated: true })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:173:      stubVersions({ name: 'ncu-test-deprecated', version: '2.0.0', deprecated: true })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:188:      stubVersions({ name: 'ncu-test-deprecated', version: '2.0.0', deprecated: true })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:202:    stubVersions({ name: '//', version: 'This is a comment' })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:214:    stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:231:    stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:249:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:288:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:326:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:371:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:414:      stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/index.test.ts:462:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/install.test.ts:22:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/install.test.ts:45:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/install.test.ts:67:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/install.test.ts:92:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/install.test.ts:119:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/install.test.ts:142:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/install.test.ts:167:      stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/interactive.test.ts:10:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/package-managers/deno/index.test.ts:10:  beforeEach(() => stubVersions({ 'ncu-test-v2': '2.0.0' }))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/package-managers/npm/index.test.ts:16:    stubVersions('2.0.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/package-managers/npm/index.test.ts:22:    stubVersions('2.0.0-beta')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/package-managers/yarn/index.test.ts:35:    stubVersions({ chalk: '5.0.0' })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/package-managers/yarn/index.test.ts:41:    stubVersions({ 'ncu-test-greatest-not-newest': '2.0.0-beta' })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/package-managers/yarn/index.test.ts:48:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/peer.test.ts:11:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/peer.test.ts:38:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/peer.test.ts:67:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/peer.test.ts:107:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/peer.test.ts:139:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/peer.test.ts:205:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/peer.test.ts:253:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:7:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:13:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:20:    stubVersions({ default: { skipVersionValidation: true } } as MockedVersions)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:26:    stubVersions(() => {
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:48:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:54:    stubVersions('99.9.9')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:65:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/queryVersions.test.ts:185:      stubVersions({ name: 'ncu-test-v2', version: '2.0.0', time: {} })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/rc-config.test.ts:10:  beforeEach(() => stubVersions('99.9.9'))
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/rejectVersion.ts:6:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/rejectVersion.ts:28:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/rejectVersion.ts:53:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/rejectVersion.ts:78:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/rejectVersion.ts:103:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:13:    stubVersions({
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:487:    stubVersions(versionInfo)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:501:    stubVersions(versionInfo)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:515:    stubVersions(versionInfo)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:530:    stubVersions(versionInfo)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:545:    stubVersions(versionInfo)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:561:    stubVersions(versionInfo)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:576:    stubVersions(versionInfo)
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:590:    stubVersions('1.0.0-1')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:605:    stubVersions('1.1.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:619:    stubVersions('1.1.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:634:    stubVersions('1.1.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/target.test.ts:649:    stubVersions('1.1.0')
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/timeout.test.ts:25:    stubVersions({ express: '1' })
+cb26c2d2d1125c1d65897cb3aa5d4896f21e8a34:test/workspaces.test.ts:111:      stubVersions({

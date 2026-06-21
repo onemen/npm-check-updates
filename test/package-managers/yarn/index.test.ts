@@ -32,13 +32,13 @@ const cleanEnv = {
 describe('yarn', function () {
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
-    stubVersions({ chalk: '5.0.0' })
+    stubVersions({ chalk: '5.0.0' }, { spawn: true })
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
 
   it('greatest', async () => {
-    stubVersions({ 'ncu-test-greatest-not-newest': '2.0.0-beta' })
+    stubVersions({ 'ncu-test-greatest-not-newest': '2.0.0-beta' }, { spawn: true })
     const { version } = await yarn.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })
@@ -55,7 +55,7 @@ describe('yarn', function () {
         '2.0.0-next-4': { version: '2.0.0-next-4' },
       },
       time: {},
-    } as MockedVersions)
+    } as MockedVersions, { spawn: true })
     const { version } = await yarn.minor('popper.js', '1.15.0', { cwd: testDir, pre: true })
     version!.should.equal('1.16.1-lts')
   })

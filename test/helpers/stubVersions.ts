@@ -82,7 +82,21 @@ export const stubLifecycle = {
 }
 
 /** Stubs the npmView function from package-managers/npm. Returns the stub object. */
-const stubVersions = (mockReturnedVersions: MockedVersions) => {
+const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: boolean } = {}) => {
+  if (spawn) {
+    process.env.STUB_VERSIONS = JSON.stringify(mockReturnedVersions)
+
+    const stub = {
+      mockRestore: () => {
+        // Changed name to match your global find-and-replace
+        process.env.STUB_VERSIONS = ''
+      },
+    }
+
+    registerStub(stub)
+    return stub
+  }
+
   ensureNotLeaked('stubVersions', 'fetchUpgradedPackumentMemo')
 
   // // Save the original memoized method reference to avoid fast-memoize side effects

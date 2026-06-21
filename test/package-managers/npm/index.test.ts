@@ -13,13 +13,13 @@ describe('npm', function () {
   })
 
   it('latest', async () => {
-    stubVersions('2.0.0')
+    stubVersions('2.0.0', { spawn: true })
     const { version } = await npm.latest('express', '', { cwd: __dirname })
     parseInt(version!, 10).should.be.above(1)
   })
 
   it('greatest', async () => {
-    stubVersions('2.0.0-beta')
+    stubVersions('2.0.0-beta', { spawn: true })
     const { version } = await npm.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })

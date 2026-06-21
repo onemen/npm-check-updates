@@ -22,7 +22,7 @@ describe('timeout', async () => {
   let pkgPath: string
   beforeEach(async () => {
     pkgPath = await sandbox.createPackageJson({ dependencies: { express: '1' } })
-    stubVersions({ express: '1' })
+    stubVersions({ express: '1' }, { spawn: true })
   })
 
   it('throw an exception instead of printing to the console when timeout is exceeded', async () => {

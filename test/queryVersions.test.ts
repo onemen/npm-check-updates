@@ -4,20 +4,20 @@ import stubVersions from './helpers/stubVersions'
 
 describe('queryVersions', function () {
   it('valid single package', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const latestVersions = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
   })
 
   it('valid packages', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const latestVersions = await queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
     latestVersions.should.have.property('npm')
   })
 
   it('unavailable packages should be ignored', async () => {
-    stubVersions({ default: { skipVersionValidation: true } } as MockedVersions)
+    stubVersions({ default: { skipVersionValidation: true } } as MockedVersions, { spawn: true })
     const result = await queryVersions({ abchdefntofknacuifnt: '1.2.3' }, { loglevel: 'silent' })
     result.should.deep.equal({})
   })
@@ -25,7 +25,7 @@ describe('queryVersions', function () {
   it('error while querying version should be handled', async () => {
     stubVersions(() => {
       throw new Error(`Package inaccessible`)
-    })
+    }, { spawn: true })
 
     const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
     result.should.deep.equal({
@@ -45,13 +45,13 @@ describe('queryVersions', function () {
   })
 
   it('set the target explicitly to latest', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const result = await queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
     result.should.have.property('async')
   })
 
   it('set the target to greatest', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const result = await queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
     result.should.have.property('async')
   })
@@ -66,7 +66,7 @@ describe('queryVersions', function () {
       name: 'ncu-test-v2',
       version: '2.0.0',
       time: { '2.0.0': '2023-08-12' },
-    })
+    }, { spawn: true })
     const result = await queryVersions(
       {
         request: 'npm:ncu-test-v2@1.0.0',
@@ -182,7 +182,7 @@ describe('queryVersions', function () {
     })
 
     it('valid but nonexistent github urls with tags should be ignored', async () => {
-      stubVersions({ name: 'ncu-test-v2', version: '2.0.0', time: {} })
+      stubVersions({ name: 'ncu-test-v2', version: '2.0.0', time: {} }, { spawn: true })
       const upgrades = await queryVersions(
         {
           'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',

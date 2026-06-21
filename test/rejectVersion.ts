@@ -6,7 +6,7 @@ describe('rejectVersion', () => {
     stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-return-version': '2.0.0',
-    })
+    }, { spawn: true })
 
     const pkg = {
       dependencies: {
@@ -29,7 +29,7 @@ describe('rejectVersion', () => {
       'ncu-test-v2': '2.0.0',
       'ncu-test-return-version': '2.0.0',
       'fp-and-or': '0.1.3',
-    })
+    }, { spawn: true })
 
     const pkg = {
       dependencies: {
@@ -54,7 +54,7 @@ describe('rejectVersion', () => {
       'ncu-test-v2': '2.0.0',
       'ncu-test-return-version': '2.0.0',
       'fp-and-or': '0.1.3',
-    })
+    }, { spawn: true })
 
     const pkg = {
       dependencies: {
@@ -79,7 +79,7 @@ describe('rejectVersion', () => {
       'ncu-test-v2': '2.0.0',
       'ncu-test-return-version': '2.0.0',
       'fp-and-or': '0.1.3',
-    })
+    }, { spawn: true })
 
     const pkg = {
       dependencies: {
@@ -104,7 +104,7 @@ describe('rejectVersion', () => {
       'ncu-test-v2': '2.0.0',
       'ncu-test-return-version': '2.0.0',
       'fp-and-or': '0.1.3',
-    })
+    }, { spawn: true })
 
     const pkg = {
       dependencies: {

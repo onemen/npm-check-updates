@@ -37,7 +37,7 @@ describe('bun', function () {
   })
 
   beforeEach(async () => {
-    stubVersions(mockNpmVersions)
+    stubVersions(mockNpmVersions, { spawn: true })
   })
 
   it('list', async () => {

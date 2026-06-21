@@ -13,7 +13,7 @@ describe('filterResults', () => {
       'ncu-test-v2': '3.0.0',
       'ncu-test-tag': '2.1.0',
       'ncu-test-return-version': '1.2.0',
-    })
+    }, { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(

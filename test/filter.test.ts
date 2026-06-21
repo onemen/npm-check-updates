@@ -10,7 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('filter', () => {
   describe('module', () => {
-    beforeEach(() => stubVersions('99.9.9'))
+    beforeEach(() => stubVersions('99.9.9', { spawn: true }))
 
     it('filter by package name with one arg', async () => {
       const upgraded = (await ncu({
@@ -206,7 +206,7 @@ describe('filter', () => {
   })
 
   describe('cli', () => {
-    beforeEach(() => stubVersions('99.9.9'))
+    beforeEach(() => stubVersions('99.9.9', { spawn: true }))
 
     it('filter by package name with --filter', async () => {
       const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '--filter', 'express'], {
@@ -293,7 +293,7 @@ describe('filter', () => {
 
 describe('reject', () => {
   describe('cli', () => {
-    beforeEach(() => stubVersions('99.9.9'))
+    beforeEach(() => stubVersions('99.9.9', { spawn: true }))
 
     it('reject by package name with --reject', async () => {
       const { stdout } = await runNcuCli(['--jsonUpgraded', '--stdin', '--reject', 'chalk'], {

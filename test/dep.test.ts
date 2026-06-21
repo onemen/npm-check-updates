@@ -19,7 +19,7 @@ const packageData = JSON.stringify({
 
 describe('--dep', () => {
   it('do not upgrade peerDependencies by default', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
 
     const upgraded = await ncu({ packageData })
 
@@ -29,7 +29,7 @@ describe('--dep', () => {
   })
 
   it('only upgrade devDependencies with --dep dev', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
 
     const upgraded = await ncu({ packageData, dep: 'dev' })
 
@@ -39,7 +39,7 @@ describe('--dep', () => {
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const upgraded = await ncu({ packageData, dep: 'dev,peer' })
 
     upgraded!.should.not.have.property('ncu-test-v2')
@@ -49,7 +49,7 @@ describe('--dep', () => {
 
   describe('section isolation', () => {
     it('do not overwrite the same package in peerDependencies when upgrading devDependencies', async () => {
-      stubVersions('99.9.9')
+      stubVersions('99.9.9', { spawn: true })
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -95,7 +95,7 @@ describe('--dep', () => {
     })
 
     it('do not overwrite the same package in devDependencies when upgrading peerDependencies', async () => {
-      stubVersions('99.9.9')
+      stubVersions('99.9.9', { spawn: true })
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -141,7 +141,7 @@ describe('--dep', () => {
     })
 
     it('do not overwrite the same package in devDependencies when upgrading dependencies and peerDependencies', async () => {
-      stubVersions('99.9.9')
+      stubVersions('99.9.9', { spawn: true })
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-tag': '0.1.0',
@@ -192,7 +192,7 @@ describe('--dep', () => {
       stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
-      })
+      }, { spawn: true })
       const packageData = JSON.stringify(
         {
           packageManager: 'npm@6.0.0',
@@ -232,7 +232,7 @@ describe('--dep', () => {
       stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
-      })
+      }, { spawn: true })
       const packageData = JSON.stringify(
         {
           packageManager: 'npm@6.0.0',
@@ -273,7 +273,7 @@ describe('--dep', () => {
       stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
-      })
+      }, { spawn: true })
       const packageData = JSON.stringify(
         {
           dependencies: {
@@ -311,7 +311,7 @@ describe('--dep', () => {
       stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
-      })
+      }, { spawn: true })
       const packageData = JSON.stringify(
         {
           packageManager: 'npm@6.0.0',
@@ -352,7 +352,7 @@ describe('--dep', () => {
       stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
-      })
+      }, { spawn: true })
       const packageData = JSON.stringify(
         {
           packageManager: 'npm@9.0.0',

@@ -208,21 +208,5 @@
         "v3": "f48482b689172bf4f3a8c5828992b7229f6409b4"
       }
     }
-  },
-  "queryVersions > github urls > valid but nonexistent github urls with tags should be ignored": {
-    "getGitTags": {
-      "https://raineorshine@github.com/ncu-return-version": {
-        "_isError": true,
-        "exitCode": 1,
-        "message": "Command failed: git ls-remote --tags https://raineorshine@github.com/ncu-return-version\nremote: Not Found\nfatal: repository 'https://github.com/ncu-return-version/' not found\n",
-        "stderr": "remote: Not Found\nfatal: repository 'https://github.com/ncu-return-version/' not found\n"
-      },
-      "https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git": {
-        "_isError": true,
-        "exitCode": 1,
-        "message": "Command failed: git ls-remote --tags https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git\nremote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n",
-        "stderr": "remote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n"
-      }
-    }
   }
 }

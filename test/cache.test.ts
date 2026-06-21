@@ -32,7 +32,7 @@ describe('cache', () => {
       'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': getTime(10) } },
       'ncu-test-tag': { version: '1.1.0', time: { '1.1.0': getTime(20) } },
       'ncu-test-alpha': { version: '1.0.0', time: { '1.0.0': getTime(30) } },
-    })
+    }, { spawn: true })
 
     const packageData = {
       dependencies: {
@@ -78,7 +78,7 @@ describe('cache', () => {
       if (options.target === 'latest') return latest
       if (options.target === 'greatest') return greatest
       return null
-    })
+    }, { spawn: true })
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -120,7 +120,7 @@ describe('cache', () => {
   })
 
   it('clears the cache file', async () => {
-    stubVersions('99.9.9')
+    stubVersions('99.9.9', { spawn: true })
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -142,7 +142,7 @@ describe('cache', () => {
   })
 
   it('expires cache when schema version does not match', async () => {
-    stubVersions('2.0.0')
+    stubVersions('2.0.0', { spawn: true })
     const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
 
     // 1. Manually write an "old" schema (e.g., schema: 0)
@@ -165,7 +165,7 @@ describe('cache', () => {
   })
 
   it('expires cache when timestamp is older than 10 minutes', async () => {
-    stubVersions('2.0.0')
+    stubVersions('2.0.0', { spawn: true })
     const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
 
     // 1. Create a cache file with a valid schema but expired timestamp (11 mins ago)

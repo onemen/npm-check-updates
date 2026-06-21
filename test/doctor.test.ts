@@ -23,7 +23,7 @@ describe('doctor', function () {
     stubSpawnPlease.useFirst(doctorSpawnHandler)
   })
 
-  beforeEach(() => stubVersions(mockNpmVersions))
+  beforeEach(() => stubVersions(mockNpmVersions, { spawn: true }))
 
   afterAll(async () => {
     vi.restoreAllMocks()

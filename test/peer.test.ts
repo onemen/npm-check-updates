@@ -20,7 +20,7 @@ describe('peer dependencies', function () {
           '2.0.0': { version: '2.0.0' } as Packument,
         },
       },
-    })
+    }, { spawn: true })
     const upgrades = await ncu({
       packageData: {
         dependencies: {
@@ -47,7 +47,7 @@ describe('peer dependencies', function () {
           '1.1.0': { version: '1.1.0' } as Packument,
         },
       },
-    })
+    }, { spawn: true })
     const upgrades = await ncu({
       cwd: sandbox.cwd,
       peer: true,
@@ -79,7 +79,7 @@ describe('peer dependencies', function () {
           '1.1.0': { version: '1.1.0' } as Packument,
         },
       },
-    })
+    }, { spawn: true })
     const upgrades = await ncu({
       cwd: sandbox.cwd,
       peer: true,
@@ -107,7 +107,7 @@ describe('peer dependencies', function () {
     stubVersions({
       vitest,
       '@vitest/ui': { ...vitest },
-    })
+    }, { spawn: true })
     const upgrades = await ncu({
       cwd: sandbox.cwd,
       peer: true,
@@ -189,7 +189,7 @@ describe('peer dependencies', function () {
           } as Packument,
         },
       },
-    })
+    }, { spawn: true })
     const cwd = path.join(__dirname, 'test-data/peer-post-upgrade/')
     const upgrades = await ncu({
       cwd,
@@ -233,7 +233,7 @@ describe('peer dependencies', function () {
           } as Packument,
         },
       },
-    })
+    }, { spawn: true })
     const cwd = path.join(__dirname, 'test-data/peer-post-upgrade-no-upgrades/')
     const upgrades = await ncu({
       cwd,
@@ -253,7 +253,7 @@ describe('peer dependencies', function () {
     stubVersions({
       'ncu-test-peer': { version: '1.0.0', 'dist-tags': { latest: '1.0.0' } },
       'ncu-test-return-version': { version: '2.0.0', 'dist-tags': { latest: '2.0.0' } },
-    })
+    }, { spawn: true })
     const upgrades = await ncu({
       cwd: sandbox.cwd,
       peer: true,

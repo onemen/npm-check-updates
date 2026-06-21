@@ -96,7 +96,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 7 * DAY).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({
         packageData,
@@ -117,7 +117,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 5 * DAY).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({
         packageData,
@@ -139,7 +139,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 13 * HOUR).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({
         packageData,
@@ -161,7 +161,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 11 * HOUR).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({
         packageData,
@@ -183,7 +183,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 31 * MINUTE).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({
         packageData,
@@ -205,7 +205,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 29 * MINUTE).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({
         packageData,
@@ -226,7 +226,7 @@ describe('cooldown', () => {
         distTags: { latest: '1.1.0' },
       })
 
-      stubVersions(mockData)
+      stubVersions(mockData, { spawn: true })
       const resultNumber = await ncu({
         packageData,
         cooldown: 6,
@@ -258,7 +258,7 @@ describe('cooldown', () => {
           latest: '1.2.0',
         },
       }),
-    )
+    , { spawn: true })
 
     const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
@@ -289,7 +289,7 @@ describe('cooldown', () => {
           latest: '1.2.0',
         },
       }),
-    )
+    , { spawn: true })
 
     // When ncu is run with a 0 day cooldown parameter
     const result = await ncu({ packageData, cooldown })
@@ -317,7 +317,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'latest'
       const result = await ncu({ packageData, cooldown, target: 'latest' })
@@ -342,7 +342,7 @@ describe('cooldown', () => {
           },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({ packageData, cooldown, target: 'latest' })
 
@@ -370,7 +370,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'latest'
       const result = await ncu({ packageData, cooldown, target: 'latest' })
@@ -396,7 +396,7 @@ describe('cooldown', () => {
           },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({ packageData, cooldown, target: 'latest' })
 
@@ -421,7 +421,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -457,7 +457,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
@@ -494,7 +494,7 @@ describe('cooldown', () => {
           latest: '1.1.0',
         },
       }),
-    )
+    , { spawn: true })
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     silenceProgressBar()
@@ -530,7 +530,7 @@ describe('cooldown', () => {
             next: '1.1.0-rc.1',
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is '@next'
       const result = await ncu({ packageData, cooldown, target: '@next' })
@@ -558,7 +558,7 @@ describe('cooldown', () => {
             next: '1.1.0-rc.2',
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is '@next'
       const result = await ncu({ packageData, cooldown, target: '@next' })
@@ -583,7 +583,7 @@ describe('cooldown', () => {
           },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({ packageData, cooldown, target: '@latest' })
 
@@ -607,7 +607,7 @@ describe('cooldown', () => {
           },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       const result = await ncu({ packageData, cooldown, target: '@latest' })
 
@@ -635,7 +635,7 @@ describe('cooldown', () => {
             latest: '1.2.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'greatest'
       const result = await ncu({ packageData, cooldown, target: 'greatest' })
@@ -663,7 +663,7 @@ describe('cooldown', () => {
             latest: '1.2.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'greatest'
       const result = await ncu({ packageData, cooldown, target: 'greatest' })
@@ -690,7 +690,7 @@ describe('cooldown', () => {
             '1.1.0': new Date(NOW - 15 * DAY).toISOString(),
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'newest'
       const result = await ncu({ packageData, cooldown, target: 'newest' })
@@ -717,7 +717,7 @@ describe('cooldown', () => {
             '1.1.0': new Date(NOW - 15 * DAY).toISOString(),
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'minor'
       const result = await ncu({ packageData, cooldown, target: 'minor' })
@@ -744,7 +744,7 @@ describe('cooldown', () => {
             '1.0.1': new Date(NOW - 15 * DAY).toISOString(),
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'patch'
       const result = await ncu({ packageData, cooldown, target: 'patch' })
@@ -771,7 +771,7 @@ describe('cooldown', () => {
             '1.0.1': new Date(NOW - 15 * DAY).toISOString(),
           },
         }),
-      )
+      , { spawn: true })
 
       // When ncu is run with the cooldown parameter and target is 'semver'
       const result = await ncu({ packageData, cooldown, target: 'semver' })
@@ -799,7 +799,7 @@ describe('cooldown', () => {
           latest: '1.1.0',
         },
       }),
-    )
+    , { spawn: true })
 
     // When ncu is run with the cooldown parameter and target is 'latest'
     const result = await ncu({ packageData, cooldown, target: 'latest' })
@@ -827,7 +827,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // When: cooldown predicate returns null for test-package
       const result = await ncu({
@@ -868,7 +868,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      })
+      }, { spawn: true })
 
       // When: cooldown predicate returns 5 for test-package (skipping cooldown), and 10 for the rest packages
       const result = await ncu({
@@ -894,7 +894,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 13 * HOUR).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       // When: cooldown predicate returns 12/24 (fractional days = 12 hours)
       const result = await ncu({
@@ -919,7 +919,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - 11 * HOUR).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      )
+      , { spawn: true })
 
       // When: cooldown predicate returns 12/24 (fractional days = 12 hours)
       const result = await ncu({
@@ -954,7 +954,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - DAY).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      })
+      }, { spawn: true })
 
       // When: predicate returns a string for one package and a number for another
       const result = await ncu({
@@ -987,7 +987,7 @@ describe('cooldown', () => {
           versions: { '1.1.0': new Date(NOW - DAY).toISOString() },
           distTags: { latest: '1.1.0' },
         }),
-      })
+      }, { spawn: true })
 
       // When: predicate returns 0 for test-package and 10 for everything else
       const result = await ncu({
@@ -1023,7 +1023,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
@@ -1054,7 +1054,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
@@ -1085,7 +1085,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
@@ -1125,7 +1125,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // Prevent user's .npmrc min-release-age from taking precedence over pnpm/yarn config in tests
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
@@ -1166,7 +1166,7 @@ describe('cooldown', () => {
           versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
           distTags: { latest: '2.0.0' },
         }),
-      })
+      }, { spawn: true })
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
@@ -1204,7 +1204,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a 7-day config
       const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
@@ -1239,7 +1239,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // Stub npm config with min-release-age=2
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
@@ -1279,7 +1279,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
@@ -1317,7 +1317,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
@@ -1356,7 +1356,7 @@ describe('cooldown', () => {
           versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
           distTags: { latest: '2.0.0' },
         }),
-      })
+      }, { spawn: true })
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
@@ -1394,7 +1394,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 10080,
@@ -1429,7 +1429,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-      )
+      , { spawn: true })
 
       // Stub npm config with min-release-age=2
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
@@ -1484,7 +1484,7 @@ describe('cooldown', () => {
         // previous version (1.0.1) released 8 days ago — also within cooldown, so no fallback exists
         const cooldown = 10
 
-        stubVersions(mockedVersion)
+        stubVersions(mockedVersion, { spawn: true })
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
@@ -1505,7 +1505,7 @@ describe('cooldown', () => {
         // previous version (1.0.1) released 8 days ago — is before cooldown and return as a fallback
         const cooldown = 6
 
-        stubVersions(mockedVersion)
+        stubVersions(mockedVersion, { spawn: true })
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
@@ -1557,7 +1557,7 @@ describe('cooldown', () => {
       it(`handles "target: ${target}" correctly within cooldown`, async () => {
         const cooldown = 6
 
-        stubVersions(mockedVersion)
+        stubVersions(mockedVersion, { spawn: true })
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
@@ -1627,7 +1627,7 @@ describe('cooldown', () => {
         // greatest version time was deleted, all teaget function should return
         // test-package-with-no-time: 1.0.2 or 1.0.3-pre.0, for newest and greatest for the upgrade
         // when newest function get a package with missing time it should return greatest instead
-        stubVersions(versions)
+        stubVersions(versions, { spawn: true })
         const cooldown = 5
 
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -1649,7 +1649,7 @@ describe('cooldown', () => {
     })
 
     it(`handles "target: '@latest'" correctly within cooldown`, async () => {
-      stubVersions(versions)
+      stubVersions(versions, { spawn: true })
       const cooldown = 5
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -1669,7 +1669,7 @@ describe('cooldown', () => {
     it(`"target: newest" - ignore versions without time`, async () => {
       // test-package-with-no-time versions 1.0.2 and 1.0.3-pre.0 don't have time
       // test-package-with-no-time will upgrade to version 1.0.1
-      stubVersions(versions)
+      stubVersions(versions, { spawn: true })
       const cooldown = 5
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -1691,7 +1691,7 @@ describe('cooldown', () => {
       stubVersions({
         'test-package': mockedVersion,
         'test-package-with-no-time': { ...mockedVersionWithNoTime, time: {} },
-      })
+      }, { spawn: true })
 
       const cooldown = 5
 
@@ -1714,7 +1714,7 @@ describe('cooldown', () => {
       stubVersions({
         'test-package': { ...mockedVersion, time: {} },
         'test-package-with-no-time': { ...mockedVersionWithNoTime, time: {} },
-      })
+      }, { spawn: true })
 
       const cooldown = 5
 
@@ -1762,7 +1762,7 @@ describe('cooldown', () => {
             latest: '1.5.0',
           },
         }),
-      )
+      , { spawn: true })
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
@@ -1797,7 +1797,7 @@ describe('cooldown', () => {
             latest: '1.5.0',
           },
         }),
-      )
+      , { spawn: true })
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
@@ -1835,7 +1835,7 @@ describe('cooldown', () => {
             next: '1.5.0-rc.1',
           },
         }),
-      )
+      , { spawn: true })
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()

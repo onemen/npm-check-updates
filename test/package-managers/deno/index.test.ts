@@ -7,7 +7,7 @@ import { runNcuCli } from '../../helpers/runNcuCli'
 import stubVersions from '../../helpers/stubVersions'
 
 describe('deno', async function () {
-  beforeEach(() => stubVersions({ 'ncu-test-v2': '2.0.0' }))
+  beforeEach(() => stubVersions({ 'ncu-test-v2': '2.0.0' }, { spawn: true }))
 
   it('handle import map', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
